@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+
+# perso
+note_info_P_M.txt
+/note_info_P_M.txt
