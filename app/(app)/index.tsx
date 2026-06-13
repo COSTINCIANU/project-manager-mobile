@@ -1,265 +1,160 @@
 // =====================================================
-// TasksScreen — Mes tâches
-// Affiche toutes les tâches de tous les projets
-// de l'utilisateur connecté, avec filtres par statut
+// DashboardScreen — Écran d'accueil
+// Affiche une salutation, les infos utilisateur
+// et les stats rapides des projets et tâches
 // =====================================================
 
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-} from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useAuthStore } from "@/stores/authStore";
+import { useProjects } from "@/hooks/useProjects";
 import { useTasks } from "@/hooks/useTasks";
 import { Colors } from "@/constants/colors";
-import { Task } from "@/types/task";
+import { getUserInitials } from "@/types/user";
 
-// =====================
-// FILTRES DISPONIBLES
-// =====================
-const FILTERS = [
-  { id: "all", label: "Toutes" },
-  { id: "todo", label: "À faire" },
-  { id: "inProgress", label: "En cours" },
-  { id: "done", label: "Terminées" },
-];
+export default function DashboardScreen() {
+  const { user } = useAuthStore();
+  const { data: projects } = useProjects();
+  const { data: tasks } = useTasks();
 
-// =====================
-// COULEURS PAR PRIORITÉ
-// =====================
-const PRIORITY_COLORS: Record<string, string> = {
-  haute: Colors.priorityHigh,
-  high: Colors.priorityHigh,
-  moyenne: Colors.priorityMedium,
-  medium: Colors.priorityMedium,
-  faible: Colors.priorityLow,
-  low: Colors.priorityLow,
-  critique: Colors.priorityCritical,
-  critical: Colors.priorityCritical,
-};
-
-// =====================
-// COMPOSANT CARTE TÂCHE
-// =====================
-function TaskCard({ task }: { task: Task }) {
-  const priorityColor = PRIORITY_COLORS[task.priority] ?? Colors.textTertiary;
-
-  return (
-    <View style={styles.taskCard}>
-      <View style={styles.taskHeader}>
-        {/* Point coloré selon le statut */}
-        <View
-          style={[
-            styles.statusDot,
-            {
-              backgroundColor: task.done
-                ? Colors.success
-                : task.inProgress
-                  ? Colors.warning
-                  : Colors.textTertiary,
-            },
-          ]}
-        />
-        {/* Nom barré si terminé */}
-        <Text
-          style={[styles.taskName, task.done && styles.taskDone]}
-          numberOfLines={2}
-        >
-          {task.name}
-        </Text>
-      </View>
-
-      <View style={styles.taskFooter}>
-        {/* Badge priorité */}
-        <View
-          style={[
-            styles.priorityBadge,
-            { backgroundColor: priorityColor + "20" },
-          ]}
-        >
-          <Text style={[styles.priorityText, { color: priorityColor }]}>
-            {task.priority}
-          </Text>
-        </View>
-
-        {/* Date d'échéance */}
-        {task.dueDate && (
-          <Text style={styles.dueDate}>
-            📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
-          </Text>
-        )}
-
-        {/* Statut */}
-        <Text style={styles.statusText}>
-          {task.done
-            ? "✅ Terminé"
-            : task.inProgress
-              ? "🔄 En cours"
-              : "⏳ À faire"}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-// =====================
-// ÉCRAN PRINCIPAL
-// =====================
-export default function TasksScreen() {
-  // Filtre actif — 'all' par défaut
-  const [activeFilter, setActiveFilter] = useState("all");
-
-  // Charge toutes les tâches sans filtre de projet
-  const { data: tasks, isLoading, refetch, isFetching } = useTasks();
-
-  // Filtre les tâches selon le filtre actif
-  const filteredTasks =
-    tasks?.filter((task) => {
-      if (activeFilter === "todo") return !task.done && !task.inProgress;
-      if (activeFilter === "inProgress") return task.inProgress && !task.done;
-      if (activeFilter === "done") return task.done;
-      return true; // 'all'
-    }) ?? [];
+  const totalProjects = projects?.length ?? 0;
+  const totalTasks = tasks?.length ?? 0;
+  const doneTasks = tasks?.filter((t) => t.done).length ?? 0;
+  const inProgressTasks =
+    tasks?.filter((t) => t.inProgress && !t.done).length ?? 0;
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* En-tête */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Mes tâches</Text>
-        <Text style={styles.count}>{filteredTasks.length}</Text>
-      </View>
-
-      {/* Barre de filtres */}
-      <View style={styles.filtersContainer}>
-        {FILTERS.map((filter) => (
-          <TouchableOpacity
-            key={filter.id}
-            style={[
-              styles.filterButton,
-              activeFilter === filter.id && styles.filterButtonActive,
-            ]}
-            onPress={() => setActiveFilter(filter.id)}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                activeFilter === filter.id && styles.filterTextActive,
-              ]}
-            >
-              {filter.label}
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Section salutation centrée */}
+        <View style={styles.heroSection}>
+          {/* Avatar avec initiales */}
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {user ? getUserInitials(user) : "?"}
             </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+          </View>
 
-      {/* Indicateur de chargement */}
-      {isLoading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          {/* Bonjour */}
+          <Text style={styles.greeting}>Bonjour 👋</Text>
+
+          {/* Nom complet */}
+          <Text style={styles.userName}>{user?.name ?? "—"}</Text>
+
+          {/* Email en petit */}
+          <Text style={styles.userEmail}>{user?.email}</Text>
+
+          {/* Date du jour */}
+          <Text style={styles.date}>
+            {new Date().toLocaleDateString("fr-FR", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+          </Text>
         </View>
-      ) : (
-        <FlatList
-          data={filteredTasks}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <TaskCard task={item} />}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isFetching}
-              onRefresh={refetch}
-              tintColor={Colors.primary}
-            />
-          }
-          ListEmptyComponent={
-            <View style={styles.empty}>
-              <Text style={styles.emptyText}>Aucune tâche</Text>
-            </View>
-          }
-        />
-      )}
+
+        {/* Stats rapides */}
+        <Text style={styles.sectionTitle}>Vue d'ensemble</Text>
+
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{totalProjects}</Text>
+            <Text style={styles.statLabel}>Projets</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{totalTasks}</Text>
+            <Text style={styles.statLabel}>Tâches</Text>
+          </View>
+          <View
+            style={[
+              styles.statCard,
+              { borderTopColor: Colors.warning, borderTopWidth: 3 },
+            ]}
+          >
+            <Text style={[styles.statValue, { color: Colors.warning }]}>
+              {inProgressTasks}
+            </Text>
+            <Text style={styles.statLabel}>En cours</Text>
+          </View>
+          <View
+            style={[
+              styles.statCard,
+              { borderTopColor: Colors.success, borderTopWidth: 3 },
+            ]}
+          >
+            <Text style={[styles.statValue, { color: Colors.success }]}>
+              {doneTasks}
+            </Text>
+            <Text style={styles.statLabel}>Terminées</Text>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-// =====================
-// STYLES
-// =====================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
+  content: { padding: 20, gap: 20 },
 
-  // En-tête
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  // Section héro centrée
+  heroSection: {
+    backgroundColor: Colors.backgroundPrimary,
+    borderRadius: 20,
+    padding: 28,
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    gap: 6,
+    borderWidth: 0.5,
+    borderColor: Colors.border,
   },
-  title: { fontSize: 24, fontWeight: "700", color: Colors.textPrimary },
-  count: { fontSize: 14, color: Colors.textSecondary },
 
-  // Filtres
-  filtersContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    gap: 8,
+  // Avatar rond avec initiales
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: Colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 8,
   },
-  filterButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: Colors.backgroundPrimary,
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
-  filterButtonActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  filterText: { fontSize: 13, color: Colors.textSecondary },
-  filterTextActive: { color: "#FFFFFF", fontWeight: "500" },
+  avatarText: { fontSize: 26, fontWeight: "700", color: "#FFFFFF" },
 
-  // Liste
-  list: { padding: 16, gap: 10 },
+  // Textes salutation
+  greeting: { fontSize: 22, fontWeight: "700", color: Colors.textPrimary },
+  userName: { fontSize: 18, fontWeight: "600", color: Colors.primary },
+  userEmail: { fontSize: 13, color: Colors.textTertiary },
+  date: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    textTransform: "capitalize",
+    marginTop: 4,
+  },
 
-  // Carte tâche
-  taskCard: {
+  // Titre section
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.textPrimary,
+  },
+
+  // Grille de stats
+  statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  statCard: {
+    flex: 1,
+    minWidth: "45%",
     backgroundColor: Colors.backgroundPrimary,
     borderRadius: 12,
-    padding: 14,
-    gap: 10,
+    padding: 16,
+    alignItems: "center",
     borderWidth: 0.5,
     borderColor: Colors.border,
+    gap: 4,
   },
-  taskHeader: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  statusDot: { width: 10, height: 10, borderRadius: 5, marginTop: 3 },
-  taskName: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  taskDone: { textDecorationLine: "line-through", color: Colors.textTertiary },
-  taskFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    flexWrap: "wrap",
-  },
-  priorityBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
-  priorityText: { fontSize: 11, fontWeight: "600" },
-  dueDate: { fontSize: 11, color: Colors.textSecondary },
-  statusText: { fontSize: 11, color: Colors.textSecondary, marginLeft: "auto" },
-
-  // État vide
-  empty: { padding: 40, alignItems: "center" },
-  emptyText: { fontSize: 15, color: Colors.textTertiary },
+  statValue: { fontSize: 28, fontWeight: "700", color: Colors.primary },
+  statLabel: { fontSize: 13, color: Colors.textSecondary },
 });
