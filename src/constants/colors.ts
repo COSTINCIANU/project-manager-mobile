@@ -17,4 +17,9 @@ export const Colors = {
   textTertiary: "#94A3B8",
   border: "#E2E8F0",
   borderDark: "#334155",
+
+  priorityLow: "#22C55E",
+  priorityMedium: "#F59E0B",
+  priorityHigh: "#EF4444",
+  priorityCritical: "#DC2626",
 } as const;

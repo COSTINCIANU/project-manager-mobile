@@ -1,18 +1,27 @@
 export interface User {
   id: number;
   email: string;
-  firstName: string;
-  lastName: string;
+  name: string | null;
+  firstName?: string;
+  lastName?: string;
   avatar: string | null;
-  role: "ROLE_ADMIN" | "ROLE_USER";
+  role: string;
+  createdAt?: string;
 }
 
 export function getUserFullName(user: User): string {
-  return `${user.firstName} ${user.lastName}`.trim();
+  if (user.name) return user.name;
+  if (user.firstName && user.lastName)
+    return `${user.firstName} ${user.lastName}`;
+  return user.email;
 }
 
 export function getUserInitials(user: User): string {
-  const first = user.firstName?.[0] ?? "";
-  const last = user.lastName?.[0] ?? "";
-  return `${first}${last}`.toUpperCase();
+  if (user.name) {
+    const parts = user.name.trim().split(" ");
+    return parts.length > 1
+      ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+      : parts[0][0].toUpperCase();
+  }
+  return user.email[0].toUpperCase();
 }
