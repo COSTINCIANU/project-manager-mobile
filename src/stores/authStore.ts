@@ -1,5 +1,11 @@
+// =====================================================
+// authStore — Store Zustand pour l'authentification
+// Gere l'etat de connexion, le token JWT et Mercure
+// =====================================================
+
 import { create } from "zustand";
 import { tokenService } from "@/services/tokenService";
+import { mercureService } from "@/services/mercureService";
 import { authApi } from "@/api/auth";
 import { User } from "@/types/user";
 import { LoginPayload } from "@/types/auth";
@@ -23,6 +29,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   requiresTwoFactor: false,
   tempToken: null,
 
+  // Verifie si un token existe au demarrage de l'app
   initialize: async () => {
     set({ isLoading: true });
     try {
@@ -33,30 +40,38 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
       const user = await authApi.getProfile();
       set({ user, isAuthenticated: true, isLoading: false });
+      // Connexion Mercure si deja connecte
+      mercureService.connect(user.id);
     } catch {
       await tokenService.clearTokens();
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 
+  // Connexion avec email + mot de passe
   login: async (payload: LoginPayload) => {
     const result = await authApi.login(payload);
-    console.log("Résultat API login:", JSON.stringify(result));
     if (result.requiresTwoFactor && result.tempToken) {
       set({ requiresTwoFactor: true, tempToken: result.tempToken });
       return;
     }
     await tokenService.saveTokens(result.token, result.refresh_token);
     const user = await authApi.getProfile();
+    // Met a jour le store
     set({
       user,
       isAuthenticated: true,
       requiresTwoFactor: false,
       tempToken: null,
     });
+    // Connexion Mercure apres login
+    mercureService.connect(user.id);
   },
 
+  // Deconnexion
   logout: async () => {
+    // Deconnexion Mercure
+    mercureService.disconnect();
     await tokenService.clearTokens();
     set({
       user: null,

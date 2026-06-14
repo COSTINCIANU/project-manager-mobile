@@ -16,5 +16,7 @@ export const API_ENDPOINTS = {
   TASKS: "/api/tasks",
   TASK: (id: number) => `/api/tasks/${id}`,
   NOTIFICATIONS: "/api/notifications",
+  NOTIFICATION_READ: (id: number) => `/api/notifications/${id}/read`,
+  NOTIFICATION_READ_ALL: "/api/notifications/read-all",
   PUSH_TOKEN: "/api/push-tokens",
 } as const;
