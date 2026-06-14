@@ -45,5 +45,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     MERCURE_URL:
       process.env.MERCURE_URL ??
       "https://mercure.costincianu.fr/.well-known/mercure",
+    eas: {
+      projectId: "5a3d0779-6bd6-4518-9097-deb3f0062429",
+    },
   },
 });
