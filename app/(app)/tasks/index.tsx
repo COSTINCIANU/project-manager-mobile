@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
+import { useRouter } from "expo-router";
 import { useTasks } from "@/hooks/useTasks";
 import { Colors } from "@/constants/colors";
 import { Task } from "@/types/task";
@@ -47,12 +48,16 @@ const PRIORITY_COLORS: Record<string, string> = {
 // COMPOSANT CARTE TÂCHE
 // =====================
 function TaskCard({ task }: { task: Task }) {
+  const router = useRouter();
   const priorityColor = PRIORITY_COLORS[task.priority] ?? Colors.textTertiary;
 
   return (
-    <View style={styles.taskCard}>
+    <TouchableOpacity
+      style={styles.taskCard}
+      onPress={() => router.push(`/(app)/tasks/${task.id}` as any)}
+      activeOpacity={0.7}
+    >
       <View style={styles.taskHeader}>
-        {/* Point coloré selon le statut */}
         <View
           style={[
             styles.statusDot,
@@ -65,7 +70,6 @@ function TaskCard({ task }: { task: Task }) {
             },
           ]}
         />
-        {/* Nom barré si terminé */}
         <Text
           style={[styles.taskName, task.done && styles.taskDone]}
           numberOfLines={2}
@@ -75,7 +79,6 @@ function TaskCard({ task }: { task: Task }) {
       </View>
 
       <View style={styles.taskFooter}>
-        {/* Badge priorité */}
         <View
           style={[
             styles.priorityBadge,
@@ -86,24 +89,20 @@ function TaskCard({ task }: { task: Task }) {
             {task.priority}
           </Text>
         </View>
-
-        {/* Date d'échéance */}
         {task.dueDate && (
           <Text style={styles.dueDate}>
             📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
           </Text>
         )}
-
-        {/* Statut */}
         <Text style={styles.statusText}>
           {task.done
-            ? "✅ Terminé"
+            ? "✅ Termine"
             : task.inProgress
               ? "🔄 En cours"
-              : "⏳ À faire"}
+              : "⏳ A faire"}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

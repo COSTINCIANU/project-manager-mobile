@@ -1,22 +1,85 @@
+// =====================================================
+// api.ts — URLs et endpoints de l'API Symfony
+// Base URL : https://api.costincianu.fr
+// =====================================================
+
 export const API_BASE_URL = "https://api.costincianu.fr";
 
 export const MERCURE_URL = "https://mercure.costincianu.fr/.well-known/mercure";
 
 export const API_ENDPOINTS = {
+  // Auth
   LOGIN: "/api/auth/login",
-  REFRESH: "/api/token/refresh",
   REGISTER: "/api/auth/register",
   FORGOT_PASSWORD: "/api/auth/forgot-password",
   RESET_PASSWORD: "/api/auth/reset-password",
-  VERIFY_2FA: "/api/auth/2fa/verify",
   PROFILE: "/api/auth/me",
+  UPDATE_PROFILE: "/api/auth/profile",
   AVATAR: "/api/auth/avatar",
+  REFRESH: "/api/token/refresh",
+
+  // 2FA
+  VERIFY_2FA: "/api/auth/2fa/verify",
+  SEND_2FA: "/api/auth/2fa/send",
+  TOGGLE_2FA: "/api/auth/2fa/toggle",
+
+  // OAuth
+  OAUTH_GOOGLE: "/api/auth/google",
+  OAUTH_GITHUB: "/api/auth/github",
+
+  // Projets
   PROJECTS: "/api/projects",
   PROJECT: (id: number) => `/api/projects/${id}`,
+
+  // Taches
   TASKS: "/api/tasks",
   TASK: (id: number) => `/api/tasks/${id}`,
-  NOTIFICATIONS: "/api/notifications",
-  NOTIFICATION_READ: (id: number) => `/api/notifications/${id}/read`,
-  NOTIFICATION_READ_ALL: "/api/notifications/read-all",
-  PUSH_TOKEN: "/api/push-tokens",
+
+  // Sous-taches
+  SUBTASKS: (taskId: number) => `/api/tasks/${taskId}/subtasks`,
+  SUBTASK: (id: number) => `/api/tasks/subtasks/${id}`,
+
+  // Commentaires
+  COMMENTS: (taskId: number) => `/api/tasks/${taskId}/comments`,
+  COMMENT: (id: number) => `/api/tasks/comments/${id}`,
+
+  // Fichiers attaches aux taches
+  ATTACHMENTS: (taskId: number) => `/api/tasks/${taskId}/attachments`,
+  ATTACHMENT: (id: number) => `/api/tasks/attachments/${id}`,
+
+  // Notifications
+  NOTIFICATIONS: "/api/mentions",
+  NOTIFICATION_READ: (id: number) => `/api/mentions/${id}/read`,
+  NOTIFICATION_READ_ALL: "/api/mentions/read-all",
+
+  // Chat
+  CHAT: "/api/chat",
+  CHAT_DELETE: (id: number) => `/api/chat/${id}`,
+
+  // Push notifications
+  PUSH_TOKEN: "/api/push/subscribe",
+  PUSH_VAPID_KEY: "/api/push/vapid-key",
+
+  // IA
+  AI_CHAT: "/api/ai/chat",
+  AI_GENERATE_TASKS: "/api/ai/generate-tasks",
+
+  // Wiki
+  WIKI: (projectId: number) => `/api/wiki/project/${projectId}`,
+  WIKI_ITEM: (id: number) => `/api/wiki/${id}`,
+  WIKI_CREATE: "/api/wiki",
+  WIKI_UPDATE: (id: number) => `/api/wiki/${id}`,
+  WIKI_DELETE: (id: number) => `/api/wiki/${id}`,
+
+  // Equipe
+  USERS: "/api/users",
+  INVITE: "/api/invitations",
+  INVITATIONS: (projectId: number) => `/api/invitations/project/${projectId}`,
+
+  // Logs
+  LOGS: "/api/logs",
+
+  // Admin
+  ADMIN_STATS: "/api/admin/stats",
+  ADMIN_USERS: "/api/admin/users",
 } as const;

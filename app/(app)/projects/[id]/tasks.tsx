@@ -34,20 +34,27 @@ const PRIORITY_COLORS: Record<string, string> = {
   critical: Colors.priorityCritical,
 };
 
-// =====================
-// COMPOSANT CARTE TÂCHE
-// Affiche une tâche individuelle avec son statut,
-// son nom, sa priorité et sa date d'échéance
-// =====================
+// =====================================================
+// TaskItem — Carte tache cliquable dans la liste
+// Redirige vers le detail de la tache au clic
+// Affiche : statut, nom, priorite, date echeance
+// =====================================================
 function TaskItem({ task }: { task: Task }) {
-  // Couleur de la priorité — gris par défaut si inconnue
+  // Hook de navigation pour aller vers le detail
+  const router = useRouter();
+  // Couleur selon la priorite de la tache
   const priorityColor = PRIORITY_COLORS[task.priority] ?? Colors.textTertiary;
 
   return (
-    <View style={styles.taskCard}>
-      {/* En-tête : point coloré + nom de la tâche */}
+    // Carte cliquable — navigue vers /(app)/tasks/[id]
+    <TouchableOpacity
+      style={styles.taskCard}
+      onPress={() => router.push(`/(app)/tasks/${task.id}` as any)}
+      activeOpacity={0.7}
+    >
+      {/* En-tete : point de statut + nom de la tache */}
       <View style={styles.taskHeader}>
-        {/* Point vert = terminé, orange = en cours, gris = à faire */}
+        {/* Point vert = termine, orange = en cours, gris = a faire */}
         <View
           style={[
             styles.statusDot,
@@ -60,7 +67,7 @@ function TaskItem({ task }: { task: Task }) {
             },
           ]}
         />
-        {/* Nom barré si la tâche est terminée */}
+        {/* Nom barre si la tache est terminee */}
         <Text
           style={[styles.taskName, task.done && styles.taskDone]}
           numberOfLines={2}
@@ -69,9 +76,9 @@ function TaskItem({ task }: { task: Task }) {
         </Text>
       </View>
 
-      {/* Pied de carte : priorité + date + statut */}
+      {/* Pied de carte : priorite + date + statut */}
       <View style={styles.taskFooter}>
-        {/* Badge de priorité coloré */}
+        {/* Badge de priorite colore */}
         <View
           style={[
             styles.priorityBadge,
@@ -82,27 +89,24 @@ function TaskItem({ task }: { task: Task }) {
             {task.priority}
           </Text>
         </View>
-
-        {/* Date d'échéance — affichée uniquement si définie */}
+        {/* Date d'echeance si definie */}
         {task.dueDate && (
           <Text style={styles.dueDate}>
             📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
           </Text>
         )}
-
-        {/* Statut textuel de la tâche */}
+        {/* Statut textuel */}
         <Text style={styles.statusText}>
           {task.done
-            ? "✅ Terminé"
+            ? "✅ Termine"
             : task.inProgress
               ? "🔄 En cours"
-              : "⏳ À faire"}
+              : "⏳ A faire"}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
-
 // =====================
 // ÉCRAN PRINCIPAL
 // =====================

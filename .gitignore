@@ -44,3 +44,7 @@ yarn-error.*
 # perso
 note_info_P_M.txt
 /note_info_P_M.txt
+
+# toute les route qui doit mathche sur le back-end Symfony
+routes_project-manager-api-symfony.txt
+/routes_project-manager-api-symfony.txt
