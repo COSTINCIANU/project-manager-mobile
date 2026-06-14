@@ -87,15 +87,21 @@ export default function ProjectDetailScreen() {
         <View style={styles.actionsRow}>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => router.push(`/(app)/projects/${id}/tasks`)}
+            onPress={() => router.push(`/(app)/projects/${id}/tasks` as any)}
           >
             <Text style={styles.actionText}>📋 Tâches</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => router.push(`/(app)/projects/${id}/kanban`)}
+            onPress={() => router.push(`/(app)/projects/${id}/kanban` as any)}
           >
             <Text style={styles.actionText}>🗂 Kanban</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push(`/(app)/projects/${id}/ai` as any)}
+          >
+            <Text style={styles.actionText}>✨ IA</Text>
           </TouchableOpacity>
         </View>
 
