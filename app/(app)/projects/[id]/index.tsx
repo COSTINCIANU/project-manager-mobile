@@ -36,16 +36,30 @@ export default function ProjectDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* En-tete avec bouton retour et bouton modifier */}
       <View style={styles.header}>
+        {/* Bouton retour vers la liste des projets */}
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
           <Text style={styles.backText}>← Retour</Text>
         </TouchableOpacity>
+
+        {/* Nom du projet */}
         <Text style={styles.title} numberOfLines={1}>
           {project.name}
         </Text>
+
+        {/* Bouton pour modifier le projet */}
+        <TouchableOpacity
+          onPress={() =>
+            router.push(`/(app)/projects/${id}/edit-project` as any)
+          }
+          style={styles.editButton}
+        >
+          <Text style={styles.editButtonText}>✏️</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -199,4 +213,13 @@ const styles = StyleSheet.create({
   taskItem: { flexDirection: "row", alignItems: "center", gap: 10 },
   taskDot: { width: 8, height: 8, borderRadius: 4 },
   taskTitle: { fontSize: 14, color: Colors.textSecondary, flex: 1 },
+
+  // Bouton modifier le projet
+  editButton: {
+    padding: 8,
+    backgroundColor: Colors.primary + "15",
+    borderRadius: 20,
+  },
+  // Icone du bouton modifier
+  editButtonText: { fontSize: 16 },
 });
