@@ -51,11 +51,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   // Connexion avec email + mot de passe
   login: async (payload: LoginPayload) => {
     const result = await authApi.login(payload);
+    console.log("Resultat API:", JSON.stringify(result));
     if (result.requiresTwoFactor && result.tempToken) {
       set({ requiresTwoFactor: true, tempToken: result.tempToken });
       return;
     }
-    await tokenService.saveTokens(result.token, result.refresh_token);
+    // L'API retourne token mais pas refresh_token
+    // On sauvegarde une string vide si refresh_token est absent
+    await tokenService.saveTokens(result.token, result.refresh_token ?? "");
     const user = await authApi.getProfile();
     // Met a jour le store
     set({
