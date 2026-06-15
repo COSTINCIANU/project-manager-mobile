@@ -103,6 +103,7 @@ export default function EditTaskScreen() {
         } as any,
       });
 
+      //   Option 1
       //   Alert.alert("Succes", "Tache modifiee avec succes !", [
       //     {
       //       text: "OK",
@@ -111,6 +112,7 @@ export default function EditTaskScreen() {
       //     },
       //   ]);
 
+      //   Option 2
       //   Alert.alert("Succes", "Tache modifiee avec succes !", [
       //     {
       //       text: "OK",
@@ -119,6 +121,7 @@ export default function EditTaskScreen() {
       //     },
       //   ]);
 
+      //   Option 3
       Alert.alert("Succes", "Tache modifiee avec succes !", [
         {
           text: "Voir les projets",

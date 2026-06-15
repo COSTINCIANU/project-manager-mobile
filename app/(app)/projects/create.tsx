@@ -51,6 +51,15 @@ export default function CreateProjectScreen() {
     return `${year}-${month}-${day}`;
   };
 
+  const payload = {
+    name: name.trim(),
+    description: description.trim() || undefined,
+    priority: priority as any,
+    startDate: startDate ? formatDateForApi(startDate) : undefined,
+    endDate: endDate ? formatDateForApi(endDate) : undefined,
+  };
+  console.log("Payload creation projet:", JSON.stringify(payload));
+
   // Formate la date pour l'affichage
   const formatDateForDisplay = (date: Date): string => {
     return date.toLocaleDateString("fr-FR", {
@@ -75,13 +84,21 @@ export default function CreateProjectScreen() {
         priority: priority as any,
         startDate: startDate ? formatDateForApi(startDate) : undefined,
         endDate: endDate ? formatDateForApi(endDate) : undefined,
-      });
+        // Champs requis par le backend Symfony
+        status: "active",
+        color: "#6366F1",
+        progress: 0,
+      } as any);
 
       Alert.alert("Succes", "Projet cree avec succes !", [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error: any) {
-      console.log("Erreur creation projet:", error?.response?.data);
+      console.log(
+        "Erreur creation projet:",
+        JSON.stringify(error?.response?.data),
+      );
+      console.log("Status:", error?.response?.status);
       Alert.alert("Erreur", "Impossible de creer le projet.");
     } finally {
       setIsSubmitting(false);
