@@ -20,6 +20,6 @@ export const Colors = {
 
   priorityLow: "#22C55E",
   priorityMedium: "#F59E0B",
-  priorityHigh: "#EF4444",
-  priorityCritical: "#DC2626",
+  priorityHigh: "#F97316", // Orange pour haute
+  priorityCritical: "#DC2626", // Rouge fonce pour critique
 } as const;

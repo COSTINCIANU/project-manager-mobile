@@ -222,7 +222,7 @@ export default function TaskDetailScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* En-tete avec bouton retour */}
+        {/* En-tete avec bouton retour et bouton modifier */}
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -233,6 +233,22 @@ export default function TaskDetailScreen() {
           <Text style={styles.title} numberOfLines={1}>
             {task.name}
           </Text>
+          <TouchableOpacity
+            onPress={() => {
+              console.log(
+                "task.projectId:",
+                task.projectId,
+                "task.id:",
+                task.id,
+              );
+              router.push(
+                `/(app)/projects/${task.projectId}/edit-task?taskId=${task.id}` as any,
+              );
+            }}
+            style={styles.editButton}
+          >
+            <Text style={styles.editButtonText}>✏️ Modifier</Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -619,4 +635,13 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: { opacity: 0.4 },
   sendButtonText: { fontSize: 18, color: "#FFFFFF", fontWeight: "700" },
+
+  // {/* En-tete avec bouton retour et bouton modifier */}
+  editButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: Colors.primary + "15",
+    borderRadius: 20,
+  },
+  editButtonText: { fontSize: 12, color: Colors.primary, fontWeight: "500" },
 });

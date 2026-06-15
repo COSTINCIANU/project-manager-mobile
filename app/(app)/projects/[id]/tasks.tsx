@@ -121,7 +121,7 @@ export default function ProjectTasksScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* En-tête avec bouton retour et compteur de tâches */}
+      {/* En-tete avec bouton retour et bouton creer */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -130,7 +130,14 @@ export default function ProjectTasksScreen() {
           <Text style={styles.backText}>← Retour</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Tâches</Text>
-        <Text style={styles.count}>{tasks?.length ?? 0}</Text>
+        <TouchableOpacity
+          onPress={() =>
+            router.push(`/(app)/projects/${id}/create-task` as any)
+          }
+          style={styles.addButton}
+        >
+          <Text style={styles.addButtonText}>+ Nouveau</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Indicateur de chargement au premier chargement */}
@@ -231,4 +238,12 @@ const styles = StyleSheet.create({
   // État vide
   empty: { padding: 40, alignItems: "center" },
   emptyText: { fontSize: 15, color: Colors.textTertiary },
+
+  addButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: Colors.primary,
+    borderRadius: 20,
+  },
+  addButtonText: { fontSize: 13, color: "#FFFFFF", fontWeight: "600" },
 });

@@ -30,6 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-secure-store",
     "expo-font",
     "expo-web-browser",
+    "@react-native-community/datetimepicker",
     [
       "expo-image-picker",
       {
