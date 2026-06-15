@@ -17,6 +17,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
@@ -56,6 +57,9 @@ interface SubTask {
   completed: boolean;
 }
 
+// Un composant en React Native c'est la fonction principale du fichier
+// dans ce cas TaskDetailScreen
+
 export default function TaskDetailScreen() {
   // Recupere l'ID de la tache depuis l'URL (ex: /tasks/3)
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -63,6 +67,10 @@ export default function TaskDetailScreen() {
 
   // Charge les details de la tache via React Query
   const { data: task, isLoading } = useTask(Number(id));
+
+  // queryClient permet d'invalider le cache React Query
+  // pour forcer le rechargement des donnees apres une action
+  const queryClient = useQueryClient();
 
   // Etats locaux
   const [comments, setComments] = useState<Comment[]>([]);
@@ -80,15 +88,34 @@ export default function TaskDetailScreen() {
   }, [id]);
 
   // Charge commentaires, sous-taches et fichiers en parallele
+  // const loadData = async () => {
+  //   try {
+  //     const [commentsRes, taskRes, attachmentsRes] = await Promise.all([
+  //       apiClient.get(API_ENDPOINTS.COMMENTS(Number(id))),
+  //       apiClient.get(API_ENDPOINTS.TASK(Number(id))),
+  //       apiClient.get(API_ENDPOINTS.ATTACHMENTS(Number(id))),
+  //     ]);
+  //     setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
+  //     setSubtasks(taskRes.data?.subTasks ?? []);
+  //     setAttachments(
+  //       Array.isArray(attachmentsRes.data) ? attachmentsRes.data : [],
+  //     );
+  //   } catch (error) {
+  //     console.log("Erreur chargement:", error);
+  //   } finally {
+  //     setLoadingData(false);
+  //   }
+  // };
+
   const loadData = async () => {
     try {
-      const [commentsRes, taskRes, attachmentsRes] = await Promise.all([
+      const [commentsRes, attachmentsRes] = await Promise.all([
         apiClient.get(API_ENDPOINTS.COMMENTS(Number(id))),
-        apiClient.get(API_ENDPOINTS.TASK(Number(id))),
         apiClient.get(API_ENDPOINTS.ATTACHMENTS(Number(id))),
       ]);
       setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
-      setSubtasks(taskRes.data?.subTasks ?? []);
+      // Utilise les sous-taches deja chargees via useTask
+      setSubtasks(task?.subTasks ?? []);
       setAttachments(
         Array.isArray(attachmentsRes.data) ? attachmentsRes.data : [],
       );
@@ -233,6 +260,7 @@ export default function TaskDetailScreen() {
           <Text style={styles.title} numberOfLines={1}>
             {task.name}
           </Text>
+          {/* Bouton modifier la tache */}
           <TouchableOpacity
             onPress={() => {
               console.log(
@@ -248,6 +276,40 @@ export default function TaskDetailScreen() {
             style={styles.editButton}
           >
             <Text style={styles.editButtonText}>✏️ Modifier</Text>
+          </TouchableOpacity>
+
+          {/* Bouton supprimer la tache */}
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                "Supprimer",
+                "Voulez-vous vraiment supprimer cette tache ?",
+                [
+                  { text: "Annuler", style: "cancel" },
+                  {
+                    text: "Supprimer",
+                    style: "destructive",
+                    onPress: async () => {
+                      try {
+                        await apiClient.delete(API_ENDPOINTS.TASK(Number(id)));
+                        // Invalide le cache React Query pour mettre a jour la liste
+                        queryClient.invalidateQueries({ queryKey: ["tasks"] });
+                        // Retourne a la liste des taches apres suppression
+                        router.replace("/(app)/tasks" as any);
+                      } catch (error) {
+                        Alert.alert(
+                          "Erreur",
+                          "Impossible de supprimer la tache.",
+                        );
+                      }
+                    },
+                  },
+                ],
+              );
+            }}
+            style={styles.deleteButton}
+          >
+            <Text style={styles.deleteButtonText}>🗑️</Text>
           </TouchableOpacity>
         </View>
 
