@@ -103,8 +103,34 @@ export default function EditTaskScreen() {
         } as any,
       });
 
+      //   Alert.alert("Succes", "Tache modifiee avec succes !", [
+      //     {
+      //       text: "OK",
+      //       // Retourne au detail de la tache apres modification
+      //       onPress: () => router.back(),
+      //     },
+      //   ]);
+
+      //   Alert.alert("Succes", "Tache modifiee avec succes !", [
+      //     {
+      //       text: "OK",
+      //       // Retourne directement a la liste des projets apres modification
+      //       onPress: () => router.replace("/(app)/projects" as any),
+      //     },
+      //   ]);
+
       Alert.alert("Succes", "Tache modifiee avec succes !", [
-        { text: "OK", onPress: () => router.back() },
+        {
+          text: "Voir les projets",
+          // Retourne a la liste des projets
+          onPress: () => router.replace("/(app)/projects" as any),
+        },
+        {
+          text: "Rester ici",
+          // Reste sur la page actuelle
+          onPress: () => router.back(),
+          style: "cancel",
+        },
       ]);
     } catch (error: any) {
       console.log("Erreur modification tache:", error?.response?.data);

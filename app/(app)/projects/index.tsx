@@ -126,11 +126,18 @@ export default function ProjectsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* En-tete avec titre et bouton creer un nouveau projet */}
       <View style={styles.header}>
+        {/* Titre de la page */}
         <Text style={styles.title}>Projets</Text>
-        <Text style={styles.count}>
-          {projects?.length ?? 0} projet{(projects?.length ?? 0) > 1 ? "s" : ""}
-        </Text>
+
+        {/* Bouton pour naviguer vers le formulaire de creation */}
+        <TouchableOpacity
+          onPress={() => router.push("/(app)/projects/create" as any)}
+          style={styles.addButton}
+        >
+          <Text style={styles.addButtonText}>+ Nouveau</Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -228,4 +235,14 @@ const styles = StyleSheet.create({
   retryText: { color: "#fff", fontWeight: "600" },
   empty: { padding: 40, alignItems: "center" },
   emptyText: { fontSize: 15, color: Colors.textTertiary },
+
+  // Bouton ajouter un nouveau projet
+  addButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: Colors.primary,
+    borderRadius: 20,
+  },
+  // Texte du bouton ajouter
+  addButtonText: { fontSize: 13, color: "#FFFFFF", fontWeight: "600" },
 });
