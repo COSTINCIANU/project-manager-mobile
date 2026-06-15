@@ -5,16 +5,24 @@ import {
   ScrollView,
   ActivityIndicator,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useProject } from "@/hooks/useProjects";
 import { useTasks } from "@/hooks/useTasks";
 import { Colors } from "@/constants/colors";
+import { useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/api/client";
+import { API_ENDPOINTS } from "@/constants/api";
 
 export default function ProjectDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+
+  // queryClient permet d'invalider le cache apres suppression
+  const queryClient = useQueryClient();
+
   const { data: project, isLoading } = useProject(Number(id));
   const { data: tasks } = useTasks(Number(id));
 
@@ -59,6 +67,40 @@ export default function ProjectDetailScreen() {
           style={styles.editButton}
         >
           <Text style={styles.editButtonText}>✏️</Text>
+        </TouchableOpacity>
+
+        {/* Bouton supprimer le projet */}
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert(
+              "Supprimer",
+              "Voulez-vous vraiment supprimer ce projet ? Cette action est irreversible.",
+              [
+                { text: "Annuler", style: "cancel" },
+                {
+                  text: "Supprimer",
+                  style: "destructive",
+                  onPress: async () => {
+                    try {
+                      await apiClient.delete(API_ENDPOINTS.PROJECT(Number(id)));
+                      // Invalide le cache pour mettre a jour la liste des projets
+                      queryClient.invalidateQueries({ queryKey: ["projects"] });
+                      // Retourne a la liste des projets apres suppression
+                      router.replace("/(app)/projects" as any);
+                    } catch (error) {
+                      Alert.alert(
+                        "Erreur",
+                        "Impossible de supprimer le projet.",
+                      );
+                    }
+                  },
+                },
+              ],
+            );
+          }}
+          style={styles.deleteButton}
+        >
+          <Text style={styles.deleteButtonText}>🗑️</Text>
         </TouchableOpacity>
       </View>
 
@@ -222,4 +264,13 @@ const styles = StyleSheet.create({
   },
   // Icone du bouton modifier
   editButtonText: { fontSize: 16 },
+
+  // Bouton supprimer le projet
+  deleteButton: {
+    padding: 8,
+    backgroundColor: Colors.danger + "15",
+    borderRadius: 20,
+  },
+  // Icone du bouton supprimer
+  deleteButtonText: { fontSize: 16 },
 });
