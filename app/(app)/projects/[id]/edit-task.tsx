@@ -1,7 +1,7 @@
 // =====================================================
 // EditTaskScreen — Modifier une tache existante
-// Meme formulaire que la creation mais pre-rempli
-// avec les donnees actuelles de la tache
+// Formulaire pre-rempli avec les donnees actuelles
+// Note : DatePicker natif desactive pour Expo Go
 // =====================================================
 
 import {
@@ -13,12 +13,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTask, useUpdateTask } from "@/hooks/useTasks";
 import { Colors } from "@/constants/colors";
 
@@ -31,27 +29,21 @@ const PRIORITIES = [
 ];
 
 export default function EditTaskScreen() {
-  // Recupere l'ID de la tache depuis l'URL
   const { id, taskId } = useLocalSearchParams<{ id: string; taskId: string }>();
-  console.log("EditTask — id:", id, "taskId:", taskId);
   const router = useRouter();
-
-  // Charge la tache existante
   const { data: task, isLoading } = useTask(Number(taskId));
-  console.log("EditTask — isLoading:", isLoading, "task:", task);
   const updateTask = useUpdateTask();
 
-  // Champs du formulaire — initialises avec les donnees de la tache
+  // Champs du formulaire
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("normale");
-  const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [dueDate, setDueDate] = useState("");
   const [done, setDone] = useState(false);
   const [inProgress, setInProgress] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Pre-remplit le formulaire quand la tache est chargee
+  // Pre-remplit le formulaire avec les donnees de la tache
   useEffect(() => {
     if (task) {
       setName(task.name ?? "");
@@ -59,33 +51,28 @@ export default function EditTaskScreen() {
       setPriority(task.priority ?? "normale");
       setDone(task.done ?? false);
       setInProgress(task.inProgress ?? false);
-      if (task.dueDate) {
-        setDueDate(new Date(task.dueDate));
-      }
+      setDueDate(task.dueDate ?? "");
     }
   }, [task]);
 
-  // Formate la date en YYYY-MM-DD pour l'API
-  const formatDateForApi = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  // Formate la date pour l'affichage
-  const formatDateForDisplay = (date: Date): string => {
-    return date.toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+  // Valide le format de date YYYY-MM-DD
+  const isValidDate = (date: string): boolean => {
+    if (!date) return true;
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    return regex.test(date);
   };
 
   // Soumet les modifications
   const handleUpdate = async () => {
     if (!name.trim()) {
       Alert.alert("Champ requis", "Le nom de la tache est obligatoire.");
+      return;
+    }
+    if (dueDate && !isValidDate(dueDate)) {
+      Alert.alert(
+        "Date invalide",
+        "Format attendu : AAAA-MM-JJ (ex: 2026-12-31)",
+      );
       return;
     }
 
@@ -97,40 +84,19 @@ export default function EditTaskScreen() {
           name: name.trim(),
           description: description.trim() || undefined,
           priority,
-          dueDate: dueDate ? formatDateForApi(dueDate) : undefined,
+          dueDate: dueDate.trim() || undefined,
           done,
           inProgress,
         } as any,
       });
 
-      //   Option 1
-      //   Alert.alert("Succes", "Tache modifiee avec succes !", [
-      //     {
-      //       text: "OK",
-      //       // Retourne au detail de la tache apres modification
-      //       onPress: () => router.back(),
-      //     },
-      //   ]);
-
-      //   Option 2
-      //   Alert.alert("Succes", "Tache modifiee avec succes !", [
-      //     {
-      //       text: "OK",
-      //       // Retourne directement a la liste des projets apres modification
-      //       onPress: () => router.replace("/(app)/projects" as any),
-      //     },
-      //   ]);
-
-      //   Option 3
       Alert.alert("Succes", "Tache modifiee avec succes !", [
         {
           text: "Voir les projets",
-          // Retourne a la liste des projets
           onPress: () => router.replace("/(app)/projects" as any),
         },
         {
-          text: "Rester ici",
-          // Reste sur la page actuelle
+          text: "Retour a la tache",
           onPress: () => router.back(),
           style: "cancel",
         },
@@ -189,7 +155,6 @@ export default function EditTaskScreen() {
         <View style={styles.field}>
           <Text style={styles.label}>Statut</Text>
           <View style={styles.statusRow}>
-            {/* Bouton A faire */}
             <TouchableOpacity
               style={[
                 styles.statusOption,
@@ -209,7 +174,6 @@ export default function EditTaskScreen() {
                 ⏳ A faire
               </Text>
             </TouchableOpacity>
-            {/* Bouton En cours */}
             <TouchableOpacity
               style={[
                 styles.statusOption,
@@ -229,7 +193,6 @@ export default function EditTaskScreen() {
                 🔄 En cours
               </Text>
             </TouchableOpacity>
-            {/* Bouton Termine */}
             <TouchableOpacity
               style={[styles.statusOption, done && styles.statusOptionDone]}
               onPress={() => {
@@ -305,59 +268,19 @@ export default function EditTaskScreen() {
           </View>
         </View>
 
-        {/* Date d'echeance */}
+        {/* Date d'echeance — champ texte simple */}
         <View style={styles.field}>
           <Text style={styles.label}>Date d'echeance</Text>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Text
-              style={[
-                styles.dateButtonText,
-                !dueDate && styles.datePlaceholder,
-              ]}
-            >
-              {dueDate ? formatDateForDisplay(dueDate) : "📅 Choisir une date"}
-            </Text>
-            {dueDate && (
-              <TouchableOpacity
-                onPress={() => setDueDate(null)}
-                style={styles.clearDate}
-              >
-                <Text style={styles.clearDateText}>✕</Text>
-              </TouchableOpacity>
-            )}
-          </TouchableOpacity>
-
-          {showDatePicker && (
-            <DateTimePicker
-              value={dueDate ?? new Date()}
-              mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "default"}
-              onChange={(event, selectedDate) => {
-                if (Platform.OS === "android") {
-                  setShowDatePicker(false);
-                }
-                if (event.type === "dismissed") {
-                  setShowDatePicker(false);
-                  return;
-                }
-                if (selectedDate) {
-                  setDueDate(selectedDate);
-                }
-              }}
-            />
-          )}
-
-          {showDatePicker && Platform.OS === "ios" && (
-            <TouchableOpacity
-              style={styles.confirmDateButton}
-              onPress={() => setShowDatePicker(false)}
-            >
-              <Text style={styles.confirmDateText}>Confirmer</Text>
-            </TouchableOpacity>
-          )}
+          <TextInput
+            style={styles.input}
+            placeholder="AAAA-MM-JJ (ex: 2026-12-31)"
+            placeholderTextColor={Colors.textTertiary}
+            value={dueDate}
+            onChangeText={setDueDate}
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+          <Text style={styles.hint}>Format : AAAA-MM-JJ</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -370,8 +293,6 @@ export default function EditTaskScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  // En-tete
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -393,11 +314,26 @@ const styles = StyleSheet.create({
   },
   saveButtonDisabled: { opacity: 0.4 },
   saveButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
-
-  // Contenu
   content: { padding: 20, gap: 20 },
-
-  // Statut
+  field: { gap: 8 },
+  label: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
+  required: { color: Colors.danger },
+  hint: { fontSize: 12, color: Colors.textTertiary },
+  input: {
+    backgroundColor: Colors.backgroundPrimary,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: Colors.textPrimary,
+  },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: "top",
+    paddingTop: 12,
+  },
   statusRow: { flexDirection: "row", gap: 8 },
   statusOption: {
     flex: 1,
@@ -422,28 +358,6 @@ const styles = StyleSheet.create({
   },
   statusText: { fontSize: 12, color: Colors.textSecondary, fontWeight: "500" },
   statusTextActive: { color: Colors.textPrimary, fontWeight: "600" },
-
-  // Champs
-  field: { gap: 8 },
-  label: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
-  required: { color: Colors.danger },
-  input: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: Colors.textPrimary,
-  },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: "top",
-    paddingTop: 12,
-  },
-
-  // Priorite
   prioritiesRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   priorityOption: {
     paddingHorizontal: 14,
@@ -459,30 +373,4 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   priorityOptionTextSelected: { color: "#FFFFFF" },
-
-  // Date
-  dateButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: Colors.backgroundPrimary,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  dateButtonText: { fontSize: 15, color: Colors.textPrimary },
-  datePlaceholder: { color: Colors.textTertiary },
-  clearDate: { padding: 4 },
-  clearDateText: { fontSize: 14, color: Colors.textTertiary },
-  confirmDateButton: {
-    marginTop: 8,
-    alignSelf: "flex-end",
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-  },
-  confirmDateText: { fontSize: 14, color: "#FFFFFF", fontWeight: "600" },
 });

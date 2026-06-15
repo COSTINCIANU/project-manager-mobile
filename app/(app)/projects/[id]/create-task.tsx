@@ -1,7 +1,8 @@
 // =====================================================
 // CreateTaskScreen — Creer une nouvelle tache
-// Formulaire avec selecteur de date natif iOS/Android
-// Champs : nom, description, priorite, date echeance
+// Formulaire de creation avec les champs :
+// nom, description, priorite, date echeance
+// Note : DatePicker natif desactive pour Expo Go
 // =====================================================
 
 import {
@@ -13,12 +14,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useCreateTask } from "@/hooks/useTasks";
 import { Colors } from "@/constants/colors";
 
@@ -39,31 +38,27 @@ export default function CreateTaskScreen() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("normale");
-  const [dueDate, setDueDate] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Formate la date en YYYY-MM-DD pour l'API
-  const formatDateForApi = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  // Formate la date pour l'affichage en francais
-  const formatDateForDisplay = (date: Date): string => {
-    return date.toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+  // Valide le format de date YYYY-MM-DD
+  const isValidDate = (date: string): boolean => {
+    if (!date) return true; // Vide est accepte
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    return regex.test(date);
   };
 
   // Soumet le formulaire de creation
   const handleCreate = async () => {
     if (!name.trim()) {
       Alert.alert("Champ requis", "Le nom de la tache est obligatoire.");
+      return;
+    }
+    if (dueDate && !isValidDate(dueDate)) {
+      Alert.alert(
+        "Date invalide",
+        "Format attendu : AAAA-MM-JJ (ex: 2026-12-31)",
+      );
       return;
     }
 
@@ -74,9 +69,12 @@ export default function CreateTaskScreen() {
         description: description.trim() || undefined,
         priority,
         projectId: Number(id),
-        dueDate: dueDate ? formatDateForApi(dueDate) : undefined,
+        dueDate: dueDate.trim() || undefined,
         done: false,
         inProgress: false,
+        status: "active",
+        color: "#6366F1",
+        progress: 0,
       } as any);
 
       Alert.alert("Succes", "Tache creee avec succes !", [
@@ -182,64 +180,19 @@ export default function CreateTaskScreen() {
           </View>
         </View>
 
-        {/* Date d'echeance — selecteur natif */}
+        {/* Date d'echeance — champ texte simple */}
         <View style={styles.field}>
           <Text style={styles.label}>Date d'echeance</Text>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Text
-              style={[
-                styles.dateButtonText,
-                !dueDate && styles.datePlaceholder,
-              ]}
-            >
-              {dueDate ? formatDateForDisplay(dueDate) : "📅 Choisir une date"}
-            </Text>
-            {dueDate && (
-              // Bouton pour effacer la date
-              <TouchableOpacity
-                onPress={() => setDueDate(null)}
-                style={styles.clearDate}
-              >
-                <Text style={styles.clearDateText}>✕</Text>
-              </TouchableOpacity>
-            )}
-          </TouchableOpacity>
-
-          {/* Selecteur de date natif iOS/Android */}
-          {showDatePicker && (
-            <DateTimePicker
-              value={dueDate ?? new Date()}
-              mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "default"}
-              minimumDate={new Date()}
-              onChange={(event, selectedDate) => {
-                // Sur Android, ferme automatiquement apres selection
-                if (Platform.OS === "android") {
-                  setShowDatePicker(false);
-                }
-                if (event.type === "dismissed") {
-                  setShowDatePicker(false);
-                  return;
-                }
-                if (selectedDate) {
-                  setDueDate(selectedDate);
-                }
-              }}
-            />
-          )}
-
-          {/* Bouton confirmer sur iOS */}
-          {showDatePicker && Platform.OS === "ios" && (
-            <TouchableOpacity
-              style={styles.confirmDateButton}
-              onPress={() => setShowDatePicker(false)}
-            >
-              <Text style={styles.confirmDateText}>Confirmer</Text>
-            </TouchableOpacity>
-          )}
+          <TextInput
+            style={styles.input}
+            placeholder="AAAA-MM-JJ (ex: 2026-12-31)"
+            placeholderTextColor={Colors.textTertiary}
+            value={dueDate}
+            onChangeText={setDueDate}
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+          <Text style={styles.hint}>Format : AAAA-MM-JJ</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -251,8 +204,6 @@ export default function CreateTaskScreen() {
 // =====================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
-
-  // En-tete
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -274,14 +225,11 @@ const styles = StyleSheet.create({
   },
   createButtonDisabled: { opacity: 0.4 },
   createButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
-
-  // Contenu
   content: { padding: 20, gap: 20 },
-
-  // Champs
   field: { gap: 8 },
   label: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
   required: { color: Colors.danger },
+  hint: { fontSize: 12, color: Colors.textTertiary },
   input: {
     backgroundColor: Colors.backgroundPrimary,
     borderWidth: 1,
@@ -297,8 +245,6 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
     paddingTop: 12,
   },
-
-  // Priorite
   prioritiesRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   priorityOption: {
     paddingHorizontal: 14,
@@ -314,30 +260,4 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   priorityOptionTextSelected: { color: "#FFFFFF" },
-
-  // Date picker
-  dateButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: Colors.backgroundPrimary,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  dateButtonText: { fontSize: 15, color: Colors.textPrimary },
-  datePlaceholder: { color: Colors.textTertiary },
-  clearDate: { padding: 4 },
-  clearDateText: { fontSize: 14, color: Colors.textTertiary },
-  confirmDateButton: {
-    marginTop: 8,
-    alignSelf: "flex-end",
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-  },
-  confirmDateText: { fontSize: 14, color: "#FFFFFF", fontWeight: "600" },
 });

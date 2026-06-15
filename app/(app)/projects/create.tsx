@@ -1,6 +1,7 @@
 // =====================================================
 // CreateProjectScreen — Creer un nouveau projet
 // Formulaire avec : nom, description, priorite, dates
+// Note : DatePicker natif desactive pour Expo Go
 // =====================================================
 
 import {
@@ -12,12 +13,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useCreateProject } from "@/hooks/useProjects";
 import { Colors } from "@/constants/colors";
 
@@ -37,42 +36,35 @@ export default function CreateProjectScreen() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Formate la date en YYYY-MM-DD pour l'API
-  const formatDateForApi = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  const payload = {
-    name: name.trim(),
-    description: description.trim() || undefined,
-    priority: priority as any,
-    startDate: startDate ? formatDateForApi(startDate) : undefined,
-    endDate: endDate ? formatDateForApi(endDate) : undefined,
-  };
-  console.log("Payload creation projet:", JSON.stringify(payload));
-
-  // Formate la date pour l'affichage
-  const formatDateForDisplay = (date: Date): string => {
-    return date.toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+  // Valide le format de date YYYY-MM-DD
+  const isValidDate = (date: string): boolean => {
+    if (!date) return true;
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    return regex.test(date);
   };
 
   // Soumet le formulaire
   const handleCreate = async () => {
     if (!name.trim()) {
       Alert.alert("Champ requis", "Le nom du projet est obligatoire.");
+      return;
+    }
+    if (startDate && !isValidDate(startDate)) {
+      Alert.alert(
+        "Date invalide",
+        "Format attendu : AAAA-MM-JJ (ex: 2026-12-31)",
+      );
+      return;
+    }
+    if (endDate && !isValidDate(endDate)) {
+      Alert.alert(
+        "Date invalide",
+        "Format attendu : AAAA-MM-JJ (ex: 2026-12-31)",
+      );
       return;
     }
 
@@ -82,8 +74,8 @@ export default function CreateProjectScreen() {
         name: name.trim(),
         description: description.trim() || undefined,
         priority: priority as any,
-        startDate: startDate ? formatDateForApi(startDate) : undefined,
-        endDate: endDate ? formatDateForApi(endDate) : undefined,
+        startDate: startDate.trim() || undefined,
+        endDate: endDate.trim() || undefined,
         // Champs requis par le backend Symfony
         status: "active",
         color: "#6366F1",
@@ -98,7 +90,6 @@ export default function CreateProjectScreen() {
         "Erreur creation projet:",
         JSON.stringify(error?.response?.data),
       );
-      console.log("Status:", error?.response?.status);
       Alert.alert("Erreur", "Impossible de creer le projet.");
     } finally {
       setIsSubmitting(false);
@@ -200,102 +191,31 @@ export default function CreateProjectScreen() {
         {/* Date de debut */}
         <View style={styles.field}>
           <Text style={styles.label}>Date de debut</Text>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={() => setShowStartPicker(true)}
-          >
-            <Text
-              style={[
-                styles.dateButtonText,
-                !startDate && styles.datePlaceholder,
-              ]}
-            >
-              {startDate
-                ? formatDateForDisplay(startDate)
-                : "📅 Choisir une date"}
-            </Text>
-            {startDate && (
-              <TouchableOpacity
-                onPress={() => setStartDate(null)}
-                style={styles.clearDate}
-              >
-                <Text style={styles.clearDateText}>✕</Text>
-              </TouchableOpacity>
-            )}
-          </TouchableOpacity>
-          {showStartPicker && (
-            <DateTimePicker
-              value={startDate ?? new Date()}
-              mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "default"}
-              onChange={(event, selectedDate) => {
-                if (Platform.OS === "android") setShowStartPicker(false);
-                if (event.type === "dismissed") {
-                  setShowStartPicker(false);
-                  return;
-                }
-                if (selectedDate) setStartDate(selectedDate);
-              }}
-            />
-          )}
-          {showStartPicker && Platform.OS === "ios" && (
-            <TouchableOpacity
-              style={styles.confirmDateButton}
-              onPress={() => setShowStartPicker(false)}
-            >
-              <Text style={styles.confirmDateText}>Confirmer</Text>
-            </TouchableOpacity>
-          )}
+          <TextInput
+            style={styles.input}
+            placeholder="AAAA-MM-JJ (ex: 2026-06-15)"
+            placeholderTextColor={Colors.textTertiary}
+            value={startDate}
+            onChangeText={setStartDate}
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+          <Text style={styles.hint}>Format : AAAA-MM-JJ</Text>
         </View>
 
         {/* Date de fin */}
         <View style={styles.field}>
           <Text style={styles.label}>Date de fin</Text>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={() => setShowEndPicker(true)}
-          >
-            <Text
-              style={[
-                styles.dateButtonText,
-                !endDate && styles.datePlaceholder,
-              ]}
-            >
-              {endDate ? formatDateForDisplay(endDate) : "📅 Choisir une date"}
-            </Text>
-            {endDate && (
-              <TouchableOpacity
-                onPress={() => setEndDate(null)}
-                style={styles.clearDate}
-              >
-                <Text style={styles.clearDateText}>✕</Text>
-              </TouchableOpacity>
-            )}
-          </TouchableOpacity>
-          {showEndPicker && (
-            <DateTimePicker
-              value={endDate ?? new Date()}
-              mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "default"}
-              minimumDate={startDate ?? new Date()}
-              onChange={(event, selectedDate) => {
-                if (Platform.OS === "android") setShowEndPicker(false);
-                if (event.type === "dismissed") {
-                  setShowEndPicker(false);
-                  return;
-                }
-                if (selectedDate) setEndDate(selectedDate);
-              }}
-            />
-          )}
-          {showEndPicker && Platform.OS === "ios" && (
-            <TouchableOpacity
-              style={styles.confirmDateButton}
-              onPress={() => setShowEndPicker(false)}
-            >
-              <Text style={styles.confirmDateText}>Confirmer</Text>
-            </TouchableOpacity>
-          )}
+          <TextInput
+            style={styles.input}
+            placeholder="AAAA-MM-JJ (ex: 2026-12-31)"
+            placeholderTextColor={Colors.textTertiary}
+            value={endDate}
+            onChangeText={setEndDate}
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+          <Text style={styles.hint}>Format : AAAA-MM-JJ</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -307,7 +227,6 @@ export default function CreateProjectScreen() {
 // =====================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
-
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -329,12 +248,11 @@ const styles = StyleSheet.create({
   },
   createButtonDisabled: { opacity: 0.4 },
   createButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
-
   content: { padding: 20, gap: 20 },
-
   field: { gap: 8 },
   label: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
   required: { color: Colors.danger },
+  hint: { fontSize: 12, color: Colors.textTertiary },
   input: {
     backgroundColor: Colors.backgroundPrimary,
     borderWidth: 1,
@@ -350,7 +268,6 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
     paddingTop: 12,
   },
-
   prioritiesRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   priorityOption: {
     paddingHorizontal: 14,
@@ -366,29 +283,4 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   priorityOptionTextSelected: { color: "#FFFFFF" },
-
-  dateButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: Colors.backgroundPrimary,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  dateButtonText: { fontSize: 15, color: Colors.textPrimary },
-  datePlaceholder: { color: Colors.textTertiary },
-  clearDate: { padding: 4 },
-  clearDateText: { fontSize: 14, color: Colors.textTertiary },
-  confirmDateButton: {
-    marginTop: 8,
-    alignSelf: "flex-end",
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-  },
-  confirmDateText: { fontSize: 14, color: "#FFFFFF", fontWeight: "600" },
 });
