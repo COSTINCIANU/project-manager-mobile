@@ -40,11 +40,24 @@ export default function CreateProjectScreen() {
   const [endDate, setEndDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Valide le format de date YYYY-MM-DD
+  // // Valide le format de date YYYY-MM-DD
+  // const isValidDate = (date: string): boolean => {
+  //   if (!date) return true;
+  //   const regex = /^\d{4}-\d{2}-\d{2}$/;
+  //   return regex.test(date);
+  // };
+
+  // Valide le format de date JJ/MM/AAAA
   const isValidDate = (date: string): boolean => {
     if (!date) return true;
-    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    const regex = /^\d{2}\/\d{2}\/\d{4}$/;
     return regex.test(date);
+  };
+
+  // Convertit JJ/MM/AAAA en AAAA-MM-JJ pour l'API
+  const formatDateForApi = (date: string): string => {
+    const [day, month, year] = date.split("/");
+    return `${year}-${month}-${day}`;
   };
 
   // Soumet le formulaire
@@ -56,14 +69,14 @@ export default function CreateProjectScreen() {
     if (startDate && !isValidDate(startDate)) {
       Alert.alert(
         "Date invalide",
-        "Format attendu : AAAA-MM-JJ (ex: 2026-12-31)",
+        "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)",
       );
       return;
     }
     if (endDate && !isValidDate(endDate)) {
       Alert.alert(
         "Date invalide",
-        "Format attendu : AAAA-MM-JJ (ex: 2026-12-31)",
+        "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)",
       );
       return;
     }
@@ -74,8 +87,11 @@ export default function CreateProjectScreen() {
         name: name.trim(),
         description: description.trim() || undefined,
         priority: priority as any,
-        startDate: startDate.trim() || undefined,
-        endDate: endDate.trim() || undefined,
+        // Convertit les dates du format francais JJ/MM/AAAA vers AAAA-MM-JJ pour l'API
+        startDate: startDate.trim()
+          ? formatDateForApi(startDate.trim())
+          : undefined,
+        endDate: endDate.trim() ? formatDateForApi(endDate.trim()) : undefined,
         // Champs requis par le backend Symfony
         status: "active",
         color: "#6366F1",
@@ -193,7 +209,7 @@ export default function CreateProjectScreen() {
           <Text style={styles.label}>Date de debut</Text>
           <TextInput
             style={styles.input}
-            placeholder="AAAA-MM-JJ (ex: 2026-06-15)"
+            placeholder="ex: 17/08/2027"
             placeholderTextColor={Colors.textTertiary}
             value={startDate}
             onChangeText={setStartDate}
@@ -208,14 +224,14 @@ export default function CreateProjectScreen() {
           <Text style={styles.label}>Date de fin</Text>
           <TextInput
             style={styles.input}
-            placeholder="AAAA-MM-JJ (ex: 2026-12-31)"
+            placeholder="ex: 17/08/2027"
             placeholderTextColor={Colors.textTertiary}
             value={endDate}
             onChangeText={setEndDate}
             keyboardType="numbers-and-punctuation"
             maxLength={10}
           />
-          <Text style={styles.hint}>Format : AAAA-MM-JJ</Text>
+          <Text style={styles.hint}>Format : JJ/MM/AAAA</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

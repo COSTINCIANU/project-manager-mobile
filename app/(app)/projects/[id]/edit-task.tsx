@@ -55,11 +55,24 @@ export default function EditTaskScreen() {
     }
   }, [task]);
 
-  // Valide le format de date YYYY-MM-DD
+  // // Valide le format de date YYYY-MM-DD
+  // const isValidDate = (date: string): boolean => {
+  //   if (!date) return true;
+  //   const regex = /^\d{4}-\d{2}-\d{2}$/;
+  //   return regex.test(date);
+  // };
+
+  // Valide le format de date JJ/MM/AAAA
   const isValidDate = (date: string): boolean => {
     if (!date) return true;
-    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    const regex = /^\d{2}\/\d{2}\/\d{4}$/;
     return regex.test(date);
+  };
+
+  // Convertit JJ/MM/AAAA en AAAA-MM-JJ pour l'API
+  const formatDateForApi = (date: string): string => {
+    const [day, month, year] = date.split("/");
+    return `${year}-${month}-${day}`;
   };
 
   // Soumet les modifications
@@ -84,7 +97,10 @@ export default function EditTaskScreen() {
           name: name.trim(),
           description: description.trim() || undefined,
           priority,
-          dueDate: dueDate.trim() || undefined,
+          // Convertit la date du format francais JJ/MM/AAAA vers AAAA-MM-JJ pour l'API
+          dueDate: dueDate.trim()
+            ? formatDateForApi(dueDate.trim())
+            : undefined,
           done,
           inProgress,
         } as any,
@@ -273,14 +289,14 @@ export default function EditTaskScreen() {
           <Text style={styles.label}>Date d'echeance</Text>
           <TextInput
             style={styles.input}
-            placeholder="AAAA-MM-JJ (ex: 2026-12-31)"
+            placeholder="ex: 17/08/2027"
             placeholderTextColor={Colors.textTertiary}
             value={dueDate}
             onChangeText={setDueDate}
             keyboardType="numbers-and-punctuation"
             maxLength={10}
           />
-          <Text style={styles.hint}>Format : AAAA-MM-JJ</Text>
+          <Text style={styles.hint}>Format : JJ/MM/AAAA</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
