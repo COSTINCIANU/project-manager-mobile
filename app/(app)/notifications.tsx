@@ -55,7 +55,8 @@ export default function NotificationsScreen() {
   // Marque une notification comme lue
   const markAsRead = async (id: number) => {
     try {
-      await apiClient.post(API_ENDPOINTS.NOTIFICATION_READ(id), {});
+      // L'API utilise PUT et pas POST pour marquer comme lue
+      await apiClient.put(API_ENDPOINTS.NOTIFICATION_READ(id), {});
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
       );
@@ -67,7 +68,8 @@ export default function NotificationsScreen() {
   // Marque toutes les notifications comme lues
   const markAllAsRead = async () => {
     try {
-      await apiClient.post(API_ENDPOINTS.NOTIFICATION_READ_ALL, {});
+      // L'API utilise PUT et pas POST pour marquer toutes comme lues
+      await apiClient.put(API_ENDPOINTS.NOTIFICATION_READ_ALL, {});
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (error) {
       console.log("Erreur mark all as read:", error);
