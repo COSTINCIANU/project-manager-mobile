@@ -51,7 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   // Connexion avec email + mot de passe
   login: async (payload: LoginPayload) => {
     const result = await authApi.login(payload);
-    console.log("Resultat API:", JSON.stringify(result));
+    // console.log("Resultat API:", JSON.stringify(result));
     if (result.requiresTwoFactor && result.tempToken) {
       set({ requiresTwoFactor: true, tempToken: result.tempToken });
       return;

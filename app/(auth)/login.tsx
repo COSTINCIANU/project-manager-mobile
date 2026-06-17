@@ -34,7 +34,7 @@ export default function LoginScreen() {
   const { signInWithGithub, isReady: githubReady } = useGithubOAuth();
 
   const handleLogin = async () => {
-    console.log("handleLogin appelé Android", email, password);
+    // console.log("handleLogin appelé Android", email, password);
     if (!email.trim() || !password.trim()) {
       Alert.alert(
         "Champs requis",
@@ -51,9 +51,9 @@ export default function LoginScreen() {
         router.replace("/(app)");
       }
     } catch (error: any) {
-      console.log("Erreur complète:", JSON.stringify(error));
-      console.log("Message:", error?.message);
-      console.log("Code:", error?.code);
+      // console.log("Erreur complète:", JSON.stringify(error));
+      // console.log("Message:", error?.message);
+      // console.log("Code:", error?.code);
 
       const message =
         error?.response?.data?.message ?? "Email ou mot de passe incorrect.";

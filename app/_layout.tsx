@@ -32,9 +32,8 @@ export default function RootLayout() {
   const { initialize, isLoading, isAuthenticated } = useAuthStore();
 
   // Référence pour stocker les listeners de notifications
-  const notificationListener = useRef<Notifications.EventSubscription>();
-  const responseListener = useRef<Notifications.EventSubscription>();
-
+  const notificationListener = useRef<any>(null);
+  const responseListener = useRef<any>(null);
   // Initialisation de l'auth au démarrage
   useEffect(() => {
     initialize();

@@ -1,17 +1,92 @@
 // =====================================================
 // AppLayout — Layout principal avec tabs
-// Inclut la banniere offline et la garde d'auth
+// Gere iOS et Android dans un seul fichier
+// Sur Android : navigation en HAUT de l'ecran
+// Sur iOS : navigation en BAS de l'ecran
 // =====================================================
 
 import { useEffect } from "react";
-import { View } from "react-native";
-import { Tabs, useRouter } from "expo-router";
+import { Tabs, useRouter, usePathname } from "expo-router";
+import { View, Platform, TouchableOpacity, Text } from "react-native";
 import { useAuthStore } from "@/stores/authStore";
 import { Colors } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
 
+// =====================================================
+// AndroidTopBar — Barre de navigation en haut
+// Utilise usePathname pour detecter l'onglet actif
+// et useRouter pour naviguer entre les onglets
+// =====================================================
+function AndroidTopBar() {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Definition des onglets
+  const tabs = [
+    { name: "Accueil", path: "/(app)", icon: "home-outline" },
+    { name: "Projets", path: "/(app)/projects", icon: "folder-outline" },
+    { name: "Taches", path: "/(app)/tasks", icon: "checkmark-circle-outline" },
+    {
+      name: "Alertes",
+      path: "/(app)/notifications",
+      icon: "notifications-outline",
+    },
+    { name: "Profil", path: "/(app)/profile", icon: "person-outline" },
+  ];
+
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        backgroundColor: Colors.backgroundPrimary,
+        borderBottomWidth: 0.5,
+        borderBottomColor: Colors.border,
+        height: 78,
+        paddingTop: 30, // ← ajoute cette ligne
+      }}
+    >
+      {tabs.map((tab) => {
+        // Verifie si cet onglet est actif selon l'URL courante
+        const isActive =
+          pathname === tab.path ||
+          (tab.path !== "/(app)" && pathname.startsWith(tab.path));
+
+        return (
+          <TouchableOpacity
+            key={tab.path}
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              paddingVertical: 8,
+              borderBottomWidth: isActive ? 2 : 0,
+              borderBottomColor: Colors.primary,
+            }}
+            onPress={() => router.push(tab.path as any)}
+          >
+            <Ionicons
+              name={tab.icon as any}
+              size={22}
+              color={isActive ? Colors.primary : Colors.textTertiary}
+            />
+            <Text
+              style={{
+                fontSize: 10,
+                marginTop: 2,
+                color: isActive ? Colors.primary : Colors.textTertiary,
+              }}
+            >
+              {tab.name}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
 export default function AppLayout() {
+  console.log("Platform:", Platform.OS);
   const { isAuthenticated, isLoading } = useAuthStore();
   const router = useRouter();
 
@@ -25,25 +100,27 @@ export default function AppLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Banniere affichee quand l'app est hors ligne */}
       <OfflineBanner />
+
+      {/* Barre de navigation en haut sur Android */}
+      {Platform.OS === "android" && <AndroidTopBar />}
 
       <Tabs
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: Colors.primary,
           tabBarInactiveTintColor: Colors.textTertiary,
-          tabBarStyle: {
-            backgroundColor: Colors.backgroundPrimary,
-            borderTopColor: Colors.border,
-            borderTopWidth: 0.5,
-            height: 60,
-            paddingBottom: 8,
-          },
-          tabBarLabelStyle: {
-            fontSize: 11,
-            fontWeight: "500",
-          },
+          // Cache la barre du bas sur Android
+          tabBarStyle:
+            Platform.OS === "android"
+              ? { display: "none" }
+              : {
+                  backgroundColor: Colors.backgroundPrimary,
+                  borderTopColor: Colors.border,
+                  borderTopWidth: 0.5,
+                  height: 60,
+                  paddingBottom: 8,
+                },
         }}
       >
         <Tabs.Screen

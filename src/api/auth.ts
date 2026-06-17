@@ -11,7 +11,7 @@ export const authApi = {
       email: payload.username,
       password: payload.password,
     });
-    console.log("API login data:", JSON.stringify(data));
+    // console.log("API login data:", JSON.stringify(data));
     return data;
   },
 
