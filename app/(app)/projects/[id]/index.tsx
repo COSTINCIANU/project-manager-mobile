@@ -171,6 +171,14 @@ export default function ProjectDetailScreen() {
             {/* Bouton vers le wiki du projet */}
             <Text style={styles.actionText}>📚 Wiki</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push(`/(app)/projects/${id}/chat` as any)}
+          >
+            {/* Bouton vers le chat du projet */}
+            <Text style={styles.actionText}>💬 Chat</Text>
+          </TouchableOpacity>
         </View>
 
         {tasks && tasks.length > 0 && (
