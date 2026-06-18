@@ -29,11 +29,8 @@ import { Colors } from "@/constants/colors";
 interface ChatMessage {
   id: number;
   content: string;
-  author: {
-    id: number;
-    email: string;
-    name: string | null;
-  };
+  senderEmail: string; // Email de l'expediteur
+  senderName: string; // Nom de l'expediteur
   projectId: number;
   createdAt: string;
 }
@@ -59,11 +56,10 @@ export default function ChatScreen() {
   const loadMessages = async () => {
     try {
       const { data } = await apiClient.get(API_ENDPOINTS.CHAT);
-      // Filtre les messages par projet
-      const projectMessages = Array.isArray(data)
-        ? data.filter((m: ChatMessage) => m.projectId === Number(id))
-        : [];
-      setMessages(projectMessages);
+      console.log("Messages chat:", JSON.stringify(data));
+      console.log("ProjectId filtre:", Number(id));
+      // L'API ne retourne pas de projectId — on affiche tous les messages
+      setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log("Erreur chargement chat:", error);
     } finally {
@@ -120,7 +116,7 @@ export default function ChatScreen() {
 
   // Verifie si le message appartient a l'utilisateur connecte
   const isMyMessage = (message: ChatMessage) => {
-    return message.author?.email === user?.email;
+    return message.senderEmail === user?.email;
   };
 
   // Formate l'heure d'un message
@@ -202,7 +198,7 @@ export default function ChatScreen() {
                       {/* Nom de l'auteur pour les messages des autres */}
                       {!mine && (
                         <Text style={styles.authorName}>
-                          {item.author?.name ?? item.author?.email}
+                          {item.senderName ?? item.senderEmail}
                         </Text>
                       )}
                       {/* Contenu du message */}
