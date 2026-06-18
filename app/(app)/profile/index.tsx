@@ -22,10 +22,12 @@ import { Colors } from "@/constants/colors";
 import { getUserInitials, getUserFullName } from "@/types/user";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
+import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
   const { user, logout, setUser } = useAuthStore();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const router = useRouter();
 
   // Confirmation avant deconnexion
   const handleLogout = () => {
@@ -134,9 +136,15 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Nom et email */}
-          <Text style={styles.userName}>{getUserFullName(user)}</Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
+          {/* Affiche le nom si defini, sinon l'email uniquement */}
+          {user.name ? (
+            <>
+              <Text style={styles.userName}>{user.name}</Text>
+              <Text style={styles.userEmail}>{user.email}</Text>
+            </>
+          ) : (
+            <Text style={styles.userName}>{user.email}</Text>
+          )}
 
           {/* Badge role */}
           <View style={styles.roleBadge}>
@@ -159,7 +167,8 @@ export default function ProfileScreen() {
 
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Nom</Text>
-            <Text style={styles.infoValue}>{user.name || "—"}</Text>
+            {/* Affiche le nom ou un message si pas defini */}
+            <Text style={styles.infoValue}>{user.name || "Non renseigne"}</Text>
           </View>
 
           <View style={styles.divider} />
@@ -182,6 +191,15 @@ export default function ProfileScreen() {
             </Text>
           </View>
         </View>
+
+        {/* Bouton modifier le profil */}
+        <TouchableOpacity
+          style={styles.editProfileButton}
+          onPress={() => router.push("/(app)/profile/edit" as any)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.editProfileText}>✏️ Modifier le profil</Text>
+        </TouchableOpacity>
 
         {/* Bouton deconnexion */}
         <TouchableOpacity
@@ -292,4 +310,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logoutText: { fontSize: 16, fontWeight: "600", color: "#FFFFFF" },
+
+  // Bouton modifier le profil
+  editProfileButton: {
+    height: 52,
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  editProfileText: { fontSize: 16, fontWeight: "600", color: "#FFFFFF" },
 });

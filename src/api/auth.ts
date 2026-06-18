@@ -22,6 +22,7 @@ export const authApi = {
 
   async getProfile(): Promise<User> {
     const { data } = await apiClient.get(API_ENDPOINTS.PROFILE);
+    console.log("Profil utilisateur:", JSON.stringify(data));
     return data;
   },
 

@@ -42,10 +42,13 @@ export default function NotificationsScreen() {
   const loadNotifications = async () => {
     try {
       const { data } = await apiClient.get(API_ENDPOINTS.NOTIFICATIONS);
-      console.log("Notifications:", JSON.stringify(data));
+      console.log("Notifications Android:", JSON.stringify(data));
+      console.log("Endpoint:", API_ENDPOINTS.NOTIFICATIONS);
+      // console.log("Notifications:", JSON.stringify(data));
       setNotifications(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.log("Erreur chargement notifications:", error);
+      console.log("Erreur notifications Android:", error);
+      // console.log("Erreur chargement notifications:", error);
       setNotifications([]);
     } finally {
       setIsLoading(false);
