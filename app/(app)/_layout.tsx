@@ -110,6 +110,9 @@ export default function AppLayout() {
           headerShown: false,
           tabBarActiveTintColor: Colors.primary,
           tabBarInactiveTintColor: Colors.textTertiary,
+          // Cache les labels pour afficher seulement les icones
+          tabBarShowLabel: false,
+          tabBarLabelStyle: { display: "none" },
           // Cache la barre du bas sur Android
           tabBarStyle:
             Platform.OS === "android"

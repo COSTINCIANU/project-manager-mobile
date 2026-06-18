@@ -140,46 +140,48 @@ export default function ProjectDetailScreen() {
           <Text style={styles.progressText}>{project.progress}%</Text>
         </View>
 
-        {/* ACTIONS  */}
-        <View style={styles.actionsRow}>
+        {/* ACTIONS — scroll horizontal pour eviter la compression */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.actionsRow}
+        >
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push(`/(app)/projects/${id}/tasks` as any)}
           >
-            {/* Bouton Taches */}
-            <Text style={styles.actionText}>📋 Tâches</Text>
+            <Text style={styles.actionIcon}>📋</Text>
+            <Text style={styles.actionText}>Tâches</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push(`/(app)/projects/${id}/kanban` as any)}
           >
-            {/* Bouton Kanban */}
-            <Text style={styles.actionText}>🗂 Kanban</Text>
+            <Text style={styles.actionIcon}>🗂</Text>
+            <Text style={styles.actionText}>Kanban</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push(`/(app)/projects/${id}/ai` as any)}
           >
-            {/* Bouton vers le IA */}
-            <Text style={styles.actionText}>✨ IA</Text>
+            <Text style={styles.actionIcon}>✨</Text>
+            <Text style={styles.actionText}>IA</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push(`/(app)/projects/${id}/wiki` as any)}
           >
-            {/* Bouton vers le wiki du projet */}
-            <Text style={styles.actionText}>📚 Wiki</Text>
+            <Text style={styles.actionIcon}>📚</Text>
+            <Text style={styles.actionText}>Wiki</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push(`/(app)/projects/${id}/chat` as any)}
           >
-            {/* Bouton vers le chat du projet */}
-            <Text style={styles.actionText}>💬 Chat</Text>
+            <Text style={styles.actionIcon}>💬</Text>
+            <Text style={styles.actionText}>Chat</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
 
         {tasks && tasks.length > 0 && (
           <View style={styles.section}>
@@ -254,17 +256,32 @@ const styles = StyleSheet.create({
   },
   progressFill: { height: 6, backgroundColor: Colors.primary, borderRadius: 3 },
   progressText: { fontSize: 13, color: Colors.textSecondary, minWidth: 36 },
-  actionsRow: { flexDirection: "row", gap: 12 },
+  // Conteneur des boutons d'action — scroll horizontal
+  actionsRow: {
+    flexDirection: "row",
+    gap: 10,
+    paddingVertical: 4,
+  },
+  // Bouton d'action individuel — taille fixe pour eviter la compression
   actionButton: {
-    flex: 1,
+    width: 80,
     backgroundColor: Colors.backgroundPrimary,
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     alignItems: "center",
+    gap: 6,
     borderWidth: 0.5,
     borderColor: Colors.border,
   },
-  actionText: { fontSize: 15, fontWeight: "500", color: Colors.textPrimary },
+  // Icone du bouton
+  actionIcon: { fontSize: 24 },
+  // Texte du bouton
+  actionText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: Colors.textPrimary,
+    textAlign: "center",
+  },
   section: {
     backgroundColor: Colors.backgroundPrimary,
     borderRadius: 12,
