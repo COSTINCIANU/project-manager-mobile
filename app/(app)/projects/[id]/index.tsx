@@ -181,6 +181,14 @@ export default function ProjectDetailScreen() {
             <Text style={styles.actionIcon}>💬</Text>
             <Text style={styles.actionText}>Chat</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push(`/(app)/projects/${id}/team` as any)}
+          >
+            <Text style={styles.actionIcon}>👥</Text>
+            <Text style={styles.actionText}>Equipe</Text>
+          </TouchableOpacity>
         </ScrollView>
 
         {tasks && tasks.length > 0 && (
