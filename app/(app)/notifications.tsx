@@ -18,14 +18,16 @@ import { useState, useEffect } from "react";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/colors";
+import { useRouter } from "expo-router";
 
-// Type notification
+// Type notification — adapte a la reponse de l'API Symfony
 interface Notification {
   id: number;
-  message: string;
-  type: string;
-  isRead: boolean;
-  createdAt: string;
+  mentionedByEmail: string; // Email de la personne qui a mentionne
+  commentId: number; // ID du commentaire concerne
+  taskId: number; // ID de la tache concernee
+  isRead: boolean; // Statut de lecture
+  createdAt: string; // Date de creation
 }
 
 export default function NotificationsScreen() {
@@ -33,10 +35,14 @@ export default function NotificationsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Hook de navigation pour rediriger vers la tache
+  const router = useRouter();
+
   // Charge les notifications depuis l'API
   const loadNotifications = async () => {
     try {
       const { data } = await apiClient.get(API_ENDPOINTS.NOTIFICATIONS);
+      console.log("Notifications:", JSON.stringify(data));
       setNotifications(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log("Erreur chargement notifications:", error);
@@ -150,23 +156,29 @@ export default function NotificationsScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={[styles.notifCard, !item.isRead && styles.notifCardUnread]}
-            onPress={() => markAsRead(item.id)}
+            onPress={() => {
+              // Marque la notification comme lue
+              markAsRead(item.id);
+              // Navigue vers la tache concernee si taskId disponible
+              if (item.taskId) {
+                router.push(`/(app)/tasks/${item.taskId}` as any);
+              }
+            }}
             activeOpacity={0.7}
           >
             {/* Indicateur non lu */}
             {!item.isRead && <View style={styles.unreadDot} />}
 
-            {/* Icone du type */}
+            {/* Icone de la notification — toujours une mention */}
             <View style={styles.notifIcon}>
-              <Text style={styles.notifIconText}>
-                {getNotificationIcon(item.type)}
-              </Text>
+              <Text style={styles.notifIconText}>@</Text>
             </View>
 
             {/* Contenu */}
             <View style={styles.notifContent}>
               <Text style={styles.notifMessage} numberOfLines={2}>
-                {item.message}
+                {/* Affiche l'email de la personne qui a mentionne */}
+                Mention de {item.mentionedByEmail}
               </Text>
               <Text style={styles.notifDate}>
                 {new Date(item.createdAt).toLocaleDateString("fr-FR", {
