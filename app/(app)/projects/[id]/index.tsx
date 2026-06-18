@@ -140,24 +140,36 @@ export default function ProjectDetailScreen() {
           <Text style={styles.progressText}>{project.progress}%</Text>
         </View>
 
+        {/* ACTIONS  */}
         <View style={styles.actionsRow}>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push(`/(app)/projects/${id}/tasks` as any)}
           >
+            {/* Bouton Taches */}
             <Text style={styles.actionText}>📋 Tâches</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push(`/(app)/projects/${id}/kanban` as any)}
           >
+            {/* Bouton Kanban */}
             <Text style={styles.actionText}>🗂 Kanban</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push(`/(app)/projects/${id}/ai` as any)}
           >
+            {/* Bouton vers le IA */}
             <Text style={styles.actionText}>✨ IA</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push(`/(app)/projects/${id}/wiki` as any)}
+          >
+            {/* Bouton vers le wiki du projet */}
+            <Text style={styles.actionText}>📚 Wiki</Text>
           </TouchableOpacity>
         </View>
 
