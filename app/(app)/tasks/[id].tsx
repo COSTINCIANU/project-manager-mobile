@@ -81,6 +81,10 @@ export default function TaskDetailScreen() {
   const [loadingData, setLoadingData] = useState(true);
   const [uploadingFile, setUploadingFile] = useState(false);
 
+  // Etats pour la gestion des sous-taches
+  const [newSubtask, setNewSubtask] = useState("");
+  const [addingSubtask, setAddingSubtask] = useState(false);
+
   // Charge les donnees au demarrage
   useEffect(() => {
     if (!id) return;
@@ -159,6 +163,53 @@ export default function TaskDetailScreen() {
     } catch (error) {
       console.log("Erreur toggle subtask:", error);
     }
+  };
+
+  // Ajoute une nouvelle sous-tache a la tache courante
+  const handleAddSubtask = async () => {
+    if (!newSubtask.trim()) return;
+    setAddingSubtask(true);
+    try {
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.SUBTASKS(Number(id)),
+        { name: newSubtask.trim() },
+      );
+      // Ajoute la sous-tache a la liste locale
+      setSubtasks((prev) => [
+        ...prev,
+        {
+          id: data.id,
+          title: data.name,
+          completed: data.done ?? false,
+        },
+      ]);
+      setNewSubtask("");
+    } catch (error) {
+      console.log("Erreur ajout sous-tache:", error);
+      Alert.alert("Erreur", "Impossible d'ajouter la sous-tache.");
+    } finally {
+      setAddingSubtask(false);
+    }
+  };
+
+  // Supprime une sous-tache avec confirmation
+  const handleDeleteSubtask = async (subtaskId: number) => {
+    Alert.alert("Supprimer", "Voulez-vous supprimer cette sous-tache ?", [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Supprimer",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await apiClient.delete(API_ENDPOINTS.SUBTASK(subtaskId));
+            // Retire la sous-tache de la liste locale
+            setSubtasks((prev) => prev.filter((s) => s.id !== subtaskId));
+          } catch (error) {
+            Alert.alert("Erreur", "Impossible de supprimer la sous-tache.");
+          }
+        },
+      },
+    ]);
   };
 
   // Ouvre le selecteur de fichier et uploade le fichier choisi
@@ -373,20 +424,20 @@ export default function TaskDetailScreen() {
             </View>
           )}
 
-          {/* Sous-taches avec cases a cocher */}
-          {subtasks.length > 0 && (
-            <View style={styles.section}>
+          {/* Sous-taches avec cases a cocher et ajout */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>
                 Sous-taches ({subtasks.filter((s) => s.completed).length}/
                 {subtasks.length})
               </Text>
-              {subtasks.map((subtask) => (
-                <TouchableOpacity
-                  key={subtask.id}
-                  style={styles.subtaskRow}
-                  onPress={() => handleToggleSubtask(subtask)}
-                >
-                  {/* Case a cocher verte si completee */}
+            </View>
+
+            {/* Liste des sous-taches existantes */}
+            {subtasks.map((subtask) => (
+              <View key={subtask.id} style={styles.subtaskRow}>
+                {/* Case a cocher — coche ou decoche la sous-tache */}
+                <TouchableOpacity onPress={() => handleToggleSubtask(subtask)}>
                   <View
                     style={[
                       styles.checkbox,
@@ -397,18 +448,54 @@ export default function TaskDetailScreen() {
                       <Text style={styles.checkmark}>✓</Text>
                     )}
                   </View>
-                  <Text
-                    style={[
-                      styles.subtaskTitle,
-                      subtask.completed && styles.subtaskDone,
-                    ]}
-                  >
-                    {subtask.title}
-                  </Text>
                 </TouchableOpacity>
-              ))}
+                {/* Nom de la sous-tache avec barre si completee */}
+                <Text
+                  style={[
+                    styles.subtaskTitle,
+                    subtask.completed && styles.subtaskDone,
+                  ]}
+                >
+                  {subtask.title}
+                </Text>
+                {/* Bouton supprimer la sous-tache */}
+                <TouchableOpacity
+                  onPress={() => handleDeleteSubtask(subtask.id)}
+                >
+                  <Text style={{ fontSize: 14, color: Colors.danger }}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+
+            {/* Champ pour ajouter une nouvelle sous-tache */}
+            <View style={styles.subtaskInputRow}>
+              <TextInput
+                style={styles.subtaskInput}
+                placeholder="Ajouter une sous-tache..."
+                placeholderTextColor={Colors.textTertiary}
+                value={newSubtask}
+                onChangeText={setNewSubtask}
+                maxLength={100}
+                onSubmitEditing={handleAddSubtask}
+              />
+              {/* Bouton ajouter */}
+              <TouchableOpacity
+                onPress={handleAddSubtask}
+                disabled={!newSubtask.trim() || addingSubtask}
+                style={[
+                  styles.subtaskAddButton,
+                  (!newSubtask.trim() || addingSubtask) &&
+                    styles.sendButtonDisabled,
+                ]}
+              >
+                {addingSubtask ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.sendButtonText}>+</Text>
+                )}
+              </TouchableOpacity>
             </View>
-          )}
+          </View>
 
           {/* Fichiers attaches */}
           <View style={styles.section}>
@@ -706,4 +793,31 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   editButtonText: { fontSize: 12, color: Colors.primary, fontWeight: "500" },
+
+  // Champ ajout sous-tache
+  subtaskInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 4,
+  },
+  subtaskInput: {
+    flex: 1,
+    height: 36,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    fontSize: 13,
+    color: Colors.textPrimary,
+    backgroundColor: Colors.backgroundSecondary,
+  },
+  subtaskAddButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
