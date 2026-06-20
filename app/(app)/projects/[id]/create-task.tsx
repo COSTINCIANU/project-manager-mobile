@@ -3,6 +3,7 @@
 // Formulaire de creation avec les champs :
 // nom, description, priorite, date echeance
 // Note : DatePicker natif desactive pour Expo Go
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -19,9 +20,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { useCreateTask } from "@/hooks/useTasks";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 
-// Priorites disponibles selon le backend Symfony
+// Priorites disponibles — couleurs fixes independamment du theme
 const PRIORITIES = [
   { value: "faible", label: "Faible", color: Colors.priorityLow },
   { value: "normale", label: "Normale", color: Colors.info },
@@ -33,6 +35,8 @@ export default function CreateTaskScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const createTask = useCreateTask();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
   // Champs du formulaire
   const [name, setName] = useState("");
@@ -53,13 +57,6 @@ export default function CreateTaskScreen() {
     const [day, month, year] = date.split("/");
     return `${year}-${month}-${day}`;
   };
-
-  // // Valide le format de date YYYY-MM-DD
-  // const isValidDate = (date: string): boolean => {
-  //   if (!date) return true; // Vide est accepte
-  //   const regex = /^\d{4}-\d{2}-\d{2}$/;
-  //   return regex.test(date);
-  // };
 
   // Soumet le formulaire de creation
   const handleCreate = async () => {
@@ -103,21 +100,36 @@ export default function CreateTaskScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       {/* En-tete */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.backgroundPrimary,
+            borderBottomColor: theme.border,
+          },
+        ]}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Text style={styles.backText}>✕ Annuler</Text>
+          <Text style={[styles.backText, { color: Colors.danger }]}>
+            ✕ Annuler
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Nouvelle tache</Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>
+          Nouvelle tache
+        </Text>
         <TouchableOpacity
           onPress={handleCreate}
           disabled={isSubmitting || !name.trim()}
           style={[
             styles.createButton,
+            { backgroundColor: theme.primary },
             (!name.trim() || isSubmitting) && styles.createButtonDisabled,
           ]}
         >
@@ -136,13 +148,20 @@ export default function CreateTaskScreen() {
       >
         {/* Nom — obligatoire */}
         <View style={styles.field}>
-          <Text style={styles.label}>
-            Nom <Text style={styles.required}>*</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Nom <Text style={{ color: Colors.danger }}>*</Text>
           </Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+                color: theme.textPrimary,
+              },
+            ]}
             placeholder="Nom de la tache..."
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={theme.textTertiary}
             value={name}
             onChangeText={setName}
             autoFocus
@@ -152,11 +171,21 @@ export default function CreateTaskScreen() {
 
         {/* Description — optionnel */}
         <View style={styles.field}>
-          <Text style={styles.label}>Description</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Description
+          </Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[
+              styles.input,
+              styles.textArea,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+                color: theme.textPrimary,
+              },
+            ]}
             placeholder="Description (optionnel)..."
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={theme.textTertiary}
             value={description}
             onChangeText={setDescription}
             multiline
@@ -167,13 +196,19 @@ export default function CreateTaskScreen() {
 
         {/* Priorite */}
         <View style={styles.field}>
-          <Text style={styles.label}>Priorite</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Priorite
+          </Text>
           <View style={styles.prioritiesRow}>
             {PRIORITIES.map((p) => (
               <TouchableOpacity
                 key={p.value}
                 style={[
                   styles.priorityOption,
+                  {
+                    borderColor: theme.border,
+                    backgroundColor: theme.backgroundPrimary,
+                  },
                   priority === p.value && {
                     backgroundColor: p.color,
                     borderColor: p.color,
@@ -184,6 +219,7 @@ export default function CreateTaskScreen() {
                 <Text
                   style={[
                     styles.priorityOptionText,
+                    { color: theme.textSecondary },
                     priority === p.value && styles.priorityOptionTextSelected,
                   ]}
                 >
@@ -194,19 +230,30 @@ export default function CreateTaskScreen() {
           </View>
         </View>
 
-        {/* Date d'echeance — champ texte simple */}
+        {/* Date d'echeance */}
         <View style={styles.field}>
-          <Text style={styles.label}>Date d'echeance</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Date d'echeance
+          </Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+                color: theme.textPrimary,
+              },
+            ]}
             placeholder="ex: 17/08/2027"
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={theme.textTertiary}
             value={dueDate}
             onChangeText={setDueDate}
             keyboardType="numbers-and-punctuation"
             maxLength={10}
           />
-          <Text style={styles.hint}>Format : JJ/MM/AAAA</Text>
+          <Text style={[styles.hint, { color: theme.textTertiary }]}>
+            Format : JJ/MM/AAAA
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -214,64 +261,43 @@ export default function CreateTaskScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.danger },
-  title: { fontSize: 17, fontWeight: "600", color: Colors.textPrimary },
-  createButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-  },
+  backText: { fontSize: 15 },
+  title: { fontSize: 17, fontWeight: "600" },
+  createButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   createButtonDisabled: { opacity: 0.4 },
   createButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
   content: { padding: 20, gap: 20 },
   field: { gap: 8 },
-  label: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
-  required: { color: Colors.danger },
-  hint: { fontSize: 12, color: Colors.textTertiary },
+  label: { fontSize: 14, fontWeight: "500" },
+  hint: { fontSize: 12 },
   input: {
-    backgroundColor: Colors.backgroundPrimary,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: Colors.textPrimary,
   },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: "top",
-    paddingTop: 12,
-  },
+  textArea: { minHeight: 100, textAlignVertical: "top", paddingTop: 12 },
   prioritiesRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   priorityOption: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.backgroundPrimary,
   },
-  priorityOptionText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    fontWeight: "500",
-  },
+  priorityOptionText: { fontSize: 13, fontWeight: "500" },
   priorityOptionTextSelected: { color: "#FFFFFF" },
 });

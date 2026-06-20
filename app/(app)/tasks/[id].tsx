@@ -2,7 +2,7 @@
 // TaskDetailScreen — Detail d'une tache
 // Affiche les infos, sous-taches, commentaires
 // et fichiers attaches a la tache
-// Permet d'ajouter des commentaires et des fichiers
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -25,13 +25,10 @@ import * as DocumentPicker from "expo-document-picker";
 import { useTask } from "@/hooks/useTasks";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 
-// =====================
-// TYPES
-// =====================
-
-// Type pour un commentaire de tache
+// Type pour un commentaire
 interface Comment {
   id: number;
   content: string;
@@ -39,8 +36,7 @@ interface Comment {
   createdAt: string;
 }
 
-// Type pour un fichier attache — adapte a la reponse de l'API Symfony
-// L'API retourne : id, filename, path, mimeType, uploadedAt, url
+// Type pour un fichier attache
 interface Attachment {
   id: number;
   filename: string;
@@ -57,22 +53,14 @@ interface SubTask {
   completed: boolean;
 }
 
-// Un composant en React Native c'est la fonction principale du fichier
-// dans ce cas TaskDetailScreen
-
 export default function TaskDetailScreen() {
-  // Recupere l'ID de la tache depuis l'URL (ex: /tasks/3)
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-
-  // Charge les details de la tache via React Query
   const { data: task, isLoading } = useTask(Number(id));
-
-  // queryClient permet d'invalider le cache React Query
-  // pour forcer le rechargement des donnees apres une action
   const queryClient = useQueryClient();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
-  // Etats locaux
   const [comments, setComments] = useState<Comment[]>([]);
   const [subtasks, setSubtasks] = useState<SubTask[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -80,36 +68,13 @@ export default function TaskDetailScreen() {
   const [sendingComment, setSendingComment] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [uploadingFile, setUploadingFile] = useState(false);
-
-  // Etats pour la gestion des sous-taches
   const [newSubtask, setNewSubtask] = useState("");
   const [addingSubtask, setAddingSubtask] = useState(false);
 
-  // Charge les donnees au demarrage
   useEffect(() => {
     if (!id) return;
     loadData();
   }, [id]);
-
-  // Charge commentaires, sous-taches et fichiers en parallele
-  // const loadData = async () => {
-  //   try {
-  //     const [commentsRes, taskRes, attachmentsRes] = await Promise.all([
-  //       apiClient.get(API_ENDPOINTS.COMMENTS(Number(id))),
-  //       apiClient.get(API_ENDPOINTS.TASK(Number(id))),
-  //       apiClient.get(API_ENDPOINTS.ATTACHMENTS(Number(id))),
-  //     ]);
-  //     setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
-  //     setSubtasks(taskRes.data?.subTasks ?? []);
-  //     setAttachments(
-  //       Array.isArray(attachmentsRes.data) ? attachmentsRes.data : [],
-  //     );
-  //   } catch (error) {
-  //     console.log("Erreur chargement:", error);
-  //   } finally {
-  //     setLoadingData(false);
-  //   }
-  // };
 
   const loadData = async () => {
     try {
@@ -118,7 +83,6 @@ export default function TaskDetailScreen() {
         apiClient.get(API_ENDPOINTS.ATTACHMENTS(Number(id))),
       ]);
       setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
-      // Utilise les sous-taches deja chargees via useTask
       setSubtasks(task?.subTasks ?? []);
       setAttachments(
         Array.isArray(attachmentsRes.data) ? attachmentsRes.data : [],
@@ -130,7 +94,6 @@ export default function TaskDetailScreen() {
     }
   };
 
-  // Envoie un nouveau commentaire
   const handleSendComment = async () => {
     if (!newComment.trim()) return;
     setSendingComment(true);
@@ -148,13 +111,11 @@ export default function TaskDetailScreen() {
     }
   };
 
-  // Coche ou decoche une sous-tache
   const handleToggleSubtask = async (subtask: SubTask) => {
     try {
       await apiClient.put(API_ENDPOINTS.SUBTASK(subtask.id), {
         completed: !subtask.completed,
       });
-      // Met a jour l'etat local immediatement sans recharger
       setSubtasks((prev) =>
         prev.map((s) =>
           s.id === subtask.id ? { ...s, completed: !s.completed } : s,
@@ -165,7 +126,6 @@ export default function TaskDetailScreen() {
     }
   };
 
-  // Ajoute une nouvelle sous-tache a la tache courante
   const handleAddSubtask = async () => {
     if (!newSubtask.trim()) return;
     setAddingSubtask(true);
@@ -174,25 +134,18 @@ export default function TaskDetailScreen() {
         API_ENDPOINTS.SUBTASKS(Number(id)),
         { name: newSubtask.trim() },
       );
-      // Ajoute la sous-tache a la liste locale
       setSubtasks((prev) => [
         ...prev,
-        {
-          id: data.id,
-          title: data.name,
-          completed: data.done ?? false,
-        },
+        { id: data.id, title: data.name, completed: data.done ?? false },
       ]);
       setNewSubtask("");
     } catch (error) {
-      console.log("Erreur ajout sous-tache:", error);
       Alert.alert("Erreur", "Impossible d'ajouter la sous-tache.");
     } finally {
       setAddingSubtask(false);
     }
   };
 
-  // Supprime une sous-tache avec confirmation
   const handleDeleteSubtask = async (subtaskId: number) => {
     Alert.alert("Supprimer", "Voulez-vous supprimer cette sous-tache ?", [
       { text: "Annuler", style: "cancel" },
@@ -202,7 +155,6 @@ export default function TaskDetailScreen() {
         onPress: async () => {
           try {
             await apiClient.delete(API_ENDPOINTS.SUBTASK(subtaskId));
-            // Retire la sous-tache de la liste locale
             setSubtasks((prev) => prev.filter((s) => s.id !== subtaskId));
           } catch (error) {
             Alert.alert("Erreur", "Impossible de supprimer la sous-tache.");
@@ -212,48 +164,35 @@ export default function TaskDetailScreen() {
     ]);
   };
 
-  // Ouvre le selecteur de fichier et uploade le fichier choisi
   const handleUploadFile = async () => {
     try {
-      // Ouvre le selecteur de document (tous types de fichiers)
       const result = await DocumentPicker.getDocumentAsync({
         type: "*/*",
         copyToCacheDirectory: true,
       });
-
-      // Si l'utilisateur a annule, on arrete
       if (result.canceled) return;
-
       const file = result.assets[0];
       setUploadingFile(true);
-
-      // Prepare le FormData pour l'envoi multipart au backend
       const formData = new FormData();
       formData.append("file", {
         uri: file.uri,
         type: file.mimeType ?? "application/octet-stream",
         name: file.name,
       } as any);
-
-      // Envoie le fichier au backend Symfony
       const { data } = await apiClient.post(
         API_ENDPOINTS.ATTACHMENTS(Number(id)),
         formData,
         { headers: { "Content-Type": "multipart/form-data" } },
       );
-
-      // Ajoute le fichier a la liste locale sans recharger
       setAttachments((prev) => [...prev, data]);
       Alert.alert("Succes", "Fichier uploade avec succes !");
     } catch (error) {
-      console.log("Erreur upload fichier:", error);
       Alert.alert("Erreur", "Impossible d'uploader le fichier.");
     } finally {
       setUploadingFile(false);
     }
   };
 
-  // Supprime un fichier attache avec confirmation
   const handleDeleteAttachment = async (attachmentId: number) => {
     Alert.alert("Supprimer", "Voulez-vous supprimer ce fichier ?", [
       { text: "Annuler", style: "cancel" },
@@ -272,7 +211,6 @@ export default function TaskDetailScreen() {
     ]);
   };
 
-  // Retourne une icone selon le type MIME du fichier
   const getFileIcon = (mimeType: string): string => {
     if (mimeType.includes("image")) return "🖼";
     if (mimeType.includes("pdf")) return "📄";
@@ -284,9 +222,14 @@ export default function TaskDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: theme.backgroundTertiary },
+        ]}
+      >
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
@@ -295,41 +238,52 @@ export default function TaskDetailScreen() {
   if (!task) return null;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* En-tete avec bouton retour et bouton modifier */}
-        <View style={styles.header}>
+        {/* En-tete */}
+        <View
+          style={[
+            styles.header,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderBottomColor: theme.border,
+            },
+          ]}
+        >
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
           >
-            <Text style={styles.backText}>← Retour</Text>
+            <Text style={[styles.backText, { color: theme.primary }]}>
+              ← Retour
+            </Text>
           </TouchableOpacity>
-          <Text style={styles.title} numberOfLines={1}>
+          <Text
+            style={[styles.title, { color: theme.textPrimary }]}
+            numberOfLines={1}
+          >
             {task.name}
           </Text>
-          {/* Bouton modifier la tache */}
           <TouchableOpacity
-            onPress={() => {
-              console.log(
-                "task.projectId:",
-                task.projectId,
-                "task.id:",
-                task.id,
-              );
+            onPress={() =>
               router.push(
                 `/(app)/projects/${task.projectId}/edit-task?taskId=${task.id}` as any,
-              );
-            }}
-            style={styles.editButton}
+              )
+            }
+            style={[
+              styles.editButton,
+              { backgroundColor: theme.primary + "15" },
+            ]}
           >
-            <Text style={styles.editButtonText}>✏️ Modifier</Text>
+            <Text style={[styles.editButtonText, { color: theme.primary }]}>
+              ✏️ Modifier
+            </Text>
           </TouchableOpacity>
-
-          {/* Bouton supprimer la tache */}
           <TouchableOpacity
             onPress={() => {
               Alert.alert(
@@ -343,9 +297,7 @@ export default function TaskDetailScreen() {
                     onPress: async () => {
                       try {
                         await apiClient.delete(API_ENDPOINTS.TASK(Number(id)));
-                        // Invalide le cache React Query pour mettre a jour la liste
                         queryClient.invalidateQueries({ queryKey: ["tasks"] });
-                        // Retourne a la liste des taches apres suppression
                         router.replace("/(app)/tasks" as any);
                       } catch (error) {
                         Alert.alert(
@@ -378,7 +330,7 @@ export default function TaskDetailScreen() {
                     ? Colors.success + "20"
                     : task.inProgress
                       ? Colors.warning + "20"
-                      : Colors.textTertiary + "20",
+                      : theme.textTertiary + "20",
                 },
               ]}
             >
@@ -390,7 +342,7 @@ export default function TaskDetailScreen() {
                       ? Colors.success
                       : task.inProgress
                         ? Colors.warning
-                        : Colors.textTertiary,
+                        : theme.textTertiary,
                   },
                 ]}
               >
@@ -401,46 +353,94 @@ export default function TaskDetailScreen() {
                     : "⏳ A faire"}
               </Text>
             </View>
-            <View style={styles.priorityBadge}>
-              <Text style={styles.priorityText}>{task.priority}</Text>
+            <View
+              style={[
+                styles.priorityBadge,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <Text
+                style={[styles.priorityText, { color: theme.textSecondary }]}
+              >
+                {task.priority}
+              </Text>
             </View>
           </View>
 
-          {/* Description de la tache */}
+          {/* Description */}
           {task.description ? (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.description}>{task.description}</Text>
+            <View
+              style={[
+                styles.section,
+                {
+                  backgroundColor: theme.backgroundPrimary,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <Text
+                style={[styles.sectionTitle, { color: theme.textTertiary }]}
+              >
+                Description
+              </Text>
+              <Text
+                style={[styles.description, { color: theme.textSecondary }]}
+              >
+                {task.description}
+              </Text>
             </View>
           ) : null}
 
           {/* Date d'echeance */}
           {task.dueDate && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Date d'echeance</Text>
-              <Text style={styles.dueDate}>
+            <View
+              style={[
+                styles.section,
+                {
+                  backgroundColor: theme.backgroundPrimary,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <Text
+                style={[styles.sectionTitle, { color: theme.textTertiary }]}
+              >
+                Date d'echeance
+              </Text>
+              <Text style={[styles.dueDate, { color: theme.textPrimary }]}>
                 📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
               </Text>
             </View>
           )}
 
-          {/* Sous-taches avec cases a cocher et ajout */}
-          <View style={styles.section}>
+          {/* Sous-taches */}
+          <View
+            style={[
+              styles.section,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
+          >
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>
+              <Text
+                style={[styles.sectionTitle, { color: theme.textTertiary }]}
+              >
                 Sous-taches ({subtasks.filter((s) => s.completed).length}/
                 {subtasks.length})
               </Text>
             </View>
-
-            {/* Liste des sous-taches existantes */}
             {subtasks.map((subtask) => (
               <View key={subtask.id} style={styles.subtaskRow}>
-                {/* Case a cocher — coche ou decoche la sous-tache */}
                 <TouchableOpacity onPress={() => handleToggleSubtask(subtask)}>
                   <View
                     style={[
                       styles.checkbox,
+                      { borderColor: theme.border },
                       subtask.completed && styles.checkboxDone,
                     ]}
                   >
@@ -449,16 +449,18 @@ export default function TaskDetailScreen() {
                     )}
                   </View>
                 </TouchableOpacity>
-                {/* Nom de la sous-tache avec barre si completee */}
                 <Text
                   style={[
                     styles.subtaskTitle,
-                    subtask.completed && styles.subtaskDone,
+                    { color: theme.textPrimary },
+                    subtask.completed && {
+                      textDecorationLine: "line-through",
+                      color: theme.textTertiary,
+                    },
                   ]}
                 >
                   {subtask.title}
                 </Text>
-                {/* Bouton supprimer la sous-tache */}
                 <TouchableOpacity
                   onPress={() => handleDeleteSubtask(subtask.id)}
                 >
@@ -466,24 +468,29 @@ export default function TaskDetailScreen() {
                 </TouchableOpacity>
               </View>
             ))}
-
-            {/* Champ pour ajouter une nouvelle sous-tache */}
             <View style={styles.subtaskInputRow}>
               <TextInput
-                style={styles.subtaskInput}
+                style={[
+                  styles.subtaskInput,
+                  {
+                    borderColor: theme.border,
+                    color: theme.textPrimary,
+                    backgroundColor: theme.backgroundSecondary,
+                  },
+                ]}
                 placeholder="Ajouter une sous-tache..."
-                placeholderTextColor={Colors.textTertiary}
+                placeholderTextColor={theme.textTertiary}
                 value={newSubtask}
                 onChangeText={setNewSubtask}
                 maxLength={100}
                 onSubmitEditing={handleAddSubtask}
               />
-              {/* Bouton ajouter */}
               <TouchableOpacity
                 onPress={handleAddSubtask}
                 disabled={!newSubtask.trim() || addingSubtask}
                 style={[
                   styles.subtaskAddButton,
+                  { backgroundColor: theme.primary },
                   (!newSubtask.trim() || addingSubtask) &&
                     styles.sendButtonDisabled,
                 ]}
@@ -497,49 +504,72 @@ export default function TaskDetailScreen() {
             </View>
           </View>
 
-          {/* Fichiers attaches */}
-          <View style={styles.section}>
+          {/* Fichiers */}
+          <View
+            style={[
+              styles.section,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
+          >
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>
+              <Text
+                style={[styles.sectionTitle, { color: theme.textTertiary }]}
+              >
                 Fichiers ({attachments.length})
               </Text>
-              {/* Bouton pour ajouter un fichier */}
               <TouchableOpacity
                 onPress={handleUploadFile}
                 disabled={uploadingFile}
-                style={styles.uploadButton}
+                style={[
+                  styles.uploadButton,
+                  { backgroundColor: theme.primary + "15" },
+                ]}
               >
                 {uploadingFile ? (
-                  <ActivityIndicator size="small" color={Colors.primary} />
+                  <ActivityIndicator size="small" color={theme.primary} />
                 ) : (
-                  <Text style={styles.uploadButtonText}>+ Ajouter</Text>
+                  <Text
+                    style={[styles.uploadButtonText, { color: theme.primary }]}
+                  >
+                    + Ajouter
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>
-
-            {/* Liste des fichiers ou message vide */}
             {attachments.length === 0 ? (
-              <Text style={styles.emptyText}>Aucun fichier attache</Text>
+              <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
+                Aucun fichier attache
+              </Text>
             ) : (
               attachments.map((attachment) => (
                 <View key={attachment.id} style={styles.attachmentRow}>
-                  {/* Icone selon le type MIME */}
                   <Text style={styles.attachmentIcon}>
                     {getFileIcon(attachment.mimeType)}
                   </Text>
                   <View style={styles.attachmentInfo}>
-                    {/* Nom du fichier */}
-                    <Text style={styles.attachmentName} numberOfLines={1}>
+                    <Text
+                      style={[
+                        styles.attachmentName,
+                        { color: theme.textPrimary },
+                      ]}
+                      numberOfLines={1}
+                    >
                       {attachment.filename}
                     </Text>
-                    {/* Date d'upload a la place de la taille */}
-                    <Text style={styles.attachmentSize}>
+                    <Text
+                      style={[
+                        styles.attachmentSize,
+                        { color: theme.textTertiary },
+                      ]}
+                    >
                       {new Date(attachment.uploadedAt).toLocaleDateString(
                         "fr-FR",
                       )}
                     </Text>
                   </View>
-                  {/* Bouton supprimer */}
                   <TouchableOpacity
                     onPress={() => handleDeleteAttachment(attachment.id)}
                     style={styles.deleteButton}
@@ -552,50 +582,97 @@ export default function TaskDetailScreen() {
           </View>
 
           {/* Commentaires */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+          <View
+            style={[
+              styles.section,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
               Commentaires ({comments.length})
             </Text>
-
             {loadingData ? (
-              <ActivityIndicator color={Colors.primary} />
+              <ActivityIndicator color={theme.primary} />
             ) : comments.length === 0 ? (
-              <Text style={styles.emptyText}>Aucun commentaire</Text>
+              <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
+                Aucun commentaire
+              </Text>
             ) : (
               comments.map((comment) => (
-                <View key={comment.id} style={styles.commentCard}>
+                <View
+                  key={comment.id}
+                  style={[
+                    styles.commentCard,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
                   <View style={styles.commentHeader}>
-                    <Text style={styles.commentAuthor}>
+                    <Text
+                      style={[
+                        styles.commentAuthor,
+                        { color: theme.textPrimary },
+                      ]}
+                    >
                       {comment.author?.name ??
                         comment.author?.email ??
                         "Utilisateur"}
                     </Text>
-                    <Text style={styles.commentDate}>
+                    <Text
+                      style={[
+                        styles.commentDate,
+                        { color: theme.textTertiary },
+                      ]}
+                    >
                       {new Date(comment.createdAt).toLocaleDateString("fr-FR")}
                     </Text>
                   </View>
-                  <Text style={styles.commentContent}>{comment.content}</Text>
+                  <Text
+                    style={[
+                      styles.commentContent,
+                      { color: theme.textSecondary },
+                    ]}
+                  >
+                    {comment.content}
+                  </Text>
                 </View>
               ))
             )}
           </View>
         </ScrollView>
 
-        {/* Zone de saisie pour ajouter un commentaire */}
-        <View style={styles.commentInputContainer}>
+        {/* Zone de saisie commentaire */}
+        <View
+          style={[
+            styles.commentInputContainer,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderTopColor: theme.border,
+            },
+          ]}
+        >
           <TextInput
-            style={styles.commentInput}
+            style={[
+              styles.commentInput,
+              {
+                borderColor: theme.border,
+                color: theme.textPrimary,
+                backgroundColor: theme.backgroundSecondary,
+              },
+            ]}
             placeholder="Ajouter un commentaire..."
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={theme.textTertiary}
             value={newComment}
             onChangeText={setNewComment}
             multiline
             maxLength={500}
           />
-          {/* Bouton envoyer le commentaire */}
           <TouchableOpacity
             style={[
               styles.sendButton,
+              { backgroundColor: theme.primary },
               (!newComment.trim() || sendingComment) &&
                 styles.sendButtonDisabled,
             ]}
@@ -615,36 +692,23 @@ export default function TaskDetailScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  // En-tete
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.primary },
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-
-  // Contenu
+  backText: { fontSize: 15 },
+  title: { fontSize: 16, fontWeight: "600", flex: 1 },
   content: { padding: 16, gap: 16 },
-
-  // Badges statut et priorite
   badgesRow: { flexDirection: "row", gap: 8 },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   statusText: { fontSize: 13, fontWeight: "500" },
@@ -652,42 +716,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: Colors.backgroundSecondary,
     borderWidth: 0.5,
-    borderColor: Colors.border,
   },
-  priorityText: { fontSize: 13, color: Colors.textSecondary },
-
-  // Sections generiques
-  section: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderRadius: 12,
-    padding: 16,
-    gap: 10,
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
+  priorityText: { fontSize: 13 },
+  section: { borderRadius: 12, padding: 16, gap: 10, borderWidth: 0.5 },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: Colors.textTertiary,
-    textTransform: "uppercase",
-  },
-  description: { fontSize: 14, color: Colors.textSecondary, lineHeight: 20 },
-  dueDate: { fontSize: 14, color: Colors.textPrimary },
-  emptyText: {
-    fontSize: 14,
-    color: Colors.textTertiary,
-    textAlign: "center",
-    padding: 8,
-  },
-
-  // Sous-taches
+  sectionTitle: { fontSize: 13, fontWeight: "600", textTransform: "uppercase" },
+  description: { fontSize: 14, lineHeight: 20 },
+  dueDate: { fontSize: 14 },
+  emptyText: { fontSize: 14, textAlign: "center", padding: 8 },
   subtaskRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -699,7 +740,6 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 4,
     borderWidth: 1.5,
-    borderColor: Colors.border,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -708,20 +748,9 @@ const styles = StyleSheet.create({
     borderColor: Colors.success,
   },
   checkmark: { fontSize: 12, color: "#FFFFFF", fontWeight: "700" },
-  subtaskTitle: { fontSize: 14, color: Colors.textPrimary, flex: 1 },
-  subtaskDone: {
-    textDecorationLine: "line-through",
-    color: Colors.textTertiary,
-  },
-
-  // Fichiers
-  uploadButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    backgroundColor: Colors.primary + "15",
-    borderRadius: 20,
-  },
-  uploadButtonText: { fontSize: 13, color: Colors.primary, fontWeight: "500" },
+  subtaskTitle: { fontSize: 14, flex: 1 },
+  uploadButton: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
+  uploadButtonText: { fontSize: 13, fontWeight: "500" },
   attachmentRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -730,71 +759,43 @@ const styles = StyleSheet.create({
   },
   attachmentIcon: { fontSize: 20 },
   attachmentInfo: { flex: 1 },
-  attachmentName: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: Colors.textPrimary,
-  },
-  attachmentSize: { fontSize: 11, color: Colors.textTertiary },
+  attachmentName: { fontSize: 13, fontWeight: "500" },
+  attachmentSize: { fontSize: 11 },
   deleteButton: { padding: 4 },
   deleteButtonText: { fontSize: 16 },
-
-  // Commentaires
-  commentCard: {
-    backgroundColor: Colors.backgroundSecondary,
-    borderRadius: 8,
-    padding: 12,
-    gap: 6,
-  },
+  commentCard: { borderRadius: 8, padding: 12, gap: 6 },
   commentHeader: { flexDirection: "row", justifyContent: "space-between" },
-  commentAuthor: { fontSize: 13, fontWeight: "600", color: Colors.textPrimary },
-  commentDate: { fontSize: 11, color: Colors.textTertiary },
-  commentContent: { fontSize: 14, color: Colors.textSecondary, lineHeight: 20 },
-
-  // Zone saisie commentaire en bas
+  commentAuthor: { fontSize: 13, fontWeight: "600" },
+  commentDate: { fontSize: 11 },
+  commentContent: { fontSize: 14, lineHeight: 20 },
   commentInputContainer: {
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 8,
     padding: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderTopWidth: 0.5,
-    borderTopColor: Colors.border,
   },
   commentInput: {
     flex: 1,
     minHeight: 40,
     maxHeight: 100,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 14,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.backgroundSecondary,
   },
   sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
   },
   sendButtonDisabled: { opacity: 0.4 },
   sendButtonText: { fontSize: 18, color: "#FFFFFF", fontWeight: "700" },
-
-  // {/* En-tete avec bouton retour et bouton modifier */}
-  editButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: Colors.primary + "15",
-    borderRadius: 20,
-  },
-  editButtonText: { fontSize: 12, color: Colors.primary, fontWeight: "500" },
-
-  // Champ ajout sous-tache
+  editButton: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20 },
+  editButtonText: { fontSize: 12, fontWeight: "500" },
   subtaskInputRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -805,18 +806,14 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 36,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 18,
     paddingHorizontal: 14,
     fontSize: 13,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.backgroundSecondary,
   },
   subtaskAddButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
   },

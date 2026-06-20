@@ -1,7 +1,8 @@
 // =====================================================
 // ProfileScreen — Ecran profil utilisateur
-// Affiche les informations du compte connecté
+// Affiche les informations du compte connecte
 // Permet de changer son avatar via la galerie photo
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -18,8 +19,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { useAuthStore } from "@/stores/authStore";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
-import { getUserInitials, getUserFullName } from "@/types/user";
+import { getUserInitials } from "@/types/user";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
 import { useRouter } from "expo-router";
@@ -28,6 +30,8 @@ export default function ProfileScreen() {
   const { user, logout, setUser } = useAuthStore();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const router = useRouter();
+  // Hook theme pour les couleurs adaptees et le toggle
+  const { isDark, toggleTheme, theme } = useTheme();
 
   // Confirmation avant deconnexion
   const handleLogout = () => {
@@ -39,7 +43,6 @@ export default function ProfileScreen() {
 
   // Ouvre la galerie photo et uploade l'avatar selectionne
   const handleAvatarChange = async () => {
-    // Demande la permission d'acces a la galerie
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
@@ -48,42 +51,30 @@ export default function ProfileScreen() {
       );
       return;
     }
-
-    // Ouvre le selecteur d'image
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true, // Permet de recadrer l'image
-      aspect: [1, 1], // Format carre pour l'avatar
-      quality: 0.8, // Qualite de compression
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
     });
-
-    // Si l'utilisateur a annule, on arrete
     if (result.canceled) return;
-
     const image = result.assets[0];
     setUploadingAvatar(true);
-
     try {
-      // Prepare le FormData pour l'envoi multipart
       const formData = new FormData();
       formData.append("avatar", {
         uri: image.uri,
         type: "image/jpeg",
         name: "avatar.jpg",
       } as any);
-
-      // Envoie l'avatar au backend Symfony
       const { data } = await apiClient.post(API_ENDPOINTS.AVATAR, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      // Met a jour le profil avec le nouvel avatar
       if (data.avatar && user) {
         setUser({ ...user, avatar: data.avatar });
         Alert.alert("Succes", "Avatar mis a jour !");
       }
     } catch (error) {
-      console.log("Erreur upload avatar:", error);
       Alert.alert("Erreur", "Impossible de mettre a jour l'avatar.");
     } finally {
       setUploadingAvatar(false);
@@ -92,99 +83,142 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
-  // URL complete de l'avatar si defini
   const avatarUrl = user.avatar
     ? `https://api.costincianu.fr${user.avatar}`
     : null;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         {/* En-tete */}
         <View style={styles.header}>
-          <Text style={styles.title}>Profil</Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>
+            Profil
+          </Text>
         </View>
 
         {/* Section avatar + nom */}
-        <View style={styles.avatarSection}>
-          {/* Avatar cliquable pour changer la photo */}
+        <View
+          style={[
+            styles.avatarSection,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
           <TouchableOpacity
             onPress={handleAvatarChange}
             disabled={uploadingAvatar}
             style={styles.avatarContainer}
           >
             {uploadingAvatar ? (
-              // Indicateur de chargement pendant l'upload
-              <View style={styles.avatar}>
+              <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
                 <ActivityIndicator color="#FFFFFF" />
               </View>
             ) : avatarUrl ? (
-              // Photo de profil si definie
               <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
             ) : (
-              // Initiales par defaut
-              <View style={styles.avatar}>
+              <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
                 <Text style={styles.avatarText}>{getUserInitials(user)}</Text>
               </View>
             )}
-            {/* Indicateur "modifier" en bas de l'avatar */}
-            <View style={styles.avatarEditBadge}>
+            {/* Badge modifier */}
+            <View
+              style={[
+                styles.avatarEditBadge,
+                {
+                  backgroundColor: theme.backgroundPrimary,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
               <Text style={styles.avatarEditText}>📷</Text>
             </View>
           </TouchableOpacity>
 
-          {/* Affiche le nom si defini, sinon l'email uniquement */}
           {user.name ? (
             <>
-              <Text style={styles.userName}>{user.name}</Text>
-              <Text style={styles.userEmail}>{user.email}</Text>
+              <Text style={[styles.userName, { color: theme.textPrimary }]}>
+                {user.name}
+              </Text>
+              <Text style={[styles.userEmail, { color: theme.textSecondary }]}>
+                {user.email}
+              </Text>
             </>
           ) : (
-            <Text style={styles.userName}>{user.email}</Text>
+            <Text style={[styles.userName, { color: theme.textPrimary }]}>
+              {user.email}
+            </Text>
           )}
 
           {/* Badge role */}
-          <View style={styles.roleBadge}>
-            <Text style={styles.roleText}>
+          <View
+            style={[
+              styles.roleBadge,
+              { backgroundColor: theme.primary + "20" },
+            ]}
+          >
+            <Text style={[styles.roleText, { color: theme.primary }]}>
               {user.role === "admin" ? "👑 Admin" : "👤 Utilisateur"}
             </Text>
           </View>
         </View>
 
         {/* Informations du compte */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Informations</Text>
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
+            Informations
+          </Text>
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{user.email}</Text>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
+              Email
+            </Text>
+            <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
+              {user.email}
+            </Text>
           </View>
-
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Nom</Text>
-            {/* Affiche le nom ou un message si pas defini */}
-            <Text style={styles.infoValue}>{user.name || "Non renseigne"}</Text>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
+              Nom
+            </Text>
+            <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
+              {user.name || "—"}
+            </Text>
           </View>
-
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Role</Text>
-            <Text style={styles.infoValue}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
+              Role
+            </Text>
+            <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
               {user.role === "admin" ? "Administrateur" : "Utilisateur"}
             </Text>
           </View>
-
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Membre depuis</Text>
-            <Text style={styles.infoValue}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
+              Membre depuis
+            </Text>
+            <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
               {user.createdAt
                 ? new Date(user.createdAt).toLocaleDateString("fr-FR")
                 : "—"}
@@ -192,9 +226,28 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Bouton theme clair/sombre */}
+        <TouchableOpacity
+          style={[
+            styles.themeButton,
+            {
+              backgroundColor: isDark
+                ? Colors.warning + "20"
+                : theme.primary + "15",
+              borderColor: theme.border,
+            },
+          ]}
+          onPress={toggleTheme}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.themeButtonText, { color: theme.textPrimary }]}>
+            {isDark ? "☀️ Mode clair" : "🌙 Mode sombre"}
+          </Text>
+        </TouchableOpacity>
+
         {/* Bouton modifier le profil */}
         <TouchableOpacity
-          style={styles.editProfileButton}
+          style={[styles.editProfileButton, { backgroundColor: theme.primary }]}
           onPress={() => router.push("/(app)/profile/edit" as any)}
           activeOpacity={0.8}
         >
@@ -215,40 +268,29 @@ export default function ProfileScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   content: { padding: 20, gap: 20 },
-
-  // En-tete
   header: { marginBottom: 4 },
-  title: { fontSize: 24, fontWeight: "700", color: Colors.textPrimary },
-
-  // Section avatar
+  title: { fontSize: 24, fontWeight: "700" },
   avatarSection: {
-    backgroundColor: Colors.backgroundPrimary,
     borderRadius: 16,
     padding: 24,
     alignItems: "center",
     gap: 8,
     borderWidth: 0.5,
-    borderColor: Colors.border,
   },
   avatarContainer: { position: "relative", marginBottom: 8 },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
   },
-  avatarImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
+  avatarImage: { width: 80, height: 80, borderRadius: 40 },
   avatarText: { fontSize: 28, fontWeight: "700", color: "#FFFFFF" },
   avatarEditBadge: {
     position: "absolute",
@@ -257,36 +299,24 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: Colors.backgroundPrimary,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 0.5,
-    borderColor: Colors.border,
   },
   avatarEditText: { fontSize: 13 },
-  userName: { fontSize: 20, fontWeight: "600", color: Colors.textPrimary },
-  userEmail: { fontSize: 14, color: Colors.textSecondary },
+  userName: { fontSize: 20, fontWeight: "600" },
+  userEmail: { fontSize: 14 },
   roleBadge: {
     marginTop: 4,
     paddingHorizontal: 12,
     paddingVertical: 4,
-    backgroundColor: Colors.primary + "20",
     borderRadius: 20,
   },
-  roleText: { fontSize: 13, color: Colors.primary, fontWeight: "500" },
-
-  // Section infos
-  section: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
+  roleText: { fontSize: 13, fontWeight: "500" },
+  section: { borderRadius: 16, padding: 16, borderWidth: 0.5 },
   sectionTitle: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.textTertiary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 12,
@@ -297,11 +327,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 10,
   },
-  infoLabel: { fontSize: 14, color: Colors.textSecondary },
-  infoValue: { fontSize: 14, color: Colors.textPrimary, fontWeight: "500" },
-  divider: { height: 0.5, backgroundColor: Colors.border },
-
-  // Bouton deconnexion
+  infoLabel: { fontSize: 14 },
+  infoValue: { fontSize: 14, fontWeight: "500" },
+  divider: { height: 0.5 },
+  themeButton: {
+    height: 52,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+  },
+  themeButtonText: { fontSize: 16, fontWeight: "600" },
+  editProfileButton: {
+    height: 52,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  editProfileText: { fontSize: 16, fontWeight: "600", color: "#FFFFFF" },
   logoutButton: {
     height: 52,
     backgroundColor: Colors.danger,
@@ -310,15 +353,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logoutText: { fontSize: 16, fontWeight: "600", color: "#FFFFFF" },
-
-  // Bouton modifier le profil
-  editProfileButton: {
-    height: 52,
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  editProfileText: { fontSize: 16, fontWeight: "600", color: "#FFFFFF" },
 });

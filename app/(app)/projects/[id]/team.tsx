@@ -2,9 +2,7 @@
 // TeamScreen — Gestion de l'equipe du projet
 // Affiche les membres invites et permet d'en inviter
 // de nouveaux en entrant leur email
-// Routes utilisees :
-// - GET /api/invitations/project/{id} — liste invitations
-// - POST /api/invitations — inviter un membre
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -22,27 +20,26 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 
 // Type pour une invitation
 interface Invitation {
   id: number;
-  email: string; // Email de la personne invitee
-  role: string; // Role attribue dans le projet
-  status: string; // Statut : pending, accepted, declined
-  createdAt: string; // Date d'envoi de l'invitation
+  email: string;
+  role: string;
+  status: string;
+  createdAt: string;
 }
 
 export default function TeamScreen() {
-  // Recupere l'ID du projet depuis l'URL
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
-  // Etats de la liste des invitations
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Etats du formulaire d'invitation
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("dev");
   const [isSending, setIsSending] = useState(false);
@@ -54,12 +51,10 @@ export default function TeamScreen() {
     { value: "client", label: "👤 Client" },
   ];
 
-  // Charge les invitations du projet au demarrage
   useEffect(() => {
     loadInvitations();
   }, [id]);
 
-  // Recupere la liste des invitations depuis l'API
   const loadInvitations = async () => {
     try {
       const { data } = await apiClient.get(
@@ -73,9 +68,7 @@ export default function TeamScreen() {
     }
   };
 
-  // Envoie une invitation par email
   const handleInvite = async () => {
-    // Validation de l'email
     if (!email.trim()) {
       Alert.alert("Champ requis", "Veuillez entrer un email.");
       return;
@@ -84,29 +77,24 @@ export default function TeamScreen() {
       Alert.alert("Email invalide", "Veuillez entrer un email valide.");
       return;
     }
-
     setIsSending(true);
     try {
-      // Envoie l'invitation au backend Symfony
       const { data } = await apiClient.post(API_ENDPOINTS.INVITE, {
         email: email.trim(),
         projectId: Number(id),
         role,
       });
-
-      // Ajoute l'invitation a la liste locale
       setInvitations((prev) => [...prev, data]);
       setEmail("");
       Alert.alert("Succes", `Invitation envoyee a ${email} !`);
     } catch (error: any) {
-      console.log("Erreur invitation:", error?.response?.data);
       Alert.alert("Erreur", "Impossible d'envoyer l'invitation.");
     } finally {
       setIsSending(false);
     }
   };
 
-  // Retourne la couleur selon le statut de l'invitation
+  // Retourne la couleur selon le statut
   const getStatusColor = (status: string) => {
     switch (status) {
       case "accepted":
@@ -114,7 +102,7 @@ export default function TeamScreen() {
       case "declined":
         return Colors.danger;
       default:
-        return Colors.warning; // pending
+        return Colors.warning;
     }
   };
 
@@ -132,27 +120,43 @@ export default function TeamScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: theme.backgroundTertiary },
+        ]}
+      >
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* En-tete avec bouton retour */}
-      <View style={styles.header}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
+      {/* En-tete */}
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.backgroundPrimary,
+            borderBottomColor: theme.border,
+          },
+        ]}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Text style={styles.backText}>← Retour</Text>
+          <Text style={[styles.backText, { color: theme.primary }]}>
+            ← Retour
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Equipe</Text>
-        {/* Compteur de membres invites */}
-        <Text style={styles.count}>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Equipe</Text>
+        <Text style={[styles.count, { color: theme.textSecondary }]}>
           {invitations.length} membre{invitations.length > 1 ? "s" : ""}
         </Text>
       </View>
@@ -162,17 +166,36 @@ export default function TeamScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Section invitation — formulaire pour inviter un membre */}
-        <View key="invite-form" style={styles.section}>
-          <Text style={styles.sectionTitle}>Inviter un membre</Text>
+        {/* Section formulaire d'invitation */}
+        <View
+          key="invite-form"
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+            Inviter un membre
+          </Text>
 
-          {/* Champ email */}
           <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>
+              Email
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                  color: theme.textPrimary,
+                },
+              ]}
               placeholder="email@exemple.com"
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={theme.textTertiary}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -181,22 +204,31 @@ export default function TeamScreen() {
             />
           </View>
 
-          {/* Selecteur de role */}
           <View style={styles.field}>
-            <Text style={styles.label}>Role</Text>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>
+              Role
+            </Text>
             <View style={styles.rolesRow}>
               {ROLES.map((r) => (
                 <TouchableOpacity
                   key={r.value}
                   style={[
                     styles.roleOption,
-                    role === r.value && styles.roleOptionActive,
+                    {
+                      borderColor: theme.border,
+                      backgroundColor: theme.backgroundSecondary,
+                    },
+                    role === r.value && {
+                      backgroundColor: theme.primary,
+                      borderColor: theme.primary,
+                    },
                   ]}
                   onPress={() => setRole(r.value)}
                 >
                   <Text
                     style={[
                       styles.roleText,
+                      { color: theme.textSecondary },
                       role === r.value && styles.roleTextActive,
                     ]}
                   >
@@ -207,10 +239,10 @@ export default function TeamScreen() {
             </View>
           </View>
 
-          {/* Bouton envoyer l'invitation */}
           <TouchableOpacity
             style={[
               styles.inviteButton,
+              { backgroundColor: theme.primary },
               isSending && styles.inviteButtonDisabled,
             ]}
             onPress={handleInvite}
@@ -227,33 +259,63 @@ export default function TeamScreen() {
         </View>
 
         {/* Section liste des invitations */}
-        <View key="invite-list" style={styles.section}>
-          <Text style={styles.sectionTitle}>
+        <View
+          key="invite-list"
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
             Invitations ({invitations.length})
           </Text>
 
-          {/* Message si aucune invitation */}
           {invitations.length === 0 ? (
             <View style={styles.empty}>
               <Text style={styles.emptyIcon}>👥</Text>
-              <Text style={styles.emptyText}>Aucune invitation envoyee</Text>
+              <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
+                Aucune invitation envoyee
+              </Text>
             </View>
           ) : (
-            // Liste des invitations
             invitations.map((invitation) => (
-              <View key={invitation.id} style={styles.invitationCard}>
-                {/* Email de la personne invitee */}
+              <View
+                key={invitation.id}
+                style={[
+                  styles.invitationCard,
+                  { borderBottomColor: theme.border },
+                ]}
+              >
                 <View style={styles.invitationInfo}>
-                  <Text style={styles.invitationEmail}>{invitation.email}</Text>
-                  <Text style={styles.invitationRole}>
+                  <Text
+                    style={[
+                      styles.invitationEmail,
+                      { color: theme.textPrimary },
+                    ]}
+                  >
+                    {invitation.email}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.invitationRole,
+                      { color: theme.textSecondary },
+                    ]}
+                  >
                     Role : {invitation.role}
                   </Text>
-                  <Text style={styles.invitationDate}>
+                  <Text
+                    style={[
+                      styles.invitationDate,
+                      { color: theme.textTertiary },
+                    ]}
+                  >
                     Envoye le{" "}
                     {new Date(invitation.createdAt).toLocaleDateString("fr-FR")}
                   </Text>
                 </View>
-                {/* Badge statut */}
                 <View
                   style={[
                     styles.statusBadge,
@@ -281,121 +343,66 @@ export default function TeamScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  // En-tete
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.primary },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  count: { fontSize: 13, color: Colors.textSecondary },
-
-  // Contenu
+  backText: { fontSize: 15 },
+  title: { fontSize: 18, fontWeight: "600", flex: 1 },
+  count: { fontSize: 13 },
   content: { padding: 16, gap: 16 },
-
-  // Sections
-  section: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderRadius: 16,
-    padding: 16,
-    gap: 14,
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: Colors.textPrimary,
-  },
-
-  // Champs formulaire
+  section: { borderRadius: 16, padding: 16, gap: 14, borderWidth: 0.5 },
+  sectionTitle: { fontSize: 15, fontWeight: "600" },
   field: { gap: 6 },
-  label: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
+  label: { fontSize: 14, fontWeight: "500" },
   input: {
-    backgroundColor: Colors.backgroundSecondary,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: Colors.textPrimary,
   },
-
-  // Selecteur de role
   rolesRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   roleOption: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.backgroundSecondary,
   },
-  roleOptionActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  roleText: { fontSize: 13, color: Colors.textSecondary },
+  roleText: { fontSize: 13 },
   roleTextActive: { color: "#FFFFFF", fontWeight: "500" },
-
-  // Bouton invitation
   inviteButton: {
     height: 48,
-    backgroundColor: Colors.primary,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
   },
   inviteButtonDisabled: { opacity: 0.5 },
   inviteButtonText: { fontSize: 15, fontWeight: "600", color: "#FFFFFF" },
-
-  // Carte invitation
   invitationCard: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 10,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   invitationInfo: { flex: 1, gap: 2 },
-  invitationEmail: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: Colors.textPrimary,
-  },
-  invitationRole: { fontSize: 12, color: Colors.textSecondary },
-  invitationDate: { fontSize: 11, color: Colors.textTertiary },
-
-  // Badge statut
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
+  invitationEmail: { fontSize: 14, fontWeight: "500" },
+  invitationRole: { fontSize: 12 },
+  invitationDate: { fontSize: 11 },
+  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   statusText: { fontSize: 12, fontWeight: "500" },
-
-  // Etat vide
   empty: { alignItems: "center", gap: 8, padding: 20 },
   emptyIcon: { fontSize: 32 },
-  emptyText: { fontSize: 14, color: Colors.textTertiary },
+  emptyText: { fontSize: 14 },
 });

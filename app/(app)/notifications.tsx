@@ -2,6 +2,7 @@
 // NotificationsScreen — Centre de notifications
 // Affiche toutes les notifications de l'utilisateur
 // avec possibilite de les marquer comme lues
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -17,7 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
-import { Colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { useRouter } from "expo-router";
 
 // Type notification — adapte a la reponse de l'API Symfony
@@ -37,18 +38,16 @@ export default function NotificationsScreen() {
 
   // Hook de navigation pour rediriger vers la tache
   const router = useRouter();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
   // Charge les notifications depuis l'API
   const loadNotifications = async () => {
     try {
       const { data } = await apiClient.get(API_ENDPOINTS.NOTIFICATIONS);
-      console.log("Notifications Android:", JSON.stringify(data));
-      console.log("Endpoint:", API_ENDPOINTS.NOTIFICATIONS);
-      // console.log("Notifications:", JSON.stringify(data));
       setNotifications(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.log("Erreur notifications Android:", error);
-      // console.log("Erreur chargement notifications:", error);
+      console.log("Erreur chargement notifications:", error);
       setNotifications([]);
     } finally {
       setIsLoading(false);
@@ -94,42 +93,33 @@ export default function NotificationsScreen() {
   // Nombre de notifications non lues
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  // Icone selon le type de notification
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "task":
-        return "✅";
-      case "comment":
-        return "💬";
-      case "mention":
-        return "@";
-      case "invite":
-        return "👥";
-      case "deadline":
-        return "⏰";
-      default:
-        return "🔔";
-    }
-  };
-
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: theme.backgroundTertiary },
+        ]}
+      >
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       {/* En-tete */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Notifications</Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>
+            Notifications
+          </Text>
           {unreadCount > 0 && (
-            <Text style={styles.unreadCount}>
+            <Text style={[styles.unreadCount, { color: theme.primary }]}>
               {unreadCount} non lue{unreadCount > 1 ? "s" : ""}
             </Text>
           )}
@@ -137,9 +127,14 @@ export default function NotificationsScreen() {
         {unreadCount > 0 && (
           <TouchableOpacity
             onPress={markAllAsRead}
-            style={styles.markAllButton}
+            style={[
+              styles.markAllButton,
+              { backgroundColor: theme.primary + "15" },
+            ]}
           >
-            <Text style={styles.markAllText}>Tout lire</Text>
+            <Text style={[styles.markAllText, { color: theme.primary }]}>
+              Tout lire
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -153,12 +148,22 @@ export default function NotificationsScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={onRefresh}
-            tintColor={Colors.primary}
+            tintColor={theme.primary}
           />
         }
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[styles.notifCard, !item.isRead && styles.notifCardUnread]}
+            style={[
+              styles.notifCard,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+              !item.isRead && {
+                borderColor: theme.primary + "40",
+                backgroundColor: theme.primary + "05",
+              },
+            ]}
             onPress={() => {
               // Marque la notification comme lue
               markAsRead(item.id);
@@ -170,20 +175,31 @@ export default function NotificationsScreen() {
             activeOpacity={0.7}
           >
             {/* Indicateur non lu */}
-            {!item.isRead && <View style={styles.unreadDot} />}
+            {!item.isRead && (
+              <View
+                style={[styles.unreadDot, { backgroundColor: theme.primary }]}
+              />
+            )}
 
             {/* Icone de la notification — toujours une mention */}
-            <View style={styles.notifIcon}>
+            <View
+              style={[
+                styles.notifIcon,
+                { backgroundColor: theme.backgroundTertiary },
+              ]}
+            >
               <Text style={styles.notifIconText}>@</Text>
             </View>
 
             {/* Contenu */}
             <View style={styles.notifContent}>
-              <Text style={styles.notifMessage} numberOfLines={2}>
-                {/* Affiche l'email de la personne qui a mentionne */}
+              <Text
+                style={[styles.notifMessage, { color: theme.textPrimary }]}
+                numberOfLines={2}
+              >
                 Mention de {item.mentionedByEmail}
               </Text>
-              <Text style={styles.notifDate}>
+              <Text style={[styles.notifDate, { color: theme.textTertiary }]}>
                 {new Date(item.createdAt).toLocaleDateString("fr-FR", {
                   day: "numeric",
                   month: "short",
@@ -197,8 +213,10 @@ export default function NotificationsScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyIcon}>🔔</Text>
-            <Text style={styles.emptyText}>Aucune notification</Text>
-            <Text style={styles.emptySubtext}>
+            <Text style={[styles.emptyText, { color: theme.textPrimary }]}>
+              Aucune notification
+            </Text>
+            <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
               Vous serez notifie des activites de vos projets ici
             </Text>
           </View>
@@ -209,10 +227,11 @@ export default function NotificationsScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
 
   // En-tete
@@ -223,33 +242,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
-  title: { fontSize: 24, fontWeight: "700", color: Colors.textPrimary },
-  unreadCount: { fontSize: 13, color: Colors.primary, marginTop: 2 },
+  title: { fontSize: 24, fontWeight: "700" },
+  unreadCount: { fontSize: 13, marginTop: 2 },
   markAllButton: {
     paddingHorizontal: 14,
     paddingVertical: 6,
-    backgroundColor: Colors.primary + "15",
     borderRadius: 20,
   },
-  markAllText: { fontSize: 13, color: Colors.primary, fontWeight: "500" },
+  markAllText: { fontSize: 13, fontWeight: "500" },
 
   // Liste
   list: { padding: 16, gap: 8 },
 
   // Carte notification
   notifCard: {
-    backgroundColor: Colors.backgroundPrimary,
     borderRadius: 12,
     padding: 14,
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 12,
     borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
-  notifCardUnread: {
-    borderColor: Colors.primary + "40",
-    backgroundColor: Colors.primary + "05",
   },
   unreadDot: {
     position: "absolute",
@@ -258,29 +270,22 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.primary,
   },
   notifIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.backgroundTertiary,
     justifyContent: "center",
     alignItems: "center",
   },
   notifIconText: { fontSize: 18 },
   notifContent: { flex: 1, gap: 4 },
-  notifMessage: { fontSize: 14, color: Colors.textPrimary, lineHeight: 20 },
-  notifDate: { fontSize: 12, color: Colors.textTertiary },
+  notifMessage: { fontSize: 14, lineHeight: 20 },
+  notifDate: { fontSize: 12 },
 
   // Etat vide
   empty: { padding: 40, alignItems: "center", gap: 8 },
   emptyIcon: { fontSize: 48, marginBottom: 8 },
-  emptyText: { fontSize: 16, fontWeight: "600", color: Colors.textPrimary },
-  emptySubtext: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: "center",
-    lineHeight: 20,
-  },
+  emptyText: { fontSize: 16, fontWeight: "600" },
+  emptySubtext: { fontSize: 14, textAlign: "center", lineHeight: 20 },
 });

@@ -2,6 +2,7 @@
 // EditTaskScreen — Modifier une tache existante
 // Formulaire pre-rempli avec les donnees actuelles
 // Note : DatePicker natif desactive pour Expo Go
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -18,9 +19,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useTask, useUpdateTask } from "@/hooks/useTasks";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 
-// Priorites disponibles
+// Priorites disponibles — couleurs fixes independamment du theme
 const PRIORITIES = [
   { value: "faible", label: "Faible", color: Colors.priorityLow },
   { value: "normale", label: "Normale", color: Colors.info },
@@ -33,6 +35,8 @@ export default function EditTaskScreen() {
   const router = useRouter();
   const { data: task, isLoading } = useTask(Number(taskId));
   const updateTask = useUpdateTask();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
   // Champs du formulaire
   const [name, setName] = useState("");
@@ -54,13 +58,6 @@ export default function EditTaskScreen() {
       setDueDate(task.dueDate ?? "");
     }
   }, [task]);
-
-  // // Valide le format de date YYYY-MM-DD
-  // const isValidDate = (date: string): boolean => {
-  //   if (!date) return true;
-  //   const regex = /^\d{4}-\d{2}-\d{2}$/;
-  //   return regex.test(date);
-  // };
 
   // Valide le format de date JJ/MM/AAAA
   const isValidDate = (date: string): boolean => {
@@ -84,7 +81,7 @@ export default function EditTaskScreen() {
     if (dueDate && !isValidDate(dueDate)) {
       Alert.alert(
         "Date invalide",
-        "Format attendu : AAAA-MM-JJ (ex: 2026-12-31)",
+        "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)",
       );
       return;
     }
@@ -127,30 +124,50 @@ export default function EditTaskScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: theme.backgroundTertiary },
+        ]}
+      >
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       {/* En-tete */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.backgroundPrimary,
+            borderBottomColor: theme.border,
+          },
+        ]}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Text style={styles.backText}>✕ Annuler</Text>
+          <Text style={[styles.backText, { color: Colors.danger }]}>
+            ✕ Annuler
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Modifier la tache</Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>
+          Modifier la tache
+        </Text>
         <TouchableOpacity
           onPress={handleUpdate}
           disabled={isSubmitting || !name.trim()}
           style={[
             styles.saveButton,
+            { backgroundColor: theme.primary },
             (!name.trim() || isSubmitting) && styles.saveButtonDisabled,
           ]}
         >
@@ -169,12 +186,22 @@ export default function EditTaskScreen() {
       >
         {/* Statut de la tache */}
         <View style={styles.field}>
-          <Text style={styles.label}>Statut</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Statut
+          </Text>
           <View style={styles.statusRow}>
             <TouchableOpacity
               style={[
                 styles.statusOption,
-                !done && !inProgress && styles.statusOptionActive,
+                {
+                  borderColor: theme.border,
+                  backgroundColor: theme.backgroundPrimary,
+                },
+                !done &&
+                  !inProgress && {
+                    backgroundColor: theme.textTertiary + "20",
+                    borderColor: theme.textTertiary,
+                  },
               ]}
               onPress={() => {
                 setDone(false);
@@ -184,7 +211,12 @@ export default function EditTaskScreen() {
               <Text
                 style={[
                   styles.statusText,
-                  !done && !inProgress && styles.statusTextActive,
+                  { color: theme.textSecondary },
+                  !done &&
+                    !inProgress && {
+                      color: theme.textPrimary,
+                      fontWeight: "600",
+                    },
                 ]}
               >
                 ⏳ A faire
@@ -193,7 +225,15 @@ export default function EditTaskScreen() {
             <TouchableOpacity
               style={[
                 styles.statusOption,
-                inProgress && !done && styles.statusOptionInProgress,
+                {
+                  borderColor: theme.border,
+                  backgroundColor: theme.backgroundPrimary,
+                },
+                inProgress &&
+                  !done && {
+                    backgroundColor: Colors.warning + "20",
+                    borderColor: Colors.warning,
+                  },
               ]}
               onPress={() => {
                 setDone(false);
@@ -203,21 +243,37 @@ export default function EditTaskScreen() {
               <Text
                 style={[
                   styles.statusText,
-                  inProgress && !done && styles.statusTextActive,
+                  { color: theme.textSecondary },
+                  inProgress &&
+                    !done && { color: theme.textPrimary, fontWeight: "600" },
                 ]}
               >
                 🔄 En cours
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.statusOption, done && styles.statusOptionDone]}
+              style={[
+                styles.statusOption,
+                {
+                  borderColor: theme.border,
+                  backgroundColor: theme.backgroundPrimary,
+                },
+                done && {
+                  backgroundColor: Colors.success + "20",
+                  borderColor: Colors.success,
+                },
+              ]}
               onPress={() => {
                 setDone(true);
                 setInProgress(false);
               }}
             >
               <Text
-                style={[styles.statusText, done && styles.statusTextActive]}
+                style={[
+                  styles.statusText,
+                  { color: theme.textSecondary },
+                  done && { color: theme.textPrimary, fontWeight: "600" },
+                ]}
               >
                 ✅ Termine
               </Text>
@@ -227,13 +283,20 @@ export default function EditTaskScreen() {
 
         {/* Nom */}
         <View style={styles.field}>
-          <Text style={styles.label}>
-            Nom <Text style={styles.required}>*</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Nom <Text style={{ color: Colors.danger }}>*</Text>
           </Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+                color: theme.textPrimary,
+              },
+            ]}
             placeholder="Nom de la tache..."
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={theme.textTertiary}
             value={name}
             onChangeText={setName}
             maxLength={100}
@@ -242,11 +305,21 @@ export default function EditTaskScreen() {
 
         {/* Description */}
         <View style={styles.field}>
-          <Text style={styles.label}>Description</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Description
+          </Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[
+              styles.input,
+              styles.textArea,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+                color: theme.textPrimary,
+              },
+            ]}
             placeholder="Description (optionnel)..."
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={theme.textTertiary}
             value={description}
             onChangeText={setDescription}
             multiline
@@ -257,13 +330,19 @@ export default function EditTaskScreen() {
 
         {/* Priorite */}
         <View style={styles.field}>
-          <Text style={styles.label}>Priorite</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Priorite
+          </Text>
           <View style={styles.prioritiesRow}>
             {PRIORITIES.map((p) => (
               <TouchableOpacity
                 key={p.value}
                 style={[
                   styles.priorityOption,
+                  {
+                    borderColor: theme.border,
+                    backgroundColor: theme.backgroundPrimary,
+                  },
                   priority === p.value && {
                     backgroundColor: p.color,
                     borderColor: p.color,
@@ -274,6 +353,7 @@ export default function EditTaskScreen() {
                 <Text
                   style={[
                     styles.priorityOptionText,
+                    { color: theme.textSecondary },
                     priority === p.value && styles.priorityOptionTextSelected,
                   ]}
                 >
@@ -284,19 +364,30 @@ export default function EditTaskScreen() {
           </View>
         </View>
 
-        {/* Date d'echeance — champ texte simple */}
+        {/* Date d'echeance */}
         <View style={styles.field}>
-          <Text style={styles.label}>Date d'echeance</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Date d'echeance
+          </Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+                color: theme.textPrimary,
+              },
+            ]}
             placeholder="ex: 17/08/2027"
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={theme.textTertiary}
             value={dueDate}
             onChangeText={setDueDate}
             keyboardType="numbers-and-punctuation"
             maxLength={10}
           />
-          <Text style={styles.hint}>Format : JJ/MM/AAAA</Text>
+          <Text style={[styles.hint, { color: theme.textTertiary }]}>
+            Format : JJ/MM/AAAA
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -304,10 +395,10 @@ export default function EditTaskScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
     flexDirection: "row",
@@ -315,78 +406,42 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.danger },
-  title: { fontSize: 17, fontWeight: "600", color: Colors.textPrimary },
-  saveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-  },
+  backText: { fontSize: 15 },
+  title: { fontSize: 17, fontWeight: "600" },
+  saveButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   saveButtonDisabled: { opacity: 0.4 },
   saveButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
   content: { padding: 20, gap: 20 },
   field: { gap: 8 },
-  label: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
-  required: { color: Colors.danger },
-  hint: { fontSize: 12, color: Colors.textTertiary },
+  label: { fontSize: 14, fontWeight: "500" },
+  hint: { fontSize: 12 },
   input: {
-    backgroundColor: Colors.backgroundPrimary,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: Colors.textPrimary,
   },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: "top",
-    paddingTop: 12,
-  },
+  textArea: { minHeight: 100, textAlignVertical: "top", paddingTop: 12 },
   statusRow: { flexDirection: "row", gap: 8 },
   statusOption: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.backgroundPrimary,
     alignItems: "center",
   },
-  statusOptionActive: {
-    backgroundColor: Colors.textTertiary + "20",
-    borderColor: Colors.textTertiary,
-  },
-  statusOptionInProgress: {
-    backgroundColor: Colors.warning + "20",
-    borderColor: Colors.warning,
-  },
-  statusOptionDone: {
-    backgroundColor: Colors.success + "20",
-    borderColor: Colors.success,
-  },
-  statusText: { fontSize: 12, color: Colors.textSecondary, fontWeight: "500" },
-  statusTextActive: { color: Colors.textPrimary, fontWeight: "600" },
+  statusText: { fontSize: 12, fontWeight: "500" },
   prioritiesRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   priorityOption: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.backgroundPrimary,
   },
-  priorityOptionText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    fontWeight: "500",
-  },
+  priorityOptionText: { fontSize: 13, fontWeight: "500" },
   priorityOptionTextSelected: { color: "#FFFFFF" },
 });

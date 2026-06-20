@@ -1,6 +1,7 @@
 // =====================================================
 // LoginScreen — Ecran de connexion
 // Supporte : email/mot de passe, OAuth Google, GitHub
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import { useState } from "react";
@@ -19,7 +20,7 @@ import {
 import { useRouter, Link } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "@/stores/authStore";
-import { Colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { useGoogleOAuth, useGithubOAuth } from "@/hooks/useOAuth";
 
 export default function LoginScreen() {
@@ -29,12 +30,14 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Hook theme — retourne les couleurs selon le mode clair/sombre
+  const { theme } = useTheme();
+
   // Hooks OAuth
   const { signInWithGoogle, isReady: googleReady } = useGoogleOAuth();
   const { signInWithGithub, isReady: githubReady } = useGithubOAuth();
 
   const handleLogin = async () => {
-    // console.log("handleLogin appelé Android", email, password);
     if (!email.trim() || !password.trim()) {
       Alert.alert(
         "Champs requis",
@@ -51,10 +54,6 @@ export default function LoginScreen() {
         router.replace("/(app)");
       }
     } catch (error: any) {
-      // console.log("Erreur complète:", JSON.stringify(error));
-      // console.log("Message:", error?.message);
-      // console.log("Code:", error?.code);
-
       const message =
         error?.response?.data?.message ?? "Email ou mot de passe incorrect.";
       Alert.alert("Connexion impossible", message);
@@ -64,7 +63,9 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
+    >
       <KeyboardAvoidingView
         style={styles.inner}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -72,50 +73,89 @@ export default function LoginScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* En-tete */}
           <View style={styles.header}>
-            <Text style={styles.title}>Project Manager</Text>
-            <Text style={styles.subtitle}>Connectez-vous a votre espace</Text>
+            <Text style={[styles.title, { color: theme.textPrimary }]}>
+              Project Manager
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+              Connectez-vous a votre espace
+            </Text>
           </View>
 
           {/* Boutons OAuth */}
           <View style={styles.oauthSection}>
             {/* Bouton Google */}
             <TouchableOpacity
-              style={styles.oauthButton}
+              style={[
+                styles.oauthButton,
+                {
+                  borderColor: theme.border,
+                  backgroundColor: theme.backgroundSecondary,
+                },
+              ]}
               onPress={signInWithGoogle}
               disabled={!googleReady}
               activeOpacity={0.7}
             >
-              <Text style={styles.oauthIcon}>G</Text>
-              <Text style={styles.oauthText}>Continuer avec Google</Text>
+              <Text style={[styles.oauthIcon, { color: theme.textPrimary }]}>
+                G
+              </Text>
+              <Text style={[styles.oauthText, { color: theme.textPrimary }]}>
+                Continuer avec Google
+              </Text>
             </TouchableOpacity>
 
             {/* Bouton GitHub */}
             <TouchableOpacity
-              style={styles.oauthButton}
+              style={[
+                styles.oauthButton,
+                {
+                  borderColor: theme.border,
+                  backgroundColor: theme.backgroundSecondary,
+                },
+              ]}
               onPress={signInWithGithub}
               disabled={!githubReady}
               activeOpacity={0.7}
             >
-              <Text style={styles.oauthIcon}>⌥</Text>
-              <Text style={styles.oauthText}>Continuer avec GitHub</Text>
+              <Text style={[styles.oauthIcon, { color: theme.textPrimary }]}>
+                ⌥
+              </Text>
+              <Text style={[styles.oauthText, { color: theme.textPrimary }]}>
+                Continuer avec GitHub
+              </Text>
             </TouchableOpacity>
           </View>
 
           {/* Separateur */}
           <View style={styles.separator}>
-            <View style={styles.separatorLine} />
-            <Text style={styles.separatorText}>ou</Text>
-            <View style={styles.separatorLine} />
+            <View
+              style={[styles.separatorLine, { backgroundColor: theme.border }]}
+            />
+            <Text style={[styles.separatorText, { color: theme.textTertiary }]}>
+              ou
+            </Text>
+            <View
+              style={[styles.separatorLine, { backgroundColor: theme.border }]}
+            />
           </View>
 
           {/* Formulaire email/mdp */}
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={[styles.label, { color: theme.textPrimary }]}>
+                Email
+              </Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    borderColor: theme.border,
+                    color: theme.textPrimary,
+                    backgroundColor: theme.backgroundSecondary,
+                  },
+                ]}
                 placeholder="votre@email.com"
-                placeholderTextColor={Colors.textTertiary}
+                placeholderTextColor={theme.textTertiary}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -126,11 +166,20 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Mot de passe</Text>
+              <Text style={[styles.label, { color: theme.textPrimary }]}>
+                Mot de passe
+              </Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    borderColor: theme.border,
+                    color: theme.textPrimary,
+                    backgroundColor: theme.backgroundSecondary,
+                  },
+                ]}
                 placeholder="••••••••"
-                placeholderTextColor={Colors.textTertiary}
+                placeholderTextColor={theme.textTertiary}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -139,12 +188,19 @@ export default function LoginScreen() {
               />
             </View>
 
-            <Link href="/(auth)/forgot-password" style={styles.forgotLink}>
+            <Link
+              href="/(auth)/forgot-password"
+              style={[styles.forgotLink, { color: theme.primary }]}
+            >
               Mot de passe oublie ?
             </Link>
 
             <TouchableOpacity
-              style={[styles.button, isLoading && styles.buttonDisabled]}
+              style={[
+                styles.button,
+                { backgroundColor: theme.primary },
+                isLoading && styles.buttonDisabled,
+              ]}
               onPress={handleLogin}
               disabled={isLoading}
               activeOpacity={0.8}
@@ -159,8 +215,13 @@ export default function LoginScreen() {
 
           {/* Lien inscription */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Pas encore de compte ? </Text>
-            <Link href="/(auth)/register" style={styles.footerLink}>
+            <Text style={[styles.footerText, { color: theme.textSecondary }]}>
+              Pas encore de compte ?{" "}
+            </Text>
+            <Link
+              href="/(auth)/register"
+              style={[styles.footerLink, { color: theme.primary }]}
+            >
               Creer un compte
             </Link>
           </View>
@@ -171,21 +232,17 @@ export default function LoginScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundPrimary },
+  container: { flex: 1 },
   inner: { flex: 1, paddingHorizontal: 24 },
 
   // En-tete
   header: { marginTop: 40, marginBottom: 32 },
-  title: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: Colors.textPrimary,
-    marginBottom: 8,
-  },
-  subtitle: { fontSize: 16, color: Colors.textSecondary },
+  title: { fontSize: 32, fontWeight: "700", marginBottom: 8 },
+  subtitle: { fontSize: 16 },
 
   // OAuth
   oauthSection: { gap: 12, marginBottom: 24 },
@@ -197,11 +254,9 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.backgroundSecondary,
   },
-  oauthIcon: { fontSize: 18, fontWeight: "700", color: Colors.textPrimary },
-  oauthText: { fontSize: 15, fontWeight: "500", color: Colors.textPrimary },
+  oauthIcon: { fontSize: 18, fontWeight: "700" },
+  oauthText: { fontSize: 15, fontWeight: "500" },
 
   // Separateur
   separator: {
@@ -210,27 +265,23 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 24,
   },
-  separatorLine: { flex: 1, height: 0.5, backgroundColor: Colors.border },
-  separatorText: { fontSize: 13, color: Colors.textTertiary },
+  separatorLine: { flex: 1, height: 0.5 },
+  separatorText: { fontSize: 13 },
 
   // Formulaire
   form: { gap: 16, marginBottom: 24 },
   field: { gap: 6 },
-  label: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
+  label: { fontSize: 14, fontWeight: "500" },
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 10,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.backgroundSecondary,
   },
-  forgotLink: { fontSize: 14, color: Colors.primary, textAlign: "right" },
+  forgotLink: { fontSize: 14, textAlign: "right" },
   button: {
     height: 52,
-    backgroundColor: Colors.primary,
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
@@ -240,6 +291,6 @@ const styles = StyleSheet.create({
 
   // Pied de page
   footer: { flexDirection: "row", justifyContent: "center", marginBottom: 32 },
-  footerText: { fontSize: 14, color: Colors.textSecondary },
-  footerLink: { fontSize: 14, color: Colors.primary, fontWeight: "500" },
+  footerText: { fontSize: 14 },
+  footerLink: { fontSize: 14, fontWeight: "500" },
 });

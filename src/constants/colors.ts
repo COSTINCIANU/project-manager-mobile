@@ -1,3 +1,8 @@
+// =====================================================
+// colors.ts — Couleurs statiques de l'application
+// Pour le theme dynamique utiliser le hook useAppColors
+// =====================================================
+
 export const Colors = {
   primary: "#6366F1",
   primaryLight: "#818CF8",
@@ -17,9 +22,8 @@ export const Colors = {
   textTertiary: "#94A3B8",
   border: "#E2E8F0",
   borderDark: "#334155",
-
   priorityLow: "#22C55E",
   priorityMedium: "#F59E0B",
-  priorityHigh: "#F97316", // Orange pour haute
-  priorityCritical: "#DC2626", // Rouge fonce pour critique
+  priorityHigh: "#F97316",
+  priorityCritical: "#DC2626",
 } as const;

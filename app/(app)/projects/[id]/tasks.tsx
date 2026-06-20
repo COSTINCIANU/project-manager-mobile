@@ -1,7 +1,8 @@
 // =====================================================
-// ProjectTasksScreen — Liste des tâches d'un projet
-// Affiche toutes les tâches avec leur statut, priorité
-// et date d'échéance. Pull-to-refresh pour recharger.
+// ProjectTasksScreen — Liste des taches d'un projet
+// Affiche toutes les taches avec statut, priorite
+// et date d'echeance. Pull-to-refresh pour recharger.
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -16,13 +17,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTasks } from "@/hooks/useTasks";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 import { Task } from "@/types/task";
 
-// =====================
-// COULEURS PAR PRIORITÉ
-// Supporte les valeurs en français (API) et en anglais
-// =====================
+// Couleurs par priorite — fixes independamment du theme
 const PRIORITY_COLORS: Record<string, string> = {
   haute: Colors.priorityHigh,
   high: Colors.priorityHigh,
@@ -36,25 +35,24 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 // =====================================================
 // TaskItem — Carte tache cliquable dans la liste
-// Redirige vers le detail de la tache au clic
-// Affiche : statut, nom, priorite, date echeance
 // =====================================================
 function TaskItem({ task }: { task: Task }) {
-  // Hook de navigation pour aller vers le detail
   const router = useRouter();
-  // Couleur selon la priorite de la tache
-  const priorityColor = PRIORITY_COLORS[task.priority] ?? Colors.textTertiary;
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
+  const priorityColor = PRIORITY_COLORS[task.priority] ?? theme.textTertiary;
 
   return (
-    // Carte cliquable — navigue vers /(app)/tasks/[id]
     <TouchableOpacity
-      style={styles.taskCard}
+      style={[
+        styles.taskCard,
+        { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+      ]}
       onPress={() => router.push(`/(app)/tasks/${task.id}` as any)}
       activeOpacity={0.7}
     >
-      {/* En-tete : point de statut + nom de la tache */}
+      {/* En-tete : point de statut + nom */}
       <View style={styles.taskHeader}>
-        {/* Point vert = termine, orange = en cours, gris = a faire */}
         <View
           style={[
             styles.statusDot,
@@ -63,13 +61,16 @@ function TaskItem({ task }: { task: Task }) {
                 ? Colors.success
                 : task.inProgress
                   ? Colors.warning
-                  : Colors.textTertiary,
+                  : theme.textTertiary,
             },
           ]}
         />
-        {/* Nom barre si la tache est terminee */}
         <Text
-          style={[styles.taskName, task.done && styles.taskDone]}
+          style={[
+            styles.taskName,
+            { color: theme.textPrimary },
+            task.done && styles.taskDone,
+          ]}
           numberOfLines={2}
         >
           {task.name}
@@ -78,7 +79,6 @@ function TaskItem({ task }: { task: Task }) {
 
       {/* Pied de carte : priorite + date + statut */}
       <View style={styles.taskFooter}>
-        {/* Badge de priorite colore */}
         <View
           style={[
             styles.priorityBadge,
@@ -89,14 +89,12 @@ function TaskItem({ task }: { task: Task }) {
             {task.priority}
           </Text>
         </View>
-        {/* Date d'echeance si definie */}
         {task.dueDate && (
-          <Text style={styles.dueDate}>
+          <Text style={[styles.dueDate, { color: theme.textSecondary }]}>
             📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
           </Text>
         )}
-        {/* Statut textuel */}
-        <Text style={styles.statusText}>
+        <Text style={[styles.statusText, { color: theme.textSecondary }]}>
           {task.done
             ? "✅ Termine"
             : task.inProgress
@@ -107,64 +105,74 @@ function TaskItem({ task }: { task: Task }) {
     </TouchableOpacity>
   );
 }
+
 // =====================
-// ÉCRAN PRINCIPAL
+// ECRAN PRINCIPAL
 // =====================
 export default function ProjectTasksScreen() {
-  // Récupère l'ID du projet depuis l'URL (ex: /projects/3/tasks)
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-
-  // Hook React Query — charge les tâches du projet depuis l'API
-  // isFetching = true pendant le pull-to-refresh
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
   const { data: tasks, isLoading, refetch, isFetching } = useTasks(Number(id));
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       {/* En-tete avec bouton retour et bouton creer */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.backgroundPrimary,
+            borderBottomColor: theme.border,
+          },
+        ]}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Text style={styles.backText}>← Retour</Text>
+          <Text style={[styles.backText, { color: theme.primary }]}>
+            ← Retour
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Tâches</Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Taches</Text>
         <TouchableOpacity
           onPress={() =>
             router.push(`/(app)/projects/${id}/create-task` as any)
           }
-          style={styles.addButton}
+          style={[styles.addButton, { backgroundColor: theme.primary }]}
         >
           <Text style={styles.addButtonText}>+ Nouveau</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Indicateur de chargement au premier chargement */}
+      {/* Indicateur de chargement */}
       {isLoading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       ) : (
-        // Liste des tâches avec pull-to-refresh
         <FlatList
           data={tasks}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => <TaskItem task={item} />}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
-          // Pull-to-refresh : tirer vers le bas pour recharger
           refreshControl={
             <RefreshControl
               refreshing={isFetching}
               onRefresh={refetch}
-              tintColor={Colors.primary}
+              tintColor={theme.primary}
             />
           }
-          // Message affiché si aucune tâche
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyText}>Aucune tâche pour ce projet</Text>
+              <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
+                Aucune tache pour ce projet
+              </Text>
             </View>
           }
         />
@@ -174,56 +182,29 @@ export default function ProjectTasksScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  // En-tête de la page
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.primary },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  count: { fontSize: 14, color: Colors.textSecondary },
-
-  // Liste
+  backText: { fontSize: 15 },
+  title: { fontSize: 18, fontWeight: "600", flex: 1 },
   list: { padding: 16, gap: 10 },
-
-  // Carte tâche
-  taskCard: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderRadius: 12,
-    padding: 14,
-    gap: 10,
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
+  taskCard: { borderRadius: 12, padding: 14, gap: 10, borderWidth: 0.5 },
   taskHeader: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   statusDot: { width: 10, height: 10, borderRadius: 5, marginTop: 3 },
-  taskName: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  taskDone: { textDecorationLine: "line-through", color: Colors.textTertiary },
-
-  // Pied de carte
+  taskName: { fontSize: 14, fontWeight: "500", flex: 1 },
+  taskDone: { textDecorationLine: "line-through" },
   taskFooter: {
     flexDirection: "row",
     alignItems: "center",
@@ -232,18 +213,10 @@ const styles = StyleSheet.create({
   },
   priorityBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   priorityText: { fontSize: 11, fontWeight: "600" },
-  dueDate: { fontSize: 11, color: Colors.textSecondary },
-  statusText: { fontSize: 11, color: Colors.textSecondary, marginLeft: "auto" },
-
-  // État vide
+  dueDate: { fontSize: 11 },
+  statusText: { fontSize: 11, marginLeft: "auto" },
   empty: { padding: 40, alignItems: "center" },
-  emptyText: { fontSize: 15, color: Colors.textTertiary },
-
-  addButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-  },
+  emptyText: { fontSize: 15 },
+  addButton: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   addButtonText: { fontSize: 13, color: "#FFFFFF", fontWeight: "600" },
 });

@@ -1,7 +1,8 @@
 // =====================================================
-// TasksScreen — Mes tâches
-// Affiche toutes les tâches de tous les projets
-// de l'utilisateur connecté, avec filtres par statut
+// TasksScreen — Mes taches
+// Affiche toutes les taches de tous les projets
+// avec filtres par statut
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -17,22 +18,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useTasks } from "@/hooks/useTasks";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 import { Task } from "@/types/task";
 
-// =====================
-// FILTRES DISPONIBLES
-// =====================
+// Filtres disponibles
 const FILTERS = [
   { id: "all", label: "Toutes" },
-  { id: "todo", label: "À faire" },
+  { id: "todo", label: "A faire" },
   { id: "inProgress", label: "En cours" },
-  { id: "done", label: "Terminées" },
+  { id: "done", label: "Terminees" },
 ];
 
-// =====================
-// COULEURS PAR PRIORITÉ
-// =====================
+// Couleurs par priorite — fixes independamment du theme
 const PRIORITY_COLORS: Record<string, string> = {
   haute: Colors.priorityHigh,
   high: Colors.priorityHigh,
@@ -45,15 +43,20 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 // =====================
-// COMPOSANT CARTE TÂCHE
+// CARTE TACHE
 // =====================
 function TaskCard({ task }: { task: Task }) {
   const router = useRouter();
-  const priorityColor = PRIORITY_COLORS[task.priority] ?? Colors.textTertiary;
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
+  const priorityColor = PRIORITY_COLORS[task.priority] ?? theme.textTertiary;
 
   return (
     <TouchableOpacity
-      style={styles.taskCard}
+      style={[
+        styles.taskCard,
+        { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+      ]}
       onPress={() => router.push(`/(app)/tasks/${task.id}` as any)}
       activeOpacity={0.7}
     >
@@ -66,18 +69,24 @@ function TaskCard({ task }: { task: Task }) {
                 ? Colors.success
                 : task.inProgress
                   ? Colors.warning
-                  : Colors.textTertiary,
+                  : theme.textTertiary,
             },
           ]}
         />
         <Text
-          style={[styles.taskName, task.done && styles.taskDone]}
+          style={[
+            styles.taskName,
+            { color: theme.textPrimary },
+            task.done && {
+              textDecorationLine: "line-through",
+              color: theme.textTertiary,
+            },
+          ]}
           numberOfLines={2}
         >
           {task.name}
         </Text>
       </View>
-
       <View style={styles.taskFooter}>
         <View
           style={[
@@ -90,11 +99,11 @@ function TaskCard({ task }: { task: Task }) {
           </Text>
         </View>
         {task.dueDate && (
-          <Text style={styles.dueDate}>
+          <Text style={[styles.dueDate, { color: theme.textSecondary }]}>
             📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
           </Text>
         )}
-        <Text style={styles.statusText}>
+        <Text style={[styles.statusText, { color: theme.textSecondary }]}>
           {task.done
             ? "✅ Termine"
             : task.inProgress
@@ -107,30 +116,34 @@ function TaskCard({ task }: { task: Task }) {
 }
 
 // =====================
-// ÉCRAN PRINCIPAL
+// ECRAN PRINCIPAL
 // =====================
 export default function TasksScreen() {
-  // Filtre actif — 'all' par défaut
   const [activeFilter, setActiveFilter] = useState("all");
-
-  // Charge toutes les tâches sans filtre de projet
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
   const { data: tasks, isLoading, refetch, isFetching } = useTasks();
 
-  // Filtre les tâches selon le filtre actif
   const filteredTasks =
     tasks?.filter((task) => {
       if (activeFilter === "todo") return !task.done && !task.inProgress;
       if (activeFilter === "inProgress") return task.inProgress && !task.done;
       if (activeFilter === "done") return task.done;
-      return true; // 'all'
+      return true;
     }) ?? [];
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* En-tête */}
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
+      {/* En-tete */}
       <View style={styles.header}>
-        <Text style={styles.title}>Mes tâches</Text>
-        <Text style={styles.count}>{filteredTasks.length}</Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>
+          Mes taches
+        </Text>
+        <Text style={[styles.count, { color: theme.textSecondary }]}>
+          {filteredTasks.length}
+        </Text>
       </View>
 
       {/* Barre de filtres */}
@@ -140,13 +153,21 @@ export default function TasksScreen() {
             key={filter.id}
             style={[
               styles.filterButton,
-              activeFilter === filter.id && styles.filterButtonActive,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+              activeFilter === filter.id && {
+                backgroundColor: theme.primary,
+                borderColor: theme.primary,
+              },
             ]}
             onPress={() => setActiveFilter(filter.id)}
           >
             <Text
               style={[
                 styles.filterText,
+                { color: theme.textSecondary },
                 activeFilter === filter.id && styles.filterTextActive,
               ]}
             >
@@ -159,7 +180,7 @@ export default function TasksScreen() {
       {/* Indicateur de chargement */}
       {isLoading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       ) : (
         <FlatList
@@ -172,12 +193,14 @@ export default function TasksScreen() {
             <RefreshControl
               refreshing={isFetching}
               onRefresh={refetch}
-              tintColor={Colors.primary}
+              tintColor={theme.primary}
             />
           }
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyText}>Aucune tâche</Text>
+              <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
+                Aucune tache
+              </Text>
             </View>
           }
         />
@@ -187,13 +210,11 @@ export default function TasksScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  // En-tête
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -201,10 +222,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
-  title: { fontSize: 24, fontWeight: "700", color: Colors.textPrimary },
-  count: { fontSize: 14, color: Colors.textSecondary },
-
-  // Filtres
+  title: { fontSize: 24, fontWeight: "700" },
+  count: { fontSize: 14 },
   filtersContainer: {
     flexDirection: "row",
     paddingHorizontal: 16,
@@ -215,38 +234,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: Colors.backgroundPrimary,
     borderWidth: 0.5,
-    borderColor: Colors.border,
   },
-  filterButtonActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  filterText: { fontSize: 13, color: Colors.textSecondary },
+  filterText: { fontSize: 13 },
   filterTextActive: { color: "#FFFFFF", fontWeight: "500" },
-
-  // Liste
   list: { padding: 16, gap: 10 },
-
-  // Carte tâche
-  taskCard: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderRadius: 12,
-    padding: 14,
-    gap: 10,
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
+  taskCard: { borderRadius: 12, padding: 14, gap: 10, borderWidth: 0.5 },
   taskHeader: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   statusDot: { width: 10, height: 10, borderRadius: 5, marginTop: 3 },
-  taskName: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  taskDone: { textDecorationLine: "line-through", color: Colors.textTertiary },
+  taskName: { fontSize: 14, fontWeight: "500", flex: 1 },
   taskFooter: {
     flexDirection: "row",
     alignItems: "center",
@@ -255,10 +251,8 @@ const styles = StyleSheet.create({
   },
   priorityBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   priorityText: { fontSize: 11, fontWeight: "600" },
-  dueDate: { fontSize: 11, color: Colors.textSecondary },
-  statusText: { fontSize: 11, color: Colors.textSecondary, marginLeft: "auto" },
-
-  // État vide
+  dueDate: { fontSize: 11 },
+  statusText: { fontSize: 11, marginLeft: "auto" },
   empty: { padding: 40, alignItems: "center" },
-  emptyText: { fontSize: 15, color: Colors.textTertiary },
+  emptyText: { fontSize: 15 },
 });

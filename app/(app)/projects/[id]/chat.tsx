@@ -3,6 +3,7 @@
 // Affiche les messages en temps reel
 // Permet d'envoyer et supprimer des messages
 // Note : temps reel via Mercure disponible en dev build
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -23,14 +24,14 @@ import { useState, useEffect, useRef } from "react";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
 import { useAuthStore } from "@/stores/authStore";
-import { Colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 
 // Type pour un message de chat
 interface ChatMessage {
   id: number;
   content: string;
-  senderEmail: string; // Email de l'expediteur
-  senderName: string; // Nom de l'expediteur
+  senderEmail: string;
+  senderName: string;
   projectId: number;
   createdAt: string;
 }
@@ -40,25 +41,21 @@ export default function ChatScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const flatListRef = useRef<FlatList>(null);
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
-  // Etats
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  // Charge les messages au demarrage
   useEffect(() => {
     loadMessages();
   }, [id]);
 
-  // Charge les messages depuis l'API
   const loadMessages = async () => {
     try {
       const { data } = await apiClient.get(API_ENDPOINTS.CHAT);
-      console.log("Messages chat:", JSON.stringify(data));
-      console.log("ProjectId filtre:", Number(id));
-      // L'API ne retourne pas de projectId — on affiche tous les messages
       setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log("Erreur chargement chat:", error);
@@ -67,27 +64,21 @@ export default function ChatScreen() {
     }
   };
 
-  // Envoie un nouveau message
   const handleSend = async () => {
     if (!newMessage.trim() || isSending) return;
-
     const messageText = newMessage.trim();
     setNewMessage("");
     setIsSending(true);
-
     try {
       const { data } = await apiClient.post(API_ENDPOINTS.CHAT, {
         content: messageText,
         projectId: Number(id),
       });
-      // Ajoute le message a la liste
       setMessages((prev) => [...prev, data]);
-      // Scroll vers le bas
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
     } catch (error) {
-      console.log("Erreur envoi message:", error);
       Alert.alert("Erreur", "Impossible d'envoyer le message.");
       setNewMessage(messageText);
     } finally {
@@ -95,7 +86,6 @@ export default function ChatScreen() {
     }
   };
 
-  // Supprime un message avec confirmation
   const handleDelete = async (messageId: number) => {
     Alert.alert("Supprimer", "Voulez-vous supprimer ce message ?", [
       { text: "Annuler", style: "cancel" },
@@ -114,47 +104,60 @@ export default function ChatScreen() {
     ]);
   };
 
-  // Verifie si le message appartient a l'utilisateur connecte
-  const isMyMessage = (message: ChatMessage) => {
-    return message.senderEmail === user?.email;
-  };
-
-  // Formate l'heure d'un message
-  const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleTimeString("fr-FR", {
+  const isMyMessage = (message: ChatMessage) =>
+    message.senderEmail === user?.email;
+  const formatTime = (dateStr: string) =>
+    new Date(dateStr).toLocaleTimeString("fr-FR", {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: theme.backgroundTertiary },
+        ]}
+      >
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         {/* En-tete */}
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderBottomColor: theme.border,
+            },
+          ]}
+        >
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
           >
-            <Text style={styles.backText}>← Retour</Text>
+            <Text style={[styles.backText, { color: theme.primary }]}>
+              ← Retour
+            </Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Chat</Text>
-          {/* Bouton rafraichir */}
+          <Text style={[styles.title, { color: theme.textPrimary }]}>Chat</Text>
           <TouchableOpacity onPress={loadMessages} style={styles.refreshButton}>
-            <Text style={styles.refreshText}>↻</Text>
+            <Text style={[styles.refreshText, { color: theme.primary }]}>
+              ↻
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -162,8 +165,10 @@ export default function ChatScreen() {
         {messages.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>💬</Text>
-            <Text style={styles.emptyText}>Aucun message</Text>
-            <Text style={styles.emptySubtext}>
+            <Text style={[styles.emptyText, { color: theme.textPrimary }]}>
+              Aucun message
+            </Text>
+            <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
               Soyez le premier a envoyer un message !
             </Text>
           </View>
@@ -188,33 +193,55 @@ export default function ChatScreen() {
                       mine ? styles.myMessageRow : styles.theirMessageRow,
                     ]}
                   >
-                    {/* Bulle de message */}
                     <View
                       style={[
                         styles.messageBubble,
-                        mine ? styles.myBubble : styles.theirBubble,
+                        mine
+                          ? [
+                              styles.myBubble,
+                              { backgroundColor: theme.primary },
+                            ]
+                          : [
+                              styles.theirBubble,
+                              {
+                                backgroundColor: theme.backgroundPrimary,
+                                borderColor: theme.border,
+                              },
+                            ],
                       ]}
                     >
-                      {/* Nom de l'auteur pour les messages des autres */}
                       {!mine && (
-                        <Text style={styles.authorName}>
+                        <Text
+                          style={[
+                            styles.authorName,
+                            { color: theme.textTertiary },
+                          ]}
+                        >
                           {item.senderName ?? item.senderEmail}
                         </Text>
                       )}
-                      {/* Contenu du message */}
                       <Text
                         style={[
                           styles.messageText,
-                          mine ? styles.myMessageText : styles.theirMessageText,
+                          mine
+                            ? styles.myMessageText
+                            : [
+                                styles.theirMessageText,
+                                { color: theme.textPrimary },
+                              ],
                         ]}
                       >
                         {item.content}
                       </Text>
-                      {/* Heure du message */}
                       <Text
                         style={[
                           styles.messageTime,
-                          mine ? styles.myMessageTime : styles.theirMessageTime,
+                          mine
+                            ? styles.myMessageTime
+                            : [
+                                styles.theirMessageTime,
+                                { color: theme.textTertiary },
+                              ],
                         ]}
                       >
                         {formatTime(item.createdAt)}
@@ -228,20 +255,35 @@ export default function ChatScreen() {
         )}
 
         {/* Zone de saisie */}
-        <View style={styles.inputContainer}>
+        <View
+          style={[
+            styles.inputContainer,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderTopColor: theme.border,
+            },
+          ]}
+        >
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                borderColor: theme.border,
+                color: theme.textPrimary,
+                backgroundColor: theme.backgroundSecondary,
+              },
+            ]}
             placeholder="Ecrire un message..."
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={theme.textTertiary}
             value={newMessage}
             onChangeText={setNewMessage}
             multiline
             maxLength={500}
           />
-          {/* Bouton envoyer */}
           <TouchableOpacity
             style={[
               styles.sendButton,
+              { backgroundColor: theme.primary },
               (!newMessage.trim() || isSending) && styles.sendButtonDisabled,
             ]}
             onPress={handleSend}
@@ -260,103 +302,63 @@ export default function ChatScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  // En-tete
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.primary },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: Colors.textPrimary,
-    flex: 1,
-    marginLeft: 12,
-  },
+  backText: { fontSize: 15 },
+  title: { fontSize: 18, fontWeight: "600", flex: 1, marginLeft: 12 },
   refreshButton: { padding: 8 },
-  refreshText: { fontSize: 20, color: Colors.primary },
-
-  // Messages
+  refreshText: { fontSize: 20 },
   messagesList: { padding: 16, gap: 8 },
   messageRow: { marginBottom: 8 },
   myMessageRow: { alignItems: "flex-end" },
   theirMessageRow: { alignItems: "flex-start" },
-  messageBubble: {
-    maxWidth: "75%",
-    padding: 12,
-    borderRadius: 16,
-    gap: 4,
-  },
-  myBubble: {
-    backgroundColor: Colors.primary,
-    borderBottomRightRadius: 4,
-  },
-  theirBubble: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderBottomLeftRadius: 4,
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
-  authorName: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: Colors.textTertiary,
-    marginBottom: 2,
-  },
+  messageBubble: { maxWidth: "75%", padding: 12, borderRadius: 16, gap: 4 },
+  myBubble: { borderBottomRightRadius: 4 },
+  theirBubble: { borderBottomLeftRadius: 4, borderWidth: 0.5 },
+  authorName: { fontSize: 11, fontWeight: "600", marginBottom: 2 },
   messageText: { fontSize: 14, lineHeight: 20 },
   myMessageText: { color: "#FFFFFF" },
-  theirMessageText: { color: Colors.textPrimary },
+  theirMessageText: {},
   messageTime: { fontSize: 10, alignSelf: "flex-end" },
   myMessageTime: { color: "rgba(255,255,255,0.7)" },
-  theirMessageTime: { color: Colors.textTertiary },
-
-  // Zone saisie
+  theirMessageTime: {},
   inputContainer: {
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 8,
     padding: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderTopWidth: 0.5,
-    borderTopColor: Colors.border,
   },
   input: {
     flex: 1,
     minHeight: 40,
     maxHeight: 100,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 14,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.backgroundSecondary,
   },
   sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
   },
   sendButtonDisabled: { opacity: 0.4 },
   sendButtonText: { fontSize: 18, color: "#FFFFFF", fontWeight: "700" },
-
-  // Etat vide
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -364,10 +366,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyIcon: { fontSize: 48 },
-  emptyText: { fontSize: 18, fontWeight: "600", color: Colors.textPrimary },
-  emptySubtext: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: "center",
-  },
+  emptyText: { fontSize: 18, fontWeight: "600" },
+  emptySubtext: { fontSize: 14, textAlign: "center" },
 });

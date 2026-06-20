@@ -2,6 +2,7 @@
 // EditProfileScreen — Modifier son profil
 // Permet de changer son nom, email et mot de passe
 // Utilise la route PUT /api/auth/profile
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -20,32 +21,27 @@ import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 
 export default function EditProfileScreen() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
-  // Champs du formulaire pre-remplis avec les donnees actuelles
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
-
-  // Champs mot de passe — vides par defaut pour securite
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Soumet les modifications du profil
   const handleUpdate = async () => {
-    // Validation email obligatoire
     if (!email.trim()) {
       Alert.alert("Champ requis", "L'email est obligatoire.");
       return;
     }
-
-    // Validation mot de passe si l'utilisateur veut le changer
     if (newPassword || confirmPassword) {
       if (!currentPassword) {
         Alert.alert("Champ requis", "Entrez votre mot de passe actuel.");
@@ -60,37 +56,24 @@ export default function EditProfileScreen() {
         return;
       }
     }
-
     setIsSubmitting(true);
     try {
-      // Prepare le payload — inclut le mot de passe seulement si renseigne
-      const payload: any = {
-        name: name.trim() || null,
-        email: email.trim(),
-      };
-
-      // Ajoute le mot de passe au payload seulement si l'utilisateur veut le changer
+      const payload: any = { name: name.trim() || null, email: email.trim() };
       if (newPassword && currentPassword) {
         payload.password = newPassword;
         payload.currentPassword = currentPassword;
       }
-
-      // Envoie les modifications au backend Symfony
       const { data } = await apiClient.put(
         API_ENDPOINTS.UPDATE_PROFILE,
         payload,
       );
-
-      // Met a jour le store avec les nouvelles informations
       if (user) {
         setUser({ ...user, name: data.name, email: data.email });
       }
-
       Alert.alert("Succes", "Profil mis a jour !", [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error: any) {
-      console.log("Erreur modification profil:", error?.response?.data);
       Alert.alert("Erreur", "Impossible de modifier le profil.");
     } finally {
       setIsSubmitting(false);
@@ -98,20 +81,38 @@ export default function EditProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       {/* En-tete */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.backgroundPrimary,
+            borderBottomColor: theme.border,
+          },
+        ]}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Text style={styles.backText}>✕ Annuler</Text>
+          <Text style={[styles.backText, { color: Colors.danger }]}>
+            ✕ Annuler
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Modifier le profil</Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>
+          Modifier le profil
+        </Text>
         <TouchableOpacity
           onPress={handleUpdate}
           disabled={isSubmitting}
-          style={[styles.saveButton, isSubmitting && styles.saveButtonDisabled]}
+          style={[
+            styles.saveButton,
+            { backgroundColor: theme.primary },
+            isSubmitting && styles.saveButtonDisabled,
+          ]}
         >
           {isSubmitting ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
@@ -127,31 +128,55 @@ export default function EditProfileScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* Section informations personnelles */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Informations personnelles</Text>
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+            Informations personnelles
+          </Text>
 
-          {/* Champ nom */}
           <View style={styles.field}>
-            <Text style={styles.label}>Nom</Text>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>
+              Nom
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                  color: theme.textPrimary,
+                },
+              ]}
               placeholder="Votre nom complet..."
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={theme.textTertiary}
               value={name}
               onChangeText={setName}
               maxLength={100}
             />
           </View>
 
-          {/* Champ email */}
           <View style={styles.field}>
-            <Text style={styles.label}>
-              Email <Text style={styles.required}>*</Text>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>
+              Email <Text style={{ color: Colors.danger }}>*</Text>
             </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                  color: theme.textPrimary,
+                },
+              ]}
               placeholder="votre@email.com"
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={theme.textTertiary}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -162,19 +187,37 @@ export default function EditProfileScreen() {
         </View>
 
         {/* Section changement de mot de passe */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Changer le mot de passe</Text>
-          <Text style={styles.sectionSubtitle}>
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+            Changer le mot de passe
+          </Text>
+          <Text style={[styles.sectionSubtitle, { color: theme.textTertiary }]}>
             Laissez vide si vous ne souhaitez pas changer votre mot de passe
           </Text>
 
-          {/* Mot de passe actuel */}
           <View style={styles.field}>
-            <Text style={styles.label}>Mot de passe actuel</Text>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>
+              Mot de passe actuel
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                  color: theme.textPrimary,
+                },
+              ]}
               placeholder="••••••••"
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={theme.textTertiary}
               value={currentPassword}
               onChangeText={setCurrentPassword}
               secureTextEntry
@@ -182,13 +225,21 @@ export default function EditProfileScreen() {
             />
           </View>
 
-          {/* Nouveau mot de passe */}
           <View style={styles.field}>
-            <Text style={styles.label}>Nouveau mot de passe</Text>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>
+              Nouveau mot de passe
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                  color: theme.textPrimary,
+                },
+              ]}
               placeholder="Minimum 6 caracteres"
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={theme.textTertiary}
               value={newPassword}
               onChangeText={setNewPassword}
               secureTextEntry
@@ -196,25 +247,29 @@ export default function EditProfileScreen() {
             />
           </View>
 
-          {/* Confirmation nouveau mot de passe */}
           <View style={styles.field}>
-            <Text style={styles.label}>Confirmer le mot de passe</Text>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>
+              Confirmer le mot de passe
+            </Text>
             <TextInput
               style={[
                 styles.input,
-                // Rouge si les mots de passe ne correspondent pas
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                  color: theme.textPrimary,
+                },
                 confirmPassword && newPassword !== confirmPassword
                   ? styles.inputError
                   : null,
               ]}
               placeholder="Repetez le nouveau mot de passe"
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={theme.textTertiary}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
               maxLength={100}
             />
-            {/* Message d'erreur si les mots de passe ne correspondent pas */}
             {confirmPassword && newPassword !== confirmPassword && (
               <Text style={styles.errorText}>
                 Les mots de passe ne correspondent pas
@@ -224,8 +279,16 @@ export default function EditProfileScreen() {
         </View>
 
         {/* Info sur le role */}
-        <View style={styles.infoBox}>
-          <Text style={styles.infoText}>
+        <View
+          style={[
+            styles.infoBox,
+            {
+              backgroundColor: Colors.info + "15",
+              borderColor: Colors.info + "40",
+            },
+          ]}
+        >
+          <Text style={[styles.infoText, { color: Colors.info }]}>
             💡 Le role ne peut pas etre modifie ici.
           </Text>
         </View>
@@ -235,87 +298,39 @@ export default function EditProfileScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
-
-  // En-tete
+  container: { flex: 1 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.danger },
-  title: { fontSize: 17, fontWeight: "600", color: Colors.textPrimary },
-  saveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-  },
+  backText: { fontSize: 15 },
+  title: { fontSize: 17, fontWeight: "600" },
+  saveButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   saveButtonDisabled: { opacity: 0.4 },
   saveButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
-
-  // Contenu
   content: { padding: 20, gap: 16 },
-
-  // Sections
-  section: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderRadius: 16,
-    padding: 16,
-    gap: 14,
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: Colors.textPrimary,
-  },
-  sectionSubtitle: {
-    fontSize: 12,
-    color: Colors.textTertiary,
-    marginTop: -8,
-  },
-
-  // Champs
+  section: { borderRadius: 16, padding: 16, gap: 14, borderWidth: 0.5 },
+  sectionTitle: { fontSize: 15, fontWeight: "600" },
+  sectionSubtitle: { fontSize: 12, marginTop: -8 },
   field: { gap: 6 },
-  label: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
-  required: { color: Colors.danger },
+  label: { fontSize: 14, fontWeight: "500" },
   input: {
-    backgroundColor: Colors.backgroundSecondary,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: Colors.textPrimary,
   },
-  inputError: {
-    borderColor: Colors.danger,
-  },
-  errorText: {
-    fontSize: 12,
-    color: Colors.danger,
-    marginTop: 2,
-  },
-
-  // Info box
-  infoBox: {
-    backgroundColor: Colors.info + "15",
-    borderRadius: 10,
-    padding: 14,
-    borderWidth: 0.5,
-    borderColor: Colors.info + "40",
-  },
-  infoText: { fontSize: 13, color: Colors.info, lineHeight: 18 },
+  inputError: { borderColor: Colors.danger },
+  errorText: { fontSize: 12, color: Colors.danger, marginTop: 2 },
+  infoBox: { borderRadius: 10, padding: 14, borderWidth: 0.5 },
+  infoText: { fontSize: 13, lineHeight: 18 },
 });

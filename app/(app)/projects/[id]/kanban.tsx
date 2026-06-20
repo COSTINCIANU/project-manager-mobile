@@ -3,6 +3,7 @@
 // Affiche les taches organisees en 3 colonnes :
 // A faire / En cours / Terminees
 // Boutons pour deplacer les taches entre colonnes
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -18,10 +19,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTasks, useUpdateTask } from "@/hooks/useTasks";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 import { Task } from "@/types/task";
 
-// Couleurs par priorite
+// Couleurs par priorite — fixes independamment du theme
 const PRIORITY_COLORS: Record<string, string> = {
   haute: Colors.priorityHigh,
   high: Colors.priorityHigh,
@@ -37,8 +39,6 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 // =====================================================
 // KanbanCard — Carte tache avec boutons de deplacement
-// Permet de changer le statut de la tache
-// en cliquant sur les fleches gauche/droite
 // =====================================================
 function KanbanCard({
   task,
@@ -53,27 +53,31 @@ function KanbanCard({
   canMoveLeft: boolean;
   canMoveRight: boolean;
 }) {
-  const priorityColor = PRIORITY_COLORS[task.priority] ?? Colors.textTertiary;
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
+  const priorityColor = PRIORITY_COLORS[task.priority] ?? theme.textTertiary;
 
   return (
-    <View style={styles.card}>
-      {/* Barre de priorite en haut de la carte */}
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+      ]}
+    >
+      {/* Barre de priorite en haut */}
       <View style={[styles.priorityBar, { backgroundColor: priorityColor }]} />
-
       <View style={styles.cardContent}>
-        {/* Nom de la tache */}
-        <Text style={styles.cardTitle} numberOfLines={2}>
+        <Text
+          style={[styles.cardTitle, { color: theme.textPrimary }]}
+          numberOfLines={2}
+        >
           {task.name}
         </Text>
-
-        {/* Date d'echeance si definie */}
         {task.dueDate && (
-          <Text style={styles.cardDate}>
+          <Text style={[styles.cardDate, { color: theme.textSecondary }]}>
             📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
           </Text>
         )}
-
-        {/* Badge de priorite */}
         <View
           style={[
             styles.priorityBadge,
@@ -84,31 +88,33 @@ function KanbanCard({
             {task.priority}
           </Text>
         </View>
-
-        {/* Boutons de deplacement entre colonnes */}
+        {/* Boutons de deplacement */}
         <View style={styles.moveButtons}>
-          {/* Bouton deplacer vers la gauche */}
           <TouchableOpacity
             onPress={onMoveLeft}
             disabled={!canMoveLeft}
             style={[
               styles.moveButton,
+              { backgroundColor: theme.primary + "15" },
               !canMoveLeft && styles.moveButtonDisabled,
             ]}
           >
-            <Text style={styles.moveButtonText}>←</Text>
+            <Text style={[styles.moveButtonText, { color: theme.primary }]}>
+              ←
+            </Text>
           </TouchableOpacity>
-
-          {/* Bouton deplacer vers la droite */}
           <TouchableOpacity
             onPress={onMoveRight}
             disabled={!canMoveRight}
             style={[
               styles.moveButton,
+              { backgroundColor: theme.primary + "15" },
               !canMoveRight && styles.moveButtonDisabled,
             ]}
           >
-            <Text style={styles.moveButtonText}>→</Text>
+            <Text style={[styles.moveButtonText, { color: theme.primary }]}>
+              →
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -122,6 +128,7 @@ function KanbanCard({
 function KanbanColumn({
   label,
   color,
+  darkColor,
   tasks,
   onMoveLeft,
   onMoveRight,
@@ -129,38 +136,54 @@ function KanbanColumn({
 }: {
   label: string;
   color: string;
+  darkColor: string;
   tasks: Task[];
   onMoveLeft: (task: Task) => void;
   onMoveRight: (task: Task) => void;
   columnIndex: number;
 }) {
+  // Hook theme pour les couleurs adaptees
+  const { theme, isDark } = useTheme();
+
   return (
-    <View style={[styles.column, { backgroundColor: color }]}>
-      {/* En-tete de la colonne avec compteur */}
+    <View
+      style={[styles.column, { backgroundColor: isDark ? darkColor : color }]}
+    >
       <View style={styles.columnHeader}>
-        <Text style={styles.columnLabel}>{label}</Text>
-        <View style={styles.columnCount}>
-          <Text style={styles.columnCountText}>{tasks.length}</Text>
+        <Text style={[styles.columnLabel, { color: theme.textPrimary }]}>
+          {label}
+        </Text>
+        <View
+          style={[
+            styles.columnCount,
+            { backgroundColor: theme.backgroundPrimary },
+          ]}
+        >
+          <Text
+            style={[styles.columnCountText, { color: theme.textSecondary }]}
+          >
+            {tasks.length}
+          </Text>
         </View>
       </View>
-
-      {/* Liste des cartes */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.columnContent}
       >
         {tasks.length === 0 ? (
           <View style={styles.emptyColumn}>
-            <Text style={styles.emptyColumnText}>Aucune tache</Text>
+            <Text
+              style={[styles.emptyColumnText, { color: theme.textTertiary }]}
+            >
+              Aucune tache
+            </Text>
           </View>
         ) : (
           tasks.map((task) => (
             <KanbanCard
               key={task.id}
               task={task}
-              // Peut aller a gauche si pas dans la premiere colonne
               canMoveLeft={columnIndex > 0}
-              // Peut aller a droite si pas dans la derniere colonne
               canMoveRight={columnIndex < 2}
               onMoveLeft={() => onMoveLeft(task)}
               onMoveRight={() => onMoveRight(task)}
@@ -180,47 +203,36 @@ export default function KanbanScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const updateTask = useUpdateTask();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
-  // Charge les taches du projet filtre par projectId
   const { data: tasks, isLoading } = useTasks(Number(id));
 
-  // Repartit les taches dans les 3 colonnes
   const todoTasks = tasks?.filter((t) => !t.done && !t.inProgress) ?? [];
   const inProgressTasks = tasks?.filter((t) => t.inProgress && !t.done) ?? [];
   const doneTasks = tasks?.filter((t) => t.done) ?? [];
 
-  // Deplace une tache vers la colonne de gauche
+  // Deplace une tache vers la gauche
   const handleMoveLeft = async (task: Task) => {
     try {
       let payload = {};
-      if (task.inProgress) {
-        // En cours → A faire
-        payload = { done: false, inProgress: false };
-      } else if (task.done) {
-        // Termine → En cours
-        payload = { done: false, inProgress: true };
-      }
+      if (task.inProgress) payload = { done: false, inProgress: false };
+      else if (task.done) payload = { done: false, inProgress: true };
       await updateTask.mutateAsync({ id: task.id, payload: payload as any });
-      // Rafraichit la liste des taches
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       Alert.alert("Erreur", "Impossible de deplacer la tache.");
     }
   };
 
-  // Deplace une tache vers la colonne de droite
+  // Deplace une tache vers la droite
   const handleMoveRight = async (task: Task) => {
     try {
       let payload = {};
-      if (!task.inProgress && !task.done) {
-        // A faire → En cours
+      if (!task.inProgress && !task.done)
         payload = { done: false, inProgress: true };
-      } else if (task.inProgress) {
-        // En cours → Termine
-        payload = { done: true, inProgress: false };
-      }
+      else if (task.inProgress) payload = { done: true, inProgress: false };
       await updateTask.mutateAsync({ id: task.id, payload: payload as any });
-      // Rafraichit la liste des taches
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       Alert.alert("Erreur", "Impossible de deplacer la tache.");
@@ -228,25 +240,38 @@ export default function KanbanScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       {/* En-tete */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.backgroundPrimary,
+            borderBottomColor: theme.border,
+          },
+        ]}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Text style={styles.backText}>← Retour</Text>
+          <Text style={[styles.backText, { color: theme.primary }]}>
+            ← Retour
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Kanban</Text>
-        <Text style={styles.count}>{tasks?.length ?? 0} taches</Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Kanban</Text>
+        <Text style={[styles.count, { color: theme.textSecondary }]}>
+          {tasks?.length ?? 0} taches
+        </Text>
       </View>
 
       {isLoading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       ) : (
-        // Scroll horizontal pour naviguer entre les colonnes
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={true}
@@ -256,6 +281,7 @@ export default function KanbanScreen() {
           <KanbanColumn
             label="⏳ A faire"
             color="#F1F5F9"
+            darkColor="#1E293B"
             tasks={todoTasks}
             columnIndex={0}
             onMoveLeft={handleMoveLeft}
@@ -264,6 +290,7 @@ export default function KanbanScreen() {
           <KanbanColumn
             label="🔄 En cours"
             color="#EFF6FF"
+            darkColor="#1E3A5F"
             tasks={inProgressTasks}
             columnIndex={1}
             onMoveLeft={handleMoveLeft}
@@ -272,6 +299,7 @@ export default function KanbanScreen() {
           <KanbanColumn
             label="✅ Terminees"
             color="#F0FDF4"
+            darkColor="#14532D"
             tasks={doneTasks}
             columnIndex={2}
             onMoveLeft={handleMoveLeft}
@@ -284,85 +312,45 @@ export default function KanbanScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  // En-tete
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.primary },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  count: { fontSize: 13, color: Colors.textSecondary },
-
-  // Tableau Kanban
+  backText: { fontSize: 15 },
+  title: { fontSize: 18, fontWeight: "600", flex: 1 },
+  count: { fontSize: 13 },
   board: {
     paddingHorizontal: 12,
     paddingVertical: 16,
     gap: 12,
     alignItems: "flex-start",
   },
-
-  // Colonne
-  column: {
-    width: 280,
-    borderRadius: 12,
-    padding: 12,
-    height: 600,
-  },
+  column: { width: 280, borderRadius: 12, padding: 12, height: 600 },
   columnHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 12,
   },
-  columnLabel: { fontSize: 14, fontWeight: "600", color: Colors.textPrimary },
-  columnCount: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  columnCountText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: Colors.textSecondary,
-  },
+  columnLabel: { fontSize: 14, fontWeight: "600" },
+  columnCount: { borderRadius: 12, paddingHorizontal: 8, paddingVertical: 2 },
+  columnCountText: { fontSize: 12, fontWeight: "600" },
   columnContent: { gap: 8, paddingBottom: 8 },
-
-  // Carte tache
-  card: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderRadius: 10,
-    overflow: "hidden",
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
+  card: { borderRadius: 10, overflow: "hidden", borderWidth: 0.5 },
   priorityBar: { height: 3 },
   cardContent: { padding: 12, gap: 8 },
-  cardTitle: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: Colors.textPrimary,
-    lineHeight: 18,
-  },
-  cardDate: { fontSize: 11, color: Colors.textSecondary },
+  cardTitle: { fontSize: 13, fontWeight: "500", lineHeight: 18 },
+  cardDate: { fontSize: 11 },
   priorityBadge: {
     alignSelf: "flex-start",
     paddingHorizontal: 8,
@@ -370,24 +358,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   priorityText: { fontSize: 11, fontWeight: "600" },
-
-  // Boutons de deplacement
-  moveButtons: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 4,
-  },
+  moveButtons: { flexDirection: "row", gap: 8, marginTop: 4 },
   moveButton: {
     flex: 1,
     paddingVertical: 6,
-    backgroundColor: Colors.primary + "15",
     borderRadius: 8,
     alignItems: "center",
   },
   moveButtonDisabled: { opacity: 0.2 },
-  moveButtonText: { fontSize: 16, color: Colors.primary, fontWeight: "600" },
-
-  // Colonne vide
+  moveButtonText: { fontSize: 16, fontWeight: "600" },
   emptyColumn: { padding: 20, alignItems: "center" },
-  emptyColumnText: { fontSize: 13, color: Colors.textTertiary },
+  emptyColumnText: { fontSize: 13 },
 });

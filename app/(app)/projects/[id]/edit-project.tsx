@@ -1,7 +1,8 @@
 // =====================================================
 // EditProjectScreen — Modifier un projet existant
 // Formulaire pre-rempli avec les donnees du projet
-// Champs : nom, statut, couleur, description, dates
+// Champs : nom, statut, couleur
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -18,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useProject, useUpdateProject } from "@/hooks/useProjects";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 
 // Statuts disponibles pour un projet
@@ -27,7 +29,7 @@ const STATUSES = [
   { value: "archived", label: "📦 Archive" },
 ];
 
-// Couleurs disponibles pour un projet
+// Couleurs disponibles pour un projet — fixes independamment du theme
 const PROJECT_COLORS = [
   { value: "#6366F1", label: "Indigo" },
   { value: "#22C55E", label: "Vert" },
@@ -38,11 +40,11 @@ const PROJECT_COLORS = [
 ];
 
 export default function EditProjectScreen() {
-  // Recupere l'ID du projet depuis l'URL
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
-  // Charge le projet existant
   const { data: project, isLoading } = useProject(Number(id));
   const updateProject = useUpdateProject();
 
@@ -72,22 +74,16 @@ export default function EditProjectScreen() {
     try {
       await updateProject.mutateAsync({
         id: Number(id),
-        payload: {
-          name: name.trim(),
-          status: status as any,
-          color,
-        },
+        payload: { name: name.trim(), status: status as any, color },
       });
 
       Alert.alert("Succes", "Projet modifie avec succes !", [
         {
           text: "Voir les projets",
-          // Retourne a la liste des projets
           onPress: () => router.replace("/(app)/projects" as any),
         },
         {
           text: "Retour au projet",
-          // Retourne au detail du projet
           onPress: () => router.back(),
           style: "cancel",
         },
@@ -102,30 +98,50 @@ export default function EditProjectScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: theme.backgroundTertiary },
+        ]}
+      >
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       {/* En-tete */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.backgroundPrimary,
+            borderBottomColor: theme.border,
+          },
+        ]}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Text style={styles.backText}>✕ Annuler</Text>
+          <Text style={[styles.backText, { color: Colors.danger }]}>
+            ✕ Annuler
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Modifier le projet</Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>
+          Modifier le projet
+        </Text>
         <TouchableOpacity
           onPress={handleUpdate}
           disabled={isSubmitting || !name.trim()}
           style={[
             styles.saveButton,
+            { backgroundColor: theme.primary },
             (!name.trim() || isSubmitting) && styles.saveButtonDisabled,
           ]}
         >
@@ -144,13 +160,20 @@ export default function EditProjectScreen() {
       >
         {/* Nom du projet */}
         <View style={styles.field}>
-          <Text style={styles.label}>
-            Nom <Text style={styles.required}>*</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Nom <Text style={{ color: Colors.danger }}>*</Text>
           </Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+                color: theme.textPrimary,
+              },
+            ]}
             placeholder="Nom du projet..."
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={theme.textTertiary}
             value={name}
             onChangeText={setName}
             maxLength={100}
@@ -159,21 +182,34 @@ export default function EditProjectScreen() {
 
         {/* Statut du projet */}
         <View style={styles.field}>
-          <Text style={styles.label}>Statut</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Statut
+          </Text>
           <View style={styles.optionsRow}>
             {STATUSES.map((s) => (
               <TouchableOpacity
                 key={s.value}
                 style={[
                   styles.statusOption,
-                  status === s.value && styles.statusOptionActive,
+                  {
+                    borderColor: theme.border,
+                    backgroundColor: theme.backgroundPrimary,
+                  },
+                  status === s.value && {
+                    backgroundColor: theme.primary + "20",
+                    borderColor: theme.primary,
+                  },
                 ]}
                 onPress={() => setStatus(s.value)}
               >
                 <Text
                   style={[
                     styles.statusText,
-                    status === s.value && styles.statusTextActive,
+                    { color: theme.textSecondary },
+                    status === s.value && {
+                      color: theme.primary,
+                      fontWeight: "600",
+                    },
                   ]}
                 >
                   {s.label}
@@ -185,7 +221,9 @@ export default function EditProjectScreen() {
 
         {/* Couleur du projet */}
         <View style={styles.field}>
-          <Text style={styles.label}>Couleur</Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Couleur
+          </Text>
           <View style={styles.colorsRow}>
             {PROJECT_COLORS.map((c) => (
               <TouchableOpacity
@@ -197,7 +235,6 @@ export default function EditProjectScreen() {
                 ]}
                 onPress={() => setColor(c.value)}
               >
-                {/* Coche si couleur selectionnee */}
                 {color === c.value && <Text style={styles.colorCheck}>✓</Text>}
               </TouchableOpacity>
             ))}
@@ -209,71 +246,43 @@ export default function EditProjectScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  // En-tete
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.danger },
-  title: { fontSize: 17, fontWeight: "600", color: Colors.textPrimary },
-  saveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-  },
+  backText: { fontSize: 15 },
+  title: { fontSize: 17, fontWeight: "600" },
+  saveButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   saveButtonDisabled: { opacity: 0.4 },
   saveButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
-
-  // Contenu
   content: { padding: 20, gap: 20 },
-
-  // Champs
   field: { gap: 8 },
-  label: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
-  required: { color: Colors.danger },
+  label: { fontSize: 14, fontWeight: "500" },
   input: {
-    backgroundColor: Colors.backgroundPrimary,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: Colors.textPrimary,
   },
-
-  // Statuts
   optionsRow: { gap: 8 },
   statusOption: {
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.backgroundPrimary,
   },
-  statusOptionActive: {
-    backgroundColor: Colors.primary + "20",
-    borderColor: Colors.primary,
-  },
-  statusText: { fontSize: 14, color: Colors.textSecondary },
-  statusTextActive: { color: Colors.primary, fontWeight: "600" },
-
-  // Couleurs
+  statusText: { fontSize: 14 },
   colorsRow: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
   colorOption: {
     width: 44,

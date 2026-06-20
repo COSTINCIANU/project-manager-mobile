@@ -1,7 +1,8 @@
 // =====================================================
-// DashboardScreen — Écran d'accueil
-// Affiche salutation, stats, projets récents
-// et tâches urgentes de l'utilisateur connecté
+// DashboardScreen — Ecran d'accueil
+// Affiche salutation, stats, projets recents
+// et taches urgentes de l'utilisateur connecte
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -16,14 +17,13 @@ import { useRouter } from "expo-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useProjects } from "@/hooks/useProjects";
 import { useTasks } from "@/hooks/useTasks";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 import { getUserInitials } from "@/types/user";
 import { Project } from "@/types/project";
 import { Task } from "@/types/task";
 
-// =====================
-// COULEURS PAR PRIORITÉ
-// =====================
+// Couleurs par priorite — fixes independamment du theme
 const PRIORITY_COLORS: Record<string, string> = {
   haute: Colors.priorityHigh,
   high: Colors.priorityHigh,
@@ -36,8 +36,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 // =====================
-// CARTE PROJET RÉCENT
-// Cliquable — redirige vers le détail du projet
+// CARTE PROJET RECENT
 // =====================
 function RecentProjectCard({
   project,
@@ -46,58 +45,76 @@ function RecentProjectCard({
   project: Project;
   onPress: () => void;
 }) {
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
+
   return (
     <TouchableOpacity
-      style={styles.projectCard}
+      style={[
+        styles.projectCard,
+        { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Nom du projet */}
-      <Text style={styles.projectName} numberOfLines={1}>
+      <Text
+        style={[styles.projectName, { color: theme.textPrimary }]}
+        numberOfLines={1}
+      >
         {project.name}
       </Text>
-
-      {/* Barre de progression */}
       <View style={styles.progressRow}>
-        <View style={styles.progressBar}>
+        <View
+          style={[
+            styles.progressBar,
+            { backgroundColor: theme.backgroundTertiary },
+          ]}
+        >
           <View
             style={[
               styles.progressFill,
-              { width: `${project.progress ?? 0}%` },
+              {
+                width: `${project.progress ?? 0}%`,
+                backgroundColor: theme.primary,
+              },
             ]}
           />
         </View>
-        <Text style={styles.progressText}>{project.progress ?? 0}%</Text>
+        <Text style={[styles.progressText, { color: theme.textSecondary }]}>
+          {project.progress ?? 0}%
+        </Text>
       </View>
-
-      {/* Compteur de tâches */}
-      <Text style={styles.projectTasks}>
-        {project.completedTasksCount ?? 0}/{project.tasksCount ?? 0} tâches
+      <Text style={[styles.projectTasks, { color: theme.textTertiary }]}>
+        {project.completedTasksCount ?? 0}/{project.tasksCount ?? 0} taches
       </Text>
     </TouchableOpacity>
   );
 }
 
 // =====================
-// CARTE TÂCHE URGENTE
-// Tâches en cours ou à faire avec date proche
+// CARTE TACHE URGENTE
 // =====================
 function UrgentTaskCard({ task }: { task: Task }) {
-  const priorityColor = PRIORITY_COLORS[task.priority] ?? Colors.textTertiary;
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
+  const priorityColor = PRIORITY_COLORS[task.priority] ?? theme.textTertiary;
 
   return (
-    <View style={styles.urgentCard}>
-      {/* Barre de priorité à gauche */}
+    <View
+      style={[
+        styles.urgentCard,
+        { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+      ]}
+    >
       <View style={[styles.urgentBar, { backgroundColor: priorityColor }]} />
-
       <View style={styles.urgentContent}>
-        {/* Nom de la tâche */}
-        <Text style={styles.urgentName} numberOfLines={1}>
+        <Text
+          style={[styles.urgentName, { color: theme.textPrimary }]}
+          numberOfLines={1}
+        >
           {task.name}
         </Text>
-
         <View style={styles.urgentFooter}>
-          {/* Badge priorité */}
           <View
             style={[
               styles.priorityBadge,
@@ -108,17 +125,13 @@ function UrgentTaskCard({ task }: { task: Task }) {
               {task.priority}
             </Text>
           </View>
-
-          {/* Date d'échéance */}
           {task.dueDate && (
-            <Text style={styles.urgentDate}>
+            <Text style={[styles.urgentDate, { color: theme.textSecondary }]}>
               📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
             </Text>
           )}
-
-          {/* Statut */}
-          <Text style={styles.urgentStatus}>
-            {task.inProgress ? "🔄 En cours" : "⏳ À faire"}
+          <Text style={[styles.urgentStatus, { color: theme.textSecondary }]}>
+            {task.inProgress ? "🔄 En cours" : "⏳ A faire"}
           </Text>
         </View>
       </View>
@@ -127,13 +140,15 @@ function UrgentTaskCard({ task }: { task: Task }) {
 }
 
 // =====================
-// ÉCRAN PRINCIPAL
+// ECRAN PRINCIPAL
 // =====================
 export default function DashboardScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { data: projects } = useProjects();
   const { data: tasks } = useTasks();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
   // Stats globales
   const totalProjects = projects?.length ?? 0;
@@ -141,15 +156,13 @@ export default function DashboardScreen() {
   const doneTasks = tasks?.filter((t) => t.done).length ?? 0;
   const inProgressTasks =
     tasks?.filter((t) => t.inProgress && !t.done).length ?? 0;
-
-  // Progression globale en pourcentage
   const globalProgress =
     totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
-  // 3 projets les plus récents
+  // 3 projets les plus recents
   const recentProjects = projects?.slice(0, 3) ?? [];
 
-  // Tâches urgentes — non terminées, triées par date d'échéance
+  // Taches urgentes — non terminees, triees par date d'echeance
   const urgentTasks =
     tasks
       ?.filter((t) => !t.done)
@@ -161,22 +174,38 @@ export default function DashboardScreen() {
       .slice(0, 5) ?? [];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Section héro — salutation centrée */}
-        <View style={styles.heroSection}>
-          <View style={styles.avatar}>
+        {/* Section hero — salutation centree */}
+        <View
+          style={[
+            styles.heroSection,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
             <Text style={styles.avatarText}>
               {user ? getUserInitials(user) : "?"}
             </Text>
           </View>
-          <Text style={styles.greeting}>Bonjour 👋</Text>
-          <Text style={styles.userName}>{user?.name ?? "—"}</Text>
-          <Text style={styles.userEmail}>{user?.email}</Text>
-          <Text style={styles.date}>
+          <Text style={[styles.greeting, { color: theme.textPrimary }]}>
+            Bonjour 👋
+          </Text>
+          <Text style={[styles.userName, { color: theme.primary }]}>
+            {user?.name ?? "—"}
+          </Text>
+          <Text style={[styles.userEmail, { color: theme.textTertiary }]}>
+            {user?.email}
+          </Text>
+          <Text style={[styles.date, { color: theme.textSecondary }]}>
             {new Date().toLocaleDateString("fr-FR", {
               weekday: "long",
               day: "numeric",
@@ -186,69 +215,136 @@ export default function DashboardScreen() {
         </View>
 
         {/* Stats rapides en grille 2x2 */}
-        <Text style={styles.sectionTitle}>Vue d'ensemble</Text>
+        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+          Vue d'ensemble
+        </Text>
         <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{totalProjects}</Text>
-            <Text style={styles.statLabel}>Projets</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{totalTasks}</Text>
-            <Text style={styles.statLabel}>Tâches</Text>
+          <View
+            style={[
+              styles.statCard,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <Text style={[styles.statValue, { color: theme.primary }]}>
+              {totalProjects}
+            </Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+              Projets
+            </Text>
           </View>
           <View
             style={[
               styles.statCard,
-              { borderTopColor: Colors.warning, borderTopWidth: 3 },
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <Text style={[styles.statValue, { color: theme.primary }]}>
+              {totalTasks}
+            </Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+              Taches
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.statCard,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+                borderTopColor: Colors.warning,
+                borderTopWidth: 3,
+              },
             ]}
           >
             <Text style={[styles.statValue, { color: Colors.warning }]}>
               {inProgressTasks}
             </Text>
-            <Text style={styles.statLabel}>En cours</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+              En cours
+            </Text>
           </View>
           <View
             style={[
               styles.statCard,
-              { borderTopColor: Colors.success, borderTopWidth: 3 },
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+                borderTopColor: Colors.success,
+                borderTopWidth: 3,
+              },
             ]}
           >
             <Text style={[styles.statValue, { color: Colors.success }]}>
               {doneTasks}
             </Text>
-            <Text style={styles.statLabel}>Terminées</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+              Terminees
+            </Text>
           </View>
         </View>
 
         {/* Progression globale */}
-        <View style={styles.globalProgress}>
+        <View
+          style={[
+            styles.globalProgress,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
           <View style={styles.globalProgressHeader}>
-            <Text style={styles.globalProgressLabel}>Progression globale</Text>
-            <Text style={styles.globalProgressValue}>{globalProgress}%</Text>
+            <Text
+              style={[styles.globalProgressLabel, { color: theme.textPrimary }]}
+            >
+              Progression globale
+            </Text>
+            <Text
+              style={[styles.globalProgressValue, { color: theme.primary }]}
+            >
+              {globalProgress}%
+            </Text>
           </View>
-          <View style={styles.globalProgressBar}>
+          <View
+            style={[
+              styles.globalProgressBar,
+              { backgroundColor: theme.backgroundTertiary },
+            ]}
+          >
             <View
               style={[
                 styles.globalProgressFill,
-                { width: `${globalProgress}%` },
+                { width: `${globalProgress}%`, backgroundColor: theme.primary },
               ]}
             />
           </View>
-          <Text style={styles.globalProgressSub}>
-            {doneTasks} tâche{doneTasks > 1 ? "s" : ""} terminée
+          <Text
+            style={[styles.globalProgressSub, { color: theme.textSecondary }]}
+          >
+            {doneTasks} tache{doneTasks > 1 ? "s" : ""} terminee
             {doneTasks > 1 ? "s" : ""} sur {totalTasks}
           </Text>
         </View>
 
-        {/* Projets récents */}
+        {/* Projets recents */}
         {recentProjects.length > 0 && (
           <View>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Projets récents</Text>
+              <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+                Projets recents
+              </Text>
               <TouchableOpacity
                 onPress={() => router.push("/(app)/projects" as any)}
               >
-                <Text style={styles.seeAll}>Voir tout</Text>
+                <Text style={[styles.seeAll, { color: theme.primary }]}>
+                  Voir tout
+                </Text>
               </TouchableOpacity>
             </View>
             <View style={styles.projectsList}>
@@ -265,13 +361,19 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        {/* Tâches urgentes */}
+        {/* Taches urgentes */}
         {urgentTasks.length > 0 && (
           <View>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Tâches urgentes</Text>
-              <TouchableOpacity onPress={() => router.push("/(app)/tasks")}>
-                <Text style={styles.seeAll}>Voir tout</Text>
+              <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+                Taches urgentes
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push("/(app)/tasks" as any)}
+              >
+                <Text style={[styles.seeAll, { color: theme.primary }]}>
+                  Voir tout
+                </Text>
               </TouchableOpacity>
             </View>
             <View style={styles.urgentList}>
@@ -287,41 +389,34 @@ export default function DashboardScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   content: { padding: 20, gap: 20 },
 
   // Hero section
   heroSection: {
-    backgroundColor: Colors.backgroundPrimary,
     borderRadius: 20,
     padding: 28,
     alignItems: "center",
     gap: 6,
     borderWidth: 0.5,
-    borderColor: Colors.border,
   },
   avatar: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
   },
   avatarText: { fontSize: 26, fontWeight: "700", color: "#FFFFFF" },
-  greeting: { fontSize: 22, fontWeight: "700", color: Colors.textPrimary },
-  userName: { fontSize: 18, fontWeight: "600", color: Colors.primary },
-  userEmail: { fontSize: 13, color: Colors.textTertiary },
-  date: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    textTransform: "capitalize",
-    marginTop: 4,
-  },
+  greeting: { fontSize: 22, fontWeight: "700" },
+  userName: { fontSize: 18, fontWeight: "600" },
+  userEmail: { fontSize: 13 },
+  date: { fontSize: 13, textTransform: "capitalize", marginTop: 4 },
 
   // Sections
   sectionHeader: {
@@ -330,100 +425,61 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-  sectionTitle: { fontSize: 16, fontWeight: "600", color: Colors.textPrimary },
-  seeAll: { fontSize: 13, color: Colors.primary, fontWeight: "500" },
+  sectionTitle: { fontSize: 16, fontWeight: "600" },
+  seeAll: { fontSize: 13, fontWeight: "500" },
 
   // Stats
   statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   statCard: {
     flex: 1,
     minWidth: "45%",
-    backgroundColor: Colors.backgroundPrimary,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
     borderWidth: 0.5,
-    borderColor: Colors.border,
     gap: 4,
   },
-  statValue: { fontSize: 28, fontWeight: "700", color: Colors.primary },
-  statLabel: { fontSize: 13, color: Colors.textSecondary },
+  statValue: { fontSize: 28, fontWeight: "700" },
+  statLabel: { fontSize: 13 },
 
   // Progression globale
   globalProgress: {
-    backgroundColor: Colors.backgroundPrimary,
     borderRadius: 12,
     padding: 16,
     gap: 8,
     borderWidth: 0.5,
-    borderColor: Colors.border,
   },
   globalProgressHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  globalProgressLabel: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: Colors.textPrimary,
-  },
-  globalProgressValue: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: Colors.primary,
-  },
-  globalProgressBar: {
-    height: 8,
-    backgroundColor: Colors.backgroundTertiary,
-    borderRadius: 4,
-  },
-  globalProgressFill: {
-    height: 8,
-    backgroundColor: Colors.primary,
-    borderRadius: 4,
-  },
-  globalProgressSub: { fontSize: 12, color: Colors.textSecondary },
+  globalProgressLabel: { fontSize: 14, fontWeight: "500" },
+  globalProgressValue: { fontSize: 14, fontWeight: "700" },
+  globalProgressBar: { height: 8, borderRadius: 4 },
+  globalProgressFill: { height: 8, borderRadius: 4 },
+  globalProgressSub: { fontSize: 12 },
 
-  // Projets récents
+  // Projets recents
   projectsList: { gap: 10 },
-  projectCard: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderRadius: 12,
-    padding: 14,
-    gap: 8,
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
-  projectName: { fontSize: 15, fontWeight: "600", color: Colors.textPrimary },
+  projectCard: { borderRadius: 12, padding: 14, gap: 8, borderWidth: 0.5 },
+  projectName: { fontSize: 15, fontWeight: "600" },
   progressRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  progressBar: {
-    flex: 1,
-    height: 4,
-    backgroundColor: Colors.backgroundTertiary,
-    borderRadius: 2,
-  },
-  progressFill: { height: 4, backgroundColor: Colors.primary, borderRadius: 2 },
-  progressText: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    minWidth: 32,
-    textAlign: "right",
-  },
-  projectTasks: { fontSize: 12, color: Colors.textTertiary },
+  progressBar: { flex: 1, height: 4, borderRadius: 2 },
+  progressFill: { height: 4, borderRadius: 2 },
+  progressText: { fontSize: 12, minWidth: 32, textAlign: "right" },
+  projectTasks: { fontSize: 12 },
 
-  // Tâches urgentes
+  // Taches urgentes
   urgentList: { gap: 8 },
   urgentCard: {
-    backgroundColor: Colors.backgroundPrimary,
     borderRadius: 12,
     flexDirection: "row",
     overflow: "hidden",
     borderWidth: 0.5,
-    borderColor: Colors.border,
   },
   urgentBar: { width: 4 },
   urgentContent: { flex: 1, padding: 12, gap: 6 },
-  urgentName: { fontSize: 14, fontWeight: "500", color: Colors.textPrimary },
+  urgentName: { fontSize: 14, fontWeight: "500" },
   urgentFooter: {
     flexDirection: "row",
     alignItems: "center",
@@ -432,6 +488,6 @@ const styles = StyleSheet.create({
   },
   priorityBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   priorityText: { fontSize: 11, fontWeight: "600" },
-  urgentDate: { fontSize: 11, color: Colors.textSecondary },
-  urgentStatus: { fontSize: 11, color: Colors.textSecondary },
+  urgentDate: { fontSize: 11 },
+  urgentStatus: { fontSize: 11 },
 });

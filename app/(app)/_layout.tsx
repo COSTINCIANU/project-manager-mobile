@@ -3,15 +3,18 @@
 // Gere iOS et Android dans un seul fichier
 // Sur Android : navigation en HAUT de l'ecran
 // Sur iOS : navigation en BAS de l'ecran
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import { useEffect } from "react";
 import { Tabs, useRouter, usePathname } from "expo-router";
 import { View, Platform, TouchableOpacity, Text } from "react-native";
 import { useAuthStore } from "@/stores/authStore";
-import { Colors } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
+import { useTheme } from "@/hooks/useTheme";
+import { Appearance } from "react-native";
+import { useThemeStore } from "@/stores/themeStore";
 
 // =====================================================
 // AndroidTopBar — Barre de navigation en haut
@@ -21,6 +24,8 @@ import { OfflineBanner } from "@/components/ui/OfflineBanner";
 function AndroidTopBar() {
   const router = useRouter();
   const pathname = usePathname();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
   // Definition des onglets
   const tabs = [
@@ -39,11 +44,11 @@ function AndroidTopBar() {
     <View
       style={{
         flexDirection: "row",
-        backgroundColor: Colors.backgroundPrimary,
+        backgroundColor: theme.backgroundPrimary,
         borderBottomWidth: 0.5,
-        borderBottomColor: Colors.border,
+        borderBottomColor: theme.border,
         height: 78,
-        paddingTop: 30, // ← ajoute cette ligne
+        paddingTop: 30,
       }}
     >
       {tabs.map((tab) => {
@@ -61,20 +66,20 @@ function AndroidTopBar() {
               alignItems: "center",
               paddingVertical: 8,
               borderBottomWidth: isActive ? 2 : 0,
-              borderBottomColor: Colors.primary,
+              borderBottomColor: theme.primary,
             }}
             onPress={() => router.push(tab.path as any)}
           >
             <Ionicons
               name={tab.icon as any}
               size={22}
-              color={isActive ? Colors.primary : Colors.textTertiary}
+              color={isActive ? theme.primary : theme.textTertiary}
             />
             <Text
               style={{
                 fontSize: 10,
                 marginTop: 2,
-                color: isActive ? Colors.primary : Colors.textTertiary,
+                color: isActive ? theme.primary : theme.textTertiary,
               }}
             >
               {tab.name}
@@ -85,10 +90,12 @@ function AndroidTopBar() {
     </View>
   );
 }
+
 export default function AppLayout() {
-  console.log("Platform:", Platform.OS);
   const { isAuthenticated, isLoading } = useAuthStore();
   const router = useRouter();
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -98,8 +105,18 @@ export default function AppLayout() {
 
   if (!isAuthenticated) return null;
 
+  // Ecoute les changements de theme systeme en temps reel
+  useEffect(() => {
+    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+      // Met a jour le store quand le theme systeme change
+      useThemeStore.setState({ isDark: colorScheme === "dark" });
+    });
+    return () => subscription.remove();
+  }, []);
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: theme.backgroundTertiary }}>
+      {/* Banniere offline */}
       <OfflineBanner />
 
       {/* Barre de navigation en haut sur Android */}
@@ -108,18 +125,17 @@ export default function AppLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: Colors.primary,
-          tabBarInactiveTintColor: Colors.textTertiary,
+          tabBarActiveTintColor: theme.primary,
+          tabBarInactiveTintColor: theme.textTertiary,
           // Cache les labels pour afficher seulement les icones
           tabBarShowLabel: false,
-          tabBarLabelStyle: { display: "none" },
           // Cache la barre du bas sur Android
           tabBarStyle:
             Platform.OS === "android"
               ? { display: "none" }
               : {
-                  backgroundColor: Colors.backgroundPrimary,
-                  borderTopColor: Colors.border,
+                  backgroundColor: theme.backgroundPrimary,
+                  borderTopColor: theme.border,
                   borderTopWidth: 0.5,
                   height: 60,
                   paddingBottom: 8,

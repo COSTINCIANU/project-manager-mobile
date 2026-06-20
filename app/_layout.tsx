@@ -2,7 +2,7 @@
 // RootLayout — Layout racine de l'application
 // Initialise : auth, React Query, notifications push
 // =====================================================
-
+import { useTheme } from "@/hooks/useTheme";
 import "react-native-gesture-handler";
 import { useEffect, useRef } from "react";
 import { Stack } from "expo-router";
@@ -14,6 +14,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Notifications from "expo-notifications";
 import { useAuthStore } from "@/stores/authStore";
 import { notificationService } from "@/services/notificationService";
+import { useThemeStore } from "@/stores/themeStore";
 
 // Maintenir le splash screen jusqu'à la fin de l'initialisation
 SplashScreen.preventAutoHideAsync();
@@ -29,6 +30,14 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
+  // Charge le theme sauvegarde au demarrage de l'app
+  const { loadTheme } = useThemeStore();
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    loadTheme();
+  }, []);
+
   const { initialize, isLoading, isAuthenticated } = useAuthStore();
 
   // Référence pour stocker les listeners de notifications
@@ -76,7 +85,10 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <StatusBar style="auto" />
+          {/* StatusBar adapte automatiquement selon le theme actif */}
+          <StatusBar
+            style={theme.backgroundPrimary === "#0F172A" ? "light" : "dark"}
+          />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(app)" />

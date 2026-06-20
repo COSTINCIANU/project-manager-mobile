@@ -3,6 +3,7 @@
 // Permet de :
 // 1. Chatter avec l'IA sur le projet
 // 2. Generer des taches automatiquement
+// Theme clair/sombre automatique selon le systeme
 // =====================================================
 
 import {
@@ -21,7 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useRef } from "react";
 import { aiApi } from "@/api/ai";
-import { Colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 
 // Type pour un message dans le chat IA
 interface ChatMessage {
@@ -35,8 +36,10 @@ export default function AIAssistantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
 
-  // Messages du chat
+  // Messages du chat — message de bienvenue initial
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "0",
@@ -62,16 +65,12 @@ export default function AIAssistantScreen() {
       timestamp: new Date(),
     };
 
-    // Ajoute le message de l'utilisateur
     setMessages((prev) => [...prev, userMessage]);
     setInputText("");
     setIsSending(true);
 
     try {
-      // Envoie le message a l'API IA
       const response = await aiApi.chat(inputText.trim(), Number(id));
-
-      // Ajoute la reponse de l'IA
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -79,14 +78,10 @@ export default function AIAssistantScreen() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMessage]);
-
-      // Scroll automatique vers le bas
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
     } catch (error: any) {
-      //   console.log("Erreur IA:", JSON.stringify(error?.response?.data));
-      //   console.log("Status:", error?.response?.status);
       Alert.alert("Erreur", "Impossible de contacter l'assistant IA.");
     } finally {
       setIsSending(false);
@@ -101,15 +96,11 @@ export default function AIAssistantScreen() {
       async (description) => {
         if (!description?.trim()) return;
         setIsGenerating(true);
-
         try {
           const response = await aiApi.generateTasks(Number(id), description);
-
-          // Affiche les taches generees dans le chat
           const tasksList = response.tasks
             .map((t, i) => `${i + 1}. ${t.title}\n   ${t.description}`)
             .join("\n\n");
-
           const assistantMessage: ChatMessage = {
             id: Date.now().toString(),
             role: "assistant",
@@ -117,11 +108,9 @@ export default function AIAssistantScreen() {
             timestamp: new Date(),
           };
           setMessages((prev) => [...prev, assistantMessage]);
-
           setTimeout(() => {
             scrollViewRef.current?.scrollToEnd({ animated: true });
           }, 100);
-
           Alert.alert(
             "Succes",
             `${response.tasks.length} tache(s) generee(s) !`,
@@ -137,35 +126,55 @@ export default function AIAssistantScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         {/* En-tete */}
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderBottomColor: theme.border,
+            },
+          ]}
+        >
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
           >
-            <Text style={styles.backText}>← Retour</Text>
+            <Text style={[styles.backText, { color: theme.primary }]}>
+              ← Retour
+            </Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Assistant IA</Text>
-          {/* Bouton generer des taches */}
+          <Text style={[styles.title, { color: theme.textPrimary }]}>
+            Assistant IA
+          </Text>
           <TouchableOpacity
             onPress={handleGenerateTasks}
             disabled={isGenerating}
-            style={styles.generateButton}
+            style={[
+              styles.generateButton,
+              { backgroundColor: theme.primary + "15" },
+            ]}
           >
             {isGenerating ? (
-              <ActivityIndicator size="small" color={Colors.primary} />
+              <ActivityIndicator size="small" color={theme.primary} />
             ) : (
-              <Text style={styles.generateButtonText}>✨ Generer</Text>
+              <Text
+                style={[styles.generateButtonText, { color: theme.primary }]}
+              >
+                ✨ Generer
+              </Text>
             )}
           </TouchableOpacity>
         </View>
 
-        {/* Liste des messages du chat */}
+        {/* Liste des messages */}
         <ScrollView
           ref={scrollViewRef}
           contentContainerStyle={styles.messagesContent}
@@ -176,15 +185,22 @@ export default function AIAssistantScreen() {
               key={message.id}
               style={[
                 styles.messageBubble,
-                // Bulle a droite pour l'utilisateur, a gauche pour l'IA
                 message.role === "user"
-                  ? styles.userBubble
-                  : styles.assistantBubble,
+                  ? [styles.userBubble, { backgroundColor: theme.primary }]
+                  : [
+                      styles.assistantBubble,
+                      {
+                        backgroundColor: theme.backgroundPrimary,
+                        borderColor: theme.border,
+                      },
+                    ],
               ]}
             >
-              {/* Indicateur du role */}
+              {/* Label role pour l'assistant */}
               {message.role === "assistant" && (
-                <Text style={styles.roleLabel}>🤖 Assistant</Text>
+                <Text style={[styles.roleLabel, { color: theme.textTertiary }]}>
+                  🤖 Assistant
+                </Text>
               )}
               {/* Contenu du message */}
               <Text
@@ -192,13 +208,23 @@ export default function AIAssistantScreen() {
                   styles.messageText,
                   message.role === "user"
                     ? styles.userText
-                    : styles.assistantText,
+                    : [styles.assistantText, { color: theme.textPrimary }],
                 ]}
               >
                 {message.content}
               </Text>
-              {/* Heure du message */}
-              <Text style={styles.messageTime}>
+              {/* Heure */}
+              <Text
+                style={[
+                  styles.messageTime,
+                  {
+                    color:
+                      message.role === "user"
+                        ? "rgba(255,255,255,0.7)"
+                        : theme.textTertiary,
+                  },
+                ]}
+              >
                 {message.timestamp.toLocaleTimeString("fr-FR", {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -207,31 +233,56 @@ export default function AIAssistantScreen() {
             </View>
           ))}
 
-          {/* Indicateur de saisie de l'IA */}
+          {/* Indicateur de frappe */}
           {isSending && (
-            <View style={styles.assistantBubble}>
-              <Text style={styles.roleLabel}>🤖 Assistant</Text>
-              <ActivityIndicator color={Colors.primary} />
+            <View
+              style={[
+                styles.assistantBubble,
+                {
+                  backgroundColor: theme.backgroundPrimary,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <Text style={[styles.roleLabel, { color: theme.textTertiary }]}>
+                🤖 Assistant
+              </Text>
+              <ActivityIndicator color={theme.primary} />
             </View>
           )}
         </ScrollView>
 
         {/* Zone de saisie */}
-        <View style={styles.inputContainer}>
+        <View
+          style={[
+            styles.inputContainer,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderTopColor: theme.border,
+            },
+          ]}
+        >
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                borderColor: theme.border,
+                color: theme.textPrimary,
+                backgroundColor: theme.backgroundSecondary,
+              },
+            ]}
             placeholder="Posez une question..."
-            placeholderTextColor={Colors.textTertiary}
+            placeholderTextColor={theme.textTertiary}
             value={inputText}
             onChangeText={setInputText}
             multiline
             maxLength={500}
             onSubmitEditing={handleSendMessage}
           />
-          {/* Bouton envoyer */}
           <TouchableOpacity
             style={[
               styles.sendButton,
+              { backgroundColor: theme.primary },
               (!inputText.trim() || isSending) && styles.sendButtonDisabled,
             ]}
             onPress={handleSendMessage}
@@ -246,100 +297,61 @@ export default function AIAssistantScreen() {
 }
 
 // =====================
-// STYLES
+// STYLES — valeurs fixes uniquement
 // =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
-
-  // En-tete
+  container: { flex: 1 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.primary },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: Colors.textPrimary,
-    flex: 1,
-  },
+  backText: { fontSize: 15 },
+  title: { fontSize: 18, fontWeight: "600", flex: 1 },
   generateButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: Colors.primary + "15",
     borderRadius: 20,
   },
-  generateButtonText: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: "500",
-  },
-
-  // Messages
+  generateButtonText: { fontSize: 13, fontWeight: "500" },
   messagesContent: { padding: 16, gap: 12 },
-  messageBubble: {
-    maxWidth: "80%",
-    padding: 12,
-    borderRadius: 16,
-    gap: 4,
-  },
-  userBubble: {
-    alignSelf: "flex-end",
-    backgroundColor: Colors.primary,
-    borderBottomRightRadius: 4,
-  },
+  messageBubble: { maxWidth: "80%", padding: 12, borderRadius: 16, gap: 4 },
+  userBubble: { alignSelf: "flex-end", borderBottomRightRadius: 4 },
   assistantBubble: {
     alignSelf: "flex-start",
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomLeftRadius: 4,
     borderWidth: 0.5,
-    borderColor: Colors.border,
   },
-  roleLabel: { fontSize: 11, color: Colors.textTertiary, marginBottom: 2 },
+  roleLabel: { fontSize: 11, marginBottom: 2 },
   messageText: { fontSize: 14, lineHeight: 20 },
   userText: { color: "#FFFFFF" },
-  assistantText: { color: Colors.textPrimary },
-  messageTime: {
-    fontSize: 10,
-    color: Colors.textTertiary,
-    alignSelf: "flex-end",
-  },
-
-  // Zone saisie
+  assistantText: {},
+  messageTime: { fontSize: 10, alignSelf: "flex-end" },
   inputContainer: {
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 8,
     padding: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderTopWidth: 0.5,
-    borderTopColor: Colors.border,
   },
   input: {
     flex: 1,
     minHeight: 40,
     maxHeight: 100,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 14,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.backgroundSecondary,
   },
   sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
   },

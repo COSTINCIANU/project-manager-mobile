@@ -1,3 +1,9 @@
+// =====================================================
+// ProjectDetailScreen — Detail d'un projet
+// Affiche les stats, actions et taches recentes
+// Theme clair/sombre automatique selon le systeme
+// =====================================================
+
 import {
   View,
   Text,
@@ -11,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useProject } from "@/hooks/useProjects";
 import { useTasks } from "@/hooks/useTasks";
+import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/colors";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
@@ -19,7 +26,8 @@ import { API_ENDPOINTS } from "@/constants/api";
 export default function ProjectDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-
+  // Hook theme pour les couleurs adaptees
+  const { theme } = useTheme();
   // queryClient permet d'invalider le cache apres suppression
   const queryClient = useQueryClient();
 
@@ -28,9 +36,14 @@ export default function ProjectDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: theme.backgroundTertiary },
+        ]}
+      >
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
@@ -43,33 +56,48 @@ export default function ProjectDetailScreen() {
   const doneTasks = tasks?.filter((t) => t.done) ?? [];
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* En-tete avec bouton retour et bouton modifier */}
-      <View style={styles.header}>
-        {/* Bouton retour vers la liste des projets */}
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
+    >
+      {/* En-tete avec bouton retour et boutons modifier/supprimer */}
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.backgroundPrimary,
+            borderBottomColor: theme.border,
+          },
+        ]}
+      >
+        {/* Bouton retour */}
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Text style={styles.backText}>← Retour</Text>
+          <Text style={[styles.backText, { color: theme.primary }]}>
+            ← Retour
+          </Text>
         </TouchableOpacity>
 
         {/* Nom du projet */}
-        <Text style={styles.title} numberOfLines={1}>
+        <Text
+          style={[styles.title, { color: theme.textPrimary }]}
+          numberOfLines={1}
+        >
           {project.name}
         </Text>
 
-        {/* Bouton pour modifier le projet */}
+        {/* Bouton modifier */}
         <TouchableOpacity
           onPress={() =>
             router.push(`/(app)/projects/${id}/edit-project` as any)
           }
-          style={styles.editButton}
+          style={[styles.editButton, { backgroundColor: theme.primary + "15" }]}
         >
           <Text style={styles.editButtonText}>✏️</Text>
         </TouchableOpacity>
 
-        {/* Bouton supprimer le projet */}
+        {/* Bouton supprimer */}
         <TouchableOpacity
           onPress={() => {
             Alert.alert(
@@ -83,9 +111,7 @@ export default function ProjectDetailScreen() {
                   onPress: async () => {
                     try {
                       await apiClient.delete(API_ENDPOINTS.PROJECT(Number(id)));
-                      // Invalide le cache pour mettre a jour la liste des projets
                       queryClient.invalidateQueries({ queryKey: ["projects"] });
-                      // Retourne a la liste des projets apres suppression
                       router.replace("/(app)/projects" as any);
                     } catch (error) {
                       Alert.alert(
@@ -98,7 +124,10 @@ export default function ProjectDetailScreen() {
               ],
             );
           }}
-          style={styles.deleteButton}
+          style={[
+            styles.deleteButton,
+            { backgroundColor: Colors.danger + "15" },
+          ]}
         >
           <Text style={styles.deleteButtonText}>🗑️</Text>
         </TouchableOpacity>
@@ -108,92 +137,197 @@ export default function ProjectDetailScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        {/* Description du projet */}
         {project.description && (
-          <Text style={styles.description}>{project.description}</Text>
+          <Text style={[styles.description, { color: theme.textSecondary }]}>
+            {project.description}
+          </Text>
         )}
 
+        {/* Stats — A faire, En cours, Terminees */}
         <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{todoTasks.length}</Text>
-            <Text style={styles.statLabel}>À faire</Text>
+          <View
+            style={[
+              styles.statBox,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <Text style={[styles.statValue, { color: theme.primary }]}>
+              {todoTasks.length}
+            </Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+              A faire
+            </Text>
           </View>
-          <View style={styles.statBox}>
+          <View
+            style={[
+              styles.statBox,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
+          >
             <Text style={[styles.statValue, { color: Colors.warning }]}>
               {inProgressTasks.length}
             </Text>
-            <Text style={styles.statLabel}>En cours</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+              En cours
+            </Text>
           </View>
-          <View style={styles.statBox}>
+          <View
+            style={[
+              styles.statBox,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
+          >
             <Text style={[styles.statValue, { color: Colors.success }]}>
               {doneTasks.length}
             </Text>
-            <Text style={styles.statLabel}>Terminées</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+              Terminees
+            </Text>
           </View>
         </View>
 
+        {/* Barre de progression */}
         <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
+          <View
+            style={[
+              styles.progressBar,
+              { backgroundColor: theme.backgroundTertiary },
+            ]}
+          >
             <View
-              style={[styles.progressFill, { width: `${project.progress}%` }]}
+              style={[
+                styles.progressFill,
+                {
+                  width: `${project.progress}%`,
+                  backgroundColor: theme.primary,
+                },
+              ]}
             />
           </View>
-          <Text style={styles.progressText}>{project.progress}%</Text>
+          <Text style={[styles.progressText, { color: theme.textSecondary }]}>
+            {project.progress}%
+          </Text>
         </View>
 
-        {/* ACTIONS — scroll horizontal pour eviter la compression */}
+        {/* ACTIONS — scroll horizontal */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.actionsRow}
         >
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => router.push(`/(app)/projects/${id}/tasks` as any)}
           >
             <Text style={styles.actionIcon}>📋</Text>
-            <Text style={styles.actionText}>Tâches</Text>
+            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
+              Taches
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => router.push(`/(app)/projects/${id}/kanban` as any)}
           >
             <Text style={styles.actionIcon}>🗂</Text>
-            <Text style={styles.actionText}>Kanban</Text>
+            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
+              Kanban
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => router.push(`/(app)/projects/${id}/ai` as any)}
           >
             <Text style={styles.actionIcon}>✨</Text>
-            <Text style={styles.actionText}>IA</Text>
+            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
+              IA
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => router.push(`/(app)/projects/${id}/wiki` as any)}
           >
             <Text style={styles.actionIcon}>📚</Text>
-            <Text style={styles.actionText}>Wiki</Text>
+            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
+              Wiki
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => router.push(`/(app)/projects/${id}/chat` as any)}
           >
             <Text style={styles.actionIcon}>💬</Text>
-            <Text style={styles.actionText}>Chat</Text>
+            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
+              Chat
+            </Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: theme.backgroundPrimary,
+                borderColor: theme.border,
+              },
+            ]}
             onPress={() => router.push(`/(app)/projects/${id}/team` as any)}
           >
             <Text style={styles.actionIcon}>👥</Text>
-            <Text style={styles.actionText}>Equipe</Text>
+            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
+              Equipe
+            </Text>
           </TouchableOpacity>
         </ScrollView>
 
+        {/* Taches recentes */}
         {tasks && tasks.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Tâches récentes</Text>
+          <View
+            style={[
+              styles.section,
+              { backgroundColor: theme.backgroundPrimary },
+            ]}
+          >
+            <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+              Taches recentes
+            </Text>
             {tasks.slice(0, 5).map((task) => (
               <View key={task.id} style={styles.taskItem}>
                 <View
@@ -204,11 +338,14 @@ export default function ProjectDetailScreen() {
                         ? Colors.success
                         : task.inProgress
                           ? Colors.warning
-                          : Colors.textTertiary,
+                          : theme.textTertiary,
                     },
                   ]}
                 />
-                <Text style={styles.taskTitle} numberOfLines={1}>
+                <Text
+                  style={[styles.taskTitle, { color: theme.textSecondary }]}
+                  numberOfLines={1}
+                >
                   {task.name}
                 </Text>
               </View>
@@ -220,8 +357,12 @@ export default function ProjectDetailScreen() {
   );
 }
 
+// =====================
+// STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
+// =====================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundTertiary },
+  container: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
     flexDirection: "row",
@@ -229,93 +370,45 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: Colors.backgroundPrimary,
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
   },
   backButton: { padding: 4 },
-  backText: { fontSize: 15, color: Colors.primary },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: Colors.textPrimary,
-    flex: 1,
-  },
+  backText: { fontSize: 15 },
+  title: { fontSize: 18, fontWeight: "600", flex: 1 },
   content: { padding: 16, gap: 16 },
-  description: { fontSize: 14, color: Colors.textSecondary, lineHeight: 20 },
+  description: { fontSize: 14, lineHeight: 20 },
   statsRow: { flexDirection: "row", gap: 12 },
   statBox: {
     flex: 1,
-    backgroundColor: Colors.backgroundPrimary,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
     borderWidth: 0.5,
-    borderColor: Colors.border,
   },
-  statValue: { fontSize: 24, fontWeight: "700", color: Colors.primary },
-  statLabel: { fontSize: 12, color: Colors.textSecondary, marginTop: 4 },
+  statValue: { fontSize: 24, fontWeight: "700" },
+  statLabel: { fontSize: 12, marginTop: 4 },
   progressContainer: { flexDirection: "row", alignItems: "center", gap: 8 },
-  progressBar: {
-    flex: 1,
-    height: 6,
-    backgroundColor: Colors.backgroundTertiary,
-    borderRadius: 3,
-  },
-  progressFill: { height: 6, backgroundColor: Colors.primary, borderRadius: 3 },
-  progressText: { fontSize: 13, color: Colors.textSecondary, minWidth: 36 },
-  // Conteneur des boutons d'action — scroll horizontal
-  actionsRow: {
-    flexDirection: "row",
-    gap: 10,
-    paddingVertical: 4,
-  },
-  // Bouton d'action individuel — taille fixe pour eviter la compression
+  progressBar: { flex: 1, height: 6, borderRadius: 3 },
+  progressFill: { height: 6, borderRadius: 3 },
+  progressText: { fontSize: 13, minWidth: 36 },
+  actionsRow: { flexDirection: "row", gap: 10, paddingVertical: 4 },
   actionButton: {
     width: 80,
-    backgroundColor: Colors.backgroundPrimary,
     borderRadius: 12,
     padding: 12,
     alignItems: "center",
     gap: 6,
     borderWidth: 0.5,
-    borderColor: Colors.border,
   },
-  // Icone du bouton
   actionIcon: { fontSize: 24 },
-  // Texte du bouton
-  actionText: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: Colors.textPrimary,
-    textAlign: "center",
-  },
-  section: {
-    backgroundColor: Colors.backgroundPrimary,
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
-  },
-  sectionTitle: { fontSize: 15, fontWeight: "600", color: Colors.textPrimary },
+  actionText: { fontSize: 12, fontWeight: "500", textAlign: "center" },
+  section: { borderRadius: 12, padding: 16, gap: 12 },
+  sectionTitle: { fontSize: 15, fontWeight: "600" },
   taskItem: { flexDirection: "row", alignItems: "center", gap: 10 },
   taskDot: { width: 8, height: 8, borderRadius: 4 },
-  taskTitle: { fontSize: 14, color: Colors.textSecondary, flex: 1 },
-
-  // Bouton modifier le projet
-  editButton: {
-    padding: 8,
-    backgroundColor: Colors.primary + "15",
-    borderRadius: 20,
-  },
-  // Icone du bouton modifier
+  taskTitle: { fontSize: 14, flex: 1 },
+  editButton: { padding: 8, borderRadius: 20 },
   editButtonText: { fontSize: 16 },
-
-  // Bouton supprimer le projet
-  deleteButton: {
-    padding: 8,
-    backgroundColor: Colors.danger + "15",
-    borderRadius: 20,
-  },
-  // Icone du bouton supprimer
+  deleteButton: { padding: 8, borderRadius: 20 },
   deleteButtonText: { fontSize: 16 },
 });
