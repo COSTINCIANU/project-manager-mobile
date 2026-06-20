@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useProject } from "@/hooks/useProjects";
@@ -23,13 +24,22 @@ import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
 
+// Liste des actions du projet
+const ACTIONS = [
+  { icon: "📋", label: "Taches", path: "tasks" },
+  { icon: "🗂", label: "Kanban", path: "kanban" },
+  { icon: "✨", label: "IA", path: "ai" },
+  { icon: "📚", label: "Wiki", path: "wiki" },
+  { icon: "💬", label: "Chat", path: "chat" },
+  { icon: "👥", label: "Equipe", path: "team" },
+];
+
 export default function ProjectDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  // Hook theme pour les couleurs adaptees
   const { theme } = useTheme();
-  // queryClient permet d'invalider le cache apres suppression
   const queryClient = useQueryClient();
+  const { isTablet } = useBreakpoint();
 
   const { data: project, isLoading } = useProject(Number(id));
   const { data: tasks } = useTasks(Number(id));
@@ -55,11 +65,185 @@ export default function ProjectDetailScreen() {
   const inProgressTasks = tasks?.filter((t) => t.inProgress && !t.done) ?? [];
   const doneTasks = tasks?.filter((t) => t.done) ?? [];
 
+  // Colonne gauche — stats, progression, actions
+  const LeftContent = ({ isTablet }: { isTablet: boolean }) => (
+    <>
+      {project.description && (
+        <Text style={[styles.description, { color: theme.textSecondary }]}>
+          {project.description}
+        </Text>
+      )}
+
+      {/* Stats */}
+      <View style={styles.statsRow}>
+        <View
+          style={[
+            styles.statBox,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.statValue, { color: theme.primary }]}>
+            {todoTasks.length}
+          </Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+            A faire
+          </Text>
+        </View>
+        <View
+          style={[
+            styles.statBox,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.statValue, { color: Colors.warning }]}>
+            {inProgressTasks.length}
+          </Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+            En cours
+          </Text>
+        </View>
+        <View
+          style={[
+            styles.statBox,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.statValue, { color: Colors.success }]}>
+            {doneTasks.length}
+          </Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+            Terminees
+          </Text>
+        </View>
+      </View>
+
+      {/* Barre de progression */}
+      <View style={styles.progressContainer}>
+        <View
+          style={[
+            styles.progressBar,
+            { backgroundColor: theme.backgroundTertiary },
+          ]}
+        >
+          <View
+            style={[
+              styles.progressFill,
+              { width: `${project.progress}%`, backgroundColor: theme.primary },
+            ]}
+          />
+        </View>
+        <Text style={[styles.progressText, { color: theme.textSecondary }]}>
+          {project.progress}%
+        </Text>
+      </View>
+
+      {/* Actions — grille sur tablette, scroll horizontal sur mobile */}
+      {isTablet ? (
+        <View style={styles.actionsGrid}>
+          {ACTIONS.map((action) => (
+            <TouchableOpacity
+              key={action.path}
+              style={[
+                styles.actionButton,
+                styles.actionButtonTablet,
+                {
+                  backgroundColor: theme.backgroundPrimary,
+                  borderColor: theme.border,
+                },
+              ]}
+              onPress={() =>
+                router.push(`/(app)/projects/${id}/${action.path}` as any)
+              }
+            >
+              <Text style={styles.actionIcon}>{action.icon}</Text>
+              <Text style={[styles.actionText, { color: theme.textPrimary }]}>
+                {action.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.actionsRow}
+        >
+          {ACTIONS.map((action) => (
+            <TouchableOpacity
+              key={action.path}
+              style={[
+                styles.actionButton,
+                {
+                  backgroundColor: theme.backgroundPrimary,
+                  borderColor: theme.border,
+                },
+              ]}
+              onPress={() =>
+                router.push(`/(app)/projects/${id}/${action.path}` as any)
+              }
+            >
+              <Text style={styles.actionIcon}>{action.icon}</Text>
+              <Text style={[styles.actionText, { color: theme.textPrimary }]}>
+                {action.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+    </>
+  );
+
+  // Colonne droite — taches recentes
+  const RightContent = () => (
+    <>
+      {tasks && tasks.length > 0 && (
+        <View
+          style={[styles.section, { backgroundColor: theme.backgroundPrimary }]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+            Taches recentes
+          </Text>
+          {tasks.slice(0, 5).map((task) => (
+            <View key={task.id} style={styles.taskItem}>
+              <View
+                style={[
+                  styles.taskDot,
+                  {
+                    backgroundColor: task.done
+                      ? Colors.success
+                      : task.inProgress
+                        ? Colors.warning
+                        : theme.textTertiary,
+                  },
+                ]}
+              />
+              <Text
+                style={[styles.taskTitle, { color: theme.textSecondary }]}
+                numberOfLines={1}
+              >
+                {task.name}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </>
+  );
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
     >
-      {/* En-tete avec bouton retour et boutons modifier/supprimer */}
+      {/* En-tete */}
       <View
         style={[
           styles.header,
@@ -69,7 +253,6 @@ export default function ProjectDetailScreen() {
           },
         ]}
       >
-        {/* Bouton retour */}
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
@@ -78,16 +261,12 @@ export default function ProjectDetailScreen() {
             ← Retour
           </Text>
         </TouchableOpacity>
-
-        {/* Nom du projet */}
         <Text
           style={[styles.title, { color: theme.textPrimary }]}
           numberOfLines={1}
         >
           {project.name}
         </Text>
-
-        {/* Bouton modifier */}
         <TouchableOpacity
           onPress={() =>
             router.push(`/(app)/projects/${id}/edit-project` as any)
@@ -96,13 +275,11 @@ export default function ProjectDetailScreen() {
         >
           <Text style={styles.editButtonText}>✏️</Text>
         </TouchableOpacity>
-
-        {/* Bouton supprimer */}
         <TouchableOpacity
           onPress={() => {
             Alert.alert(
               "Supprimer",
-              "Voulez-vous vraiment supprimer ce projet ? Cette action est irreversible.",
+              "Voulez-vous vraiment supprimer ce projet ?",
               [
                 { text: "Annuler", style: "cancel" },
                 {
@@ -134,223 +311,28 @@ export default function ProjectDetailScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isTablet && styles.contentTablet,
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Description du projet */}
-        {project.description && (
-          <Text style={[styles.description, { color: theme.textSecondary }]}>
-            {project.description}
-          </Text>
-        )}
-
-        {/* Stats — A faire, En cours, Terminees */}
-        <View style={styles.statsRow}>
-          <View
-            style={[
-              styles.statBox,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <Text style={[styles.statValue, { color: theme.primary }]}>
-              {todoTasks.length}
-            </Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-              A faire
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.statBox,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <Text style={[styles.statValue, { color: Colors.warning }]}>
-              {inProgressTasks.length}
-            </Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-              En cours
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.statBox,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <Text style={[styles.statValue, { color: Colors.success }]}>
-              {doneTasks.length}
-            </Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-              Terminees
-            </Text>
-          </View>
-        </View>
-
-        {/* Barre de progression */}
-        <View style={styles.progressContainer}>
-          <View
-            style={[
-              styles.progressBar,
-              { backgroundColor: theme.backgroundTertiary },
-            ]}
-          >
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  width: `${project.progress}%`,
-                  backgroundColor: theme.primary,
-                },
-              ]}
-            />
-          </View>
-          <Text style={[styles.progressText, { color: theme.textSecondary }]}>
-            {project.progress}%
-          </Text>
-        </View>
-
-        {/* ACTIONS — scroll horizontal */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.actionsRow}
-        >
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-            onPress={() => router.push(`/(app)/projects/${id}/tasks` as any)}
-          >
-            <Text style={styles.actionIcon}>📋</Text>
-            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
-              Taches
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-            onPress={() => router.push(`/(app)/projects/${id}/kanban` as any)}
-          >
-            <Text style={styles.actionIcon}>🗂</Text>
-            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
-              Kanban
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-            onPress={() => router.push(`/(app)/projects/${id}/ai` as any)}
-          >
-            <Text style={styles.actionIcon}>✨</Text>
-            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
-              IA
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-            onPress={() => router.push(`/(app)/projects/${id}/wiki` as any)}
-          >
-            <Text style={styles.actionIcon}>📚</Text>
-            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
-              Wiki
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-            onPress={() => router.push(`/(app)/projects/${id}/chat` as any)}
-          >
-            <Text style={styles.actionIcon}>💬</Text>
-            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
-              Chat
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-            onPress={() => router.push(`/(app)/projects/${id}/team` as any)}
-          >
-            <Text style={styles.actionIcon}>👥</Text>
-            <Text style={[styles.actionText, { color: theme.textPrimary }]}>
-              Equipe
-            </Text>
-          </TouchableOpacity>
-        </ScrollView>
-
-        {/* Taches recentes */}
-        {tasks && tasks.length > 0 && (
-          <View
-            style={[
-              styles.section,
-              { backgroundColor: theme.backgroundPrimary },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-              Taches recentes
-            </Text>
-            {tasks.slice(0, 5).map((task) => (
-              <View key={task.id} style={styles.taskItem}>
-                <View
-                  style={[
-                    styles.taskDot,
-                    {
-                      backgroundColor: task.done
-                        ? Colors.success
-                        : task.inProgress
-                          ? Colors.warning
-                          : theme.textTertiary,
-                    },
-                  ]}
-                />
-                <Text
-                  style={[styles.taskTitle, { color: theme.textSecondary }]}
-                  numberOfLines={1}
-                >
-                  {task.name}
-                </Text>
-              </View>
-            ))}
-          </View>
+        {isTablet ? (
+          // Layout tablette — 2 colonnes
+          <>
+            <View style={styles.tabletLeft}>
+              <LeftContent isTablet={true} />
+            </View>
+            <View style={styles.tabletRight}>
+              <RightContent />
+            </View>
+          </>
+        ) : (
+          // Layout mobile — 1 colonne
+          <>
+            <LeftContent isTablet={false} />
+            <RightContent />
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -359,7 +341,6 @@ export default function ProjectDetailScreen() {
 
 // =====================
 // STYLES — valeurs fixes uniquement
-// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -376,6 +357,14 @@ const styles = StyleSheet.create({
   backText: { fontSize: 15 },
   title: { fontSize: 18, fontWeight: "600", flex: 1 },
   content: { padding: 16, gap: 16 },
+  contentTablet: {
+    padding: 24,
+    flexDirection: "row",
+    gap: 24,
+    alignItems: "flex-start",
+  },
+  tabletLeft: { flex: 1, gap: 16 },
+  tabletRight: { flex: 1, gap: 16 },
   description: { fontSize: 14, lineHeight: 20 },
   statsRow: { flexDirection: "row", gap: 12 },
   statBox: {
@@ -391,7 +380,10 @@ const styles = StyleSheet.create({
   progressBar: { flex: 1, height: 6, borderRadius: 3 },
   progressFill: { height: 6, borderRadius: 3 },
   progressText: { fontSize: 13, minWidth: 36 },
+  // Actions scroll mobile
   actionsRow: { flexDirection: "row", gap: 10, paddingVertical: 4 },
+  // Actions grille tablette
+  actionsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   actionButton: {
     width: 80,
     borderRadius: 12,
@@ -400,6 +392,8 @@ const styles = StyleSheet.create({
     gap: 6,
     borderWidth: 0.5,
   },
+  // Bouton action sur tablette — prend 30% de la largeur
+  actionButtonTablet: { width: "30%" },
   actionIcon: { fontSize: 24 },
   actionText: { fontSize: 12, fontWeight: "500", textAlign: "center" },
   section: { borderRadius: 12, padding: 16, gap: 12 },
