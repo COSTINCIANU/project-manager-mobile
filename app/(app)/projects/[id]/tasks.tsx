@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTasks } from "@/hooks/useTasks";
@@ -36,7 +37,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 // =====================================================
 // TaskItem — Carte tache cliquable dans la liste
 // =====================================================
-function TaskItem({ task }: { task: Task }) {
+function TaskItem({ task, isTablet }: { task: Task; isTablet: boolean }) {
   const router = useRouter();
   // Hook theme pour les couleurs adaptees
   const { theme } = useTheme();
@@ -47,6 +48,8 @@ function TaskItem({ task }: { task: Task }) {
       style={[
         styles.taskCard,
         { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+        // isTablet && { flex: 1 }
+        isTablet && { flex: 1, maxWidth: "49%" },
       ]}
       onPress={() => router.push(`/(app)/tasks/${task.id}` as any)}
       activeOpacity={0.7}
@@ -114,6 +117,7 @@ export default function ProjectTasksScreen() {
   const router = useRouter();
   // Hook theme pour les couleurs adaptees
   const { theme } = useTheme();
+  const { isTablet } = useBreakpoint();
   const { data: tasks, isLoading, refetch, isFetching } = useTasks(Number(id));
 
   return (
@@ -158,9 +162,15 @@ export default function ProjectTasksScreen() {
         <FlatList
           data={tasks}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <TaskItem task={item} />}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <TaskItem task={item} isTablet={isTablet} />
+          )}
+          numColumns={isTablet ? 2 : 1}
+          key={isTablet ? "tablet" : "mobile"}
+          columnWrapperStyle={
+            isTablet ? { gap: 10, paddingHorizontal: 16 } : undefined
+          }
+          contentContainerStyle={[styles.list, isTablet && { padding: 24 }]}
           refreshControl={
             <RefreshControl
               refreshing={isFetching}
