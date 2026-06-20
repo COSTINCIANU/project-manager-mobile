@@ -103,8 +103,6 @@ export default function AppLayout() {
     }
   }, [isAuthenticated, isLoading]);
 
-  if (!isAuthenticated) return null;
-
   // Ecoute les changements de theme systeme en temps reel
   useEffect(() => {
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
@@ -113,6 +111,8 @@ export default function AppLayout() {
     });
     return () => subscription.remove();
   }, []);
+
+  if (!isAuthenticated) return null;
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundTertiary }}>

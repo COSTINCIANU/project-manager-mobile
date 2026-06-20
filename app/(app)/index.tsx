@@ -22,6 +22,7 @@ import { Colors } from "@/constants/colors";
 import { getUserInitials } from "@/types/user";
 import { Project } from "@/types/project";
 import { Task } from "@/types/task";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 
 // Couleurs par priorite — fixes independamment du theme
 const PRIORITY_COLORS: Record<string, string> = {
@@ -150,6 +151,8 @@ export default function DashboardScreen() {
   // Hook theme pour les couleurs adaptees
   const { theme } = useTheme();
 
+  const { isTablet } = useBreakpoint();
+
   // Stats globales
   const totalProjects = projects?.length ?? 0;
   const totalTasks = tasks?.length ?? 0;
@@ -178,210 +181,478 @@ export default function DashboardScreen() {
       style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
     >
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isTablet && styles.contentTablet,
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Section hero — salutation centree */}
-        <View
-          style={[
-            styles.heroSection,
-            {
-              backgroundColor: theme.backgroundPrimary,
-              borderColor: theme.border,
-            },
-          ]}
-        >
-          <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
-            <Text style={styles.avatarText}>
-              {user ? getUserInitials(user) : "?"}
-            </Text>
-          </View>
-          <Text style={[styles.greeting, { color: theme.textPrimary }]}>
-            Bonjour 👋
-          </Text>
-          <Text style={[styles.userName, { color: theme.primary }]}>
-            {user?.name ?? "—"}
-          </Text>
-          <Text style={[styles.userEmail, { color: theme.textTertiary }]}>
-            {user?.email}
-          </Text>
-          <Text style={[styles.date, { color: theme.textSecondary }]}>
-            {new Date().toLocaleDateString("fr-FR", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            })}
-          </Text>
-        </View>
+        {/* Layout tablette — 2 colonnes */}
+        {isTablet ? (
+          <View style={styles.tabletLayout}>
+            {/* Colonne gauche */}
+            <View style={styles.tabletLeft}>
+              {/* Hero */}
+              <View
+                style={[
+                  styles.heroSection,
+                  {
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <View
+                  style={[styles.avatar, { backgroundColor: theme.primary }]}
+                >
+                  <Text style={styles.avatarText}>
+                    {user ? getUserInitials(user) : "?"}
+                  </Text>
+                </View>
+                <Text style={[styles.greeting, { color: theme.textPrimary }]}>
+                  Bonjour 👋
+                </Text>
+                <Text style={[styles.userName, { color: theme.primary }]}>
+                  {user?.name ?? "—"}
+                </Text>
+                <Text style={[styles.userEmail, { color: theme.textTertiary }]}>
+                  {user?.email}
+                </Text>
+                <Text style={[styles.date, { color: theme.textSecondary }]}>
+                  {new Date().toLocaleDateString("fr-FR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}
+                </Text>
+              </View>
 
-        {/* Stats rapides en grille 2x2 */}
-        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-          Vue d'ensemble
-        </Text>
-        <View style={styles.statsGrid}>
-          <View
-            style={[
-              styles.statCard,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <Text style={[styles.statValue, { color: theme.primary }]}>
-              {totalProjects}
-            </Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-              Projets
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.statCard,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <Text style={[styles.statValue, { color: theme.primary }]}>
-              {totalTasks}
-            </Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-              Taches
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.statCard,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-                borderTopColor: Colors.warning,
-                borderTopWidth: 3,
-              },
-            ]}
-          >
-            <Text style={[styles.statValue, { color: Colors.warning }]}>
-              {inProgressTasks}
-            </Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-              En cours
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.statCard,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-                borderTopColor: Colors.success,
-                borderTopWidth: 3,
-              },
-            ]}
-          >
-            <Text style={[styles.statValue, { color: Colors.success }]}>
-              {doneTasks}
-            </Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-              Terminees
-            </Text>
-          </View>
-        </View>
+              {/* Stats */}
+              <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+                Vue d'ensemble
+              </Text>
+              <View style={styles.statsGrid}>
+                <View
+                  style={[
+                    styles.statCard,
+                    {
+                      backgroundColor: theme.backgroundPrimary,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.statValue, { color: theme.primary }]}>
+                    {totalProjects}
+                  </Text>
+                  <Text
+                    style={[styles.statLabel, { color: theme.textSecondary }]}
+                  >
+                    Projets
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.statCard,
+                    {
+                      backgroundColor: theme.backgroundPrimary,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.statValue, { color: theme.primary }]}>
+                    {totalTasks}
+                  </Text>
+                  <Text
+                    style={[styles.statLabel, { color: theme.textSecondary }]}
+                  >
+                    Taches
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.statCard,
+                    {
+                      backgroundColor: theme.backgroundPrimary,
+                      borderColor: theme.border,
+                      borderTopColor: Colors.warning,
+                      borderTopWidth: 3,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.statValue, { color: Colors.warning }]}>
+                    {inProgressTasks}
+                  </Text>
+                  <Text
+                    style={[styles.statLabel, { color: theme.textSecondary }]}
+                  >
+                    En cours
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.statCard,
+                    {
+                      backgroundColor: theme.backgroundPrimary,
+                      borderColor: theme.border,
+                      borderTopColor: Colors.success,
+                      borderTopWidth: 3,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.statValue, { color: Colors.success }]}>
+                    {doneTasks}
+                  </Text>
+                  <Text
+                    style={[styles.statLabel, { color: theme.textSecondary }]}
+                  >
+                    Terminees
+                  </Text>
+                </View>
+              </View>
 
-        {/* Progression globale */}
-        <View
-          style={[
-            styles.globalProgress,
-            {
-              backgroundColor: theme.backgroundPrimary,
-              borderColor: theme.border,
-            },
-          ]}
-        >
-          <View style={styles.globalProgressHeader}>
-            <Text
-              style={[styles.globalProgressLabel, { color: theme.textPrimary }]}
-            >
-              Progression globale
-            </Text>
-            <Text
-              style={[styles.globalProgressValue, { color: theme.primary }]}
-            >
-              {globalProgress}%
-            </Text>
+              {/* Progression */}
+              <View
+                style={[
+                  styles.globalProgress,
+                  {
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <View style={styles.globalProgressHeader}>
+                  <Text
+                    style={[
+                      styles.globalProgressLabel,
+                      { color: theme.textPrimary },
+                    ]}
+                  >
+                    Progression globale
+                  </Text>
+                  <Text
+                    style={[
+                      styles.globalProgressValue,
+                      { color: theme.primary },
+                    ]}
+                  >
+                    {globalProgress}%
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.globalProgressBar,
+                    { backgroundColor: theme.backgroundTertiary },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.globalProgressFill,
+                      {
+                        width: `${globalProgress}%`,
+                        backgroundColor: theme.primary,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.globalProgressSub,
+                    { color: theme.textSecondary },
+                  ]}
+                >
+                  {doneTasks} tache{doneTasks > 1 ? "s" : ""} terminee
+                  {doneTasks > 1 ? "s" : ""} sur {totalTasks}
+                </Text>
+              </View>
+            </View>
+
+            {/* Colonne droite */}
+            <View style={styles.tabletRight}>
+              {/* Projets recents */}
+              {recentProjects.length > 0 && (
+                <View>
+                  <View style={styles.sectionHeader}>
+                    <Text
+                      style={[
+                        styles.sectionTitle,
+                        { color: theme.textPrimary },
+                      ]}
+                    >
+                      Projets recents
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => router.push("/(app)/projects" as any)}
+                    >
+                      <Text style={[styles.seeAll, { color: theme.primary }]}>
+                        Voir tout
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.projectsList}>
+                    {recentProjects.map((project) => (
+                      <RecentProjectCard
+                        key={project.id}
+                        project={project}
+                        onPress={() =>
+                          router.push(`/(app)/projects/${project.id}` as any)
+                        }
+                      />
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* Taches urgentes */}
+              {urgentTasks.length > 0 && (
+                <View>
+                  <View style={styles.sectionHeader}>
+                    <Text
+                      style={[
+                        styles.sectionTitle,
+                        { color: theme.textPrimary },
+                      ]}
+                    >
+                      Taches urgentes
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => router.push("/(app)/tasks" as any)}
+                    >
+                      <Text style={[styles.seeAll, { color: theme.primary }]}>
+                        Voir tout
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.urgentList}>
+                    {urgentTasks.map((task) => (
+                      <UrgentTaskCard key={task.id} task={task} />
+                    ))}
+                  </View>
+                </View>
+              )}
+            </View>
           </View>
-          <View
-            style={[
-              styles.globalProgressBar,
-              { backgroundColor: theme.backgroundTertiary },
-            ]}
-          >
+        ) : (
+          // Layout mobile — colonne unique (code existant)
+          <>
             <View
               style={[
-                styles.globalProgressFill,
-                { width: `${globalProgress}%`, backgroundColor: theme.primary },
+                styles.heroSection,
+                {
+                  backgroundColor: theme.backgroundPrimary,
+                  borderColor: theme.border,
+                },
               ]}
-            />
-          </View>
-          <Text
-            style={[styles.globalProgressSub, { color: theme.textSecondary }]}
-          >
-            {doneTasks} tache{doneTasks > 1 ? "s" : ""} terminee
-            {doneTasks > 1 ? "s" : ""} sur {totalTasks}
-          </Text>
-        </View>
-
-        {/* Projets recents */}
-        {recentProjects.length > 0 && (
-          <View>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-                Projets recents
-              </Text>
-              <TouchableOpacity
-                onPress={() => router.push("/(app)/projects" as any)}
-              >
-                <Text style={[styles.seeAll, { color: theme.primary }]}>
-                  Voir tout
+            >
+              <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
+                <Text style={styles.avatarText}>
+                  {user ? getUserInitials(user) : "?"}
                 </Text>
-              </TouchableOpacity>
+              </View>
+              <Text style={[styles.greeting, { color: theme.textPrimary }]}>
+                Bonjour 👋
+              </Text>
+              <Text style={[styles.userName, { color: theme.primary }]}>
+                {user?.name ?? "—"}
+              </Text>
+              <Text style={[styles.userEmail, { color: theme.textTertiary }]}>
+                {user?.email}
+              </Text>
+              <Text style={[styles.date, { color: theme.textSecondary }]}>
+                {new Date().toLocaleDateString("fr-FR", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}
+              </Text>
             </View>
-            <View style={styles.projectsList}>
-              {recentProjects.map((project) => (
-                <RecentProjectCard
-                  key={project.id}
-                  project={project}
-                  onPress={() =>
-                    router.push(`/(app)/projects/${project.id}` as any)
-                  }
+
+            <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+              Vue d'ensemble
+            </Text>
+            <View style={styles.statsGrid}>
+              <View
+                style={[
+                  styles.statCard,
+                  {
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.statValue, { color: theme.primary }]}>
+                  {totalProjects}
+                </Text>
+                <Text
+                  style={[styles.statLabel, { color: theme.textSecondary }]}
+                >
+                  Projets
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.statCard,
+                  {
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.statValue, { color: theme.primary }]}>
+                  {totalTasks}
+                </Text>
+                <Text
+                  style={[styles.statLabel, { color: theme.textSecondary }]}
+                >
+                  Taches
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.statCard,
+                  {
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
+                    borderTopColor: Colors.warning,
+                    borderTopWidth: 3,
+                  },
+                ]}
+              >
+                <Text style={[styles.statValue, { color: Colors.warning }]}>
+                  {inProgressTasks}
+                </Text>
+                <Text
+                  style={[styles.statLabel, { color: theme.textSecondary }]}
+                >
+                  En cours
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.statCard,
+                  {
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
+                    borderTopColor: Colors.success,
+                    borderTopWidth: 3,
+                  },
+                ]}
+              >
+                <Text style={[styles.statValue, { color: Colors.success }]}>
+                  {doneTasks}
+                </Text>
+                <Text
+                  style={[styles.statLabel, { color: theme.textSecondary }]}
+                >
+                  Terminees
+                </Text>
+              </View>
+            </View>
+
+            <View
+              style={[
+                styles.globalProgress,
+                {
+                  backgroundColor: theme.backgroundPrimary,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <View style={styles.globalProgressHeader}>
+                <Text
+                  style={[
+                    styles.globalProgressLabel,
+                    { color: theme.textPrimary },
+                  ]}
+                >
+                  Progression globale
+                </Text>
+                <Text
+                  style={[styles.globalProgressValue, { color: theme.primary }]}
+                >
+                  {globalProgress}%
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.globalProgressBar,
+                  { backgroundColor: theme.backgroundTertiary },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.globalProgressFill,
+                    {
+                      width: `${globalProgress}%`,
+                      backgroundColor: theme.primary,
+                    },
+                  ]}
                 />
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Taches urgentes */}
-        {urgentTasks.length > 0 && (
-          <View>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-                Taches urgentes
-              </Text>
-              <TouchableOpacity
-                onPress={() => router.push("/(app)/tasks" as any)}
+              </View>
+              <Text
+                style={[
+                  styles.globalProgressSub,
+                  { color: theme.textSecondary },
+                ]}
               >
-                <Text style={[styles.seeAll, { color: theme.primary }]}>
-                  Voir tout
-                </Text>
-              </TouchableOpacity>
+                {doneTasks} tache{doneTasks > 1 ? "s" : ""} terminee
+                {doneTasks > 1 ? "s" : ""} sur {totalTasks}
+              </Text>
             </View>
-            <View style={styles.urgentList}>
-              {urgentTasks.map((task) => (
-                <UrgentTaskCard key={task.id} task={task} />
-              ))}
-            </View>
-          </View>
+
+            {recentProjects.length > 0 && (
+              <View>
+                <View style={styles.sectionHeader}>
+                  <Text
+                    style={[styles.sectionTitle, { color: theme.textPrimary }]}
+                  >
+                    Projets recents
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => router.push("/(app)/projects" as any)}
+                  >
+                    <Text style={[styles.seeAll, { color: theme.primary }]}>
+                      Voir tout
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.projectsList}>
+                  {recentProjects.map((project) => (
+                    <RecentProjectCard
+                      key={project.id}
+                      project={project}
+                      onPress={() =>
+                        router.push(`/(app)/projects/${project.id}` as any)
+                      }
+                    />
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {urgentTasks.length > 0 && (
+              <View>
+                <View style={styles.sectionHeader}>
+                  <Text
+                    style={[styles.sectionTitle, { color: theme.textPrimary }]}
+                  >
+                    Taches urgentes
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => router.push("/(app)/tasks" as any)}
+                  >
+                    <Text style={[styles.seeAll, { color: theme.primary }]}>
+                      Voir tout
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.urgentList}>
+                  {urgentTasks.map((task) => (
+                    <UrgentTaskCard key={task.id} task={task} />
+                  ))}
+                </View>
+              </View>
+            )}
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -490,4 +761,10 @@ const styles = StyleSheet.create({
   priorityText: { fontSize: 11, fontWeight: "600" },
   urgentDate: { fontSize: 11 },
   urgentStatus: { fontSize: 11 },
+
+  // Layout tablette — 2 colonnes
+  contentTablet: { padding: 24 },
+  tabletLayout: { flexDirection: "row", gap: 24, alignItems: "flex-start" },
+  tabletLeft: { flex: 1, gap: 20 },
+  tabletRight: { flex: 1, gap: 20 },
 });
