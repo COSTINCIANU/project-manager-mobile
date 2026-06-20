@@ -3,6 +3,7 @@
 // Formulaire pre-rempli avec les donnees actuelles
 // Note : DatePicker natif desactive pour Expo Go
 // Theme clair/sombre automatique selon le systeme
+// Sur tablette : formulaire centre avec largeur max
 // =====================================================
 
 import {
@@ -20,6 +21,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useTask, useUpdateTask } from "@/hooks/useTasks";
 import { useTheme } from "@/hooks/useTheme";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { Colors } from "@/constants/colors";
 
 // Priorites disponibles — couleurs fixes independamment du theme
@@ -31,14 +33,17 @@ const PRIORITIES = [
 ];
 
 export default function EditTaskScreen() {
+  // Recupere l'ID du projet et de la tache depuis l'URL
   const { id, taskId } = useLocalSearchParams<{ id: string; taskId: string }>();
   const router = useRouter();
   const { data: task, isLoading } = useTask(Number(taskId));
   const updateTask = useUpdateTask();
-  // Hook theme pour les couleurs adaptees
+  // Hook theme — retourne les couleurs selon mode clair/sombre
   const { theme } = useTheme();
+  // Hook breakpoint — isTablet est true si l'ecran est >= 768px
+  const { isTablet } = useBreakpoint();
 
-  // Champs du formulaire
+  // ETATS — champs du formulaire
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("normale");
@@ -102,7 +107,6 @@ export default function EditTaskScreen() {
           inProgress,
         } as any,
       });
-
       Alert.alert("Succes", "Tache modifiee avec succes !", [
         {
           text: "Voir les projets",
@@ -115,7 +119,6 @@ export default function EditTaskScreen() {
         },
       ]);
     } catch (error: any) {
-      console.log("Erreur modification tache:", error?.response?.data);
       Alert.alert("Erreur", "Impossible de modifier la tache.");
     } finally {
       setIsSubmitting(false);
@@ -179,8 +182,12 @@ export default function EditTaskScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Formulaire — centre sur tablette */}
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isTablet && styles.contentTablet,
+        ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -190,6 +197,7 @@ export default function EditTaskScreen() {
             Statut
           </Text>
           <View style={styles.statusRow}>
+            {/* Bouton A faire */}
             <TouchableOpacity
               style={[
                 styles.statusOption,
@@ -222,6 +230,7 @@ export default function EditTaskScreen() {
                 ⏳ A faire
               </Text>
             </TouchableOpacity>
+            {/* Bouton En cours */}
             <TouchableOpacity
               style={[
                 styles.statusOption,
@@ -251,6 +260,7 @@ export default function EditTaskScreen() {
                 🔄 En cours
               </Text>
             </TouchableOpacity>
+            {/* Bouton Termine */}
             <TouchableOpacity
               style={[
                 styles.statusOption,
@@ -396,6 +406,7 @@ export default function EditTaskScreen() {
 
 // =====================
 // STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -414,7 +425,15 @@ const styles = StyleSheet.create({
   saveButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   saveButtonDisabled: { opacity: 0.4 },
   saveButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
+  // Contenu mobile
   content: { padding: 20, gap: 20 },
+  // Contenu tablette — centre avec largeur max
+  contentTablet: {
+    maxWidth: 700,
+    alignSelf: "center",
+    width: "100%",
+    padding: 32,
+  },
   field: { gap: 8 },
   label: { fontSize: 14, fontWeight: "500" },
   hint: { fontSize: 12 },

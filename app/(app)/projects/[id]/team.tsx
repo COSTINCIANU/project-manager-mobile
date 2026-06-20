@@ -3,6 +3,7 @@
 // Affiche les membres invites et permet d'en inviter
 // de nouveaux en entrant leur email
 // Theme clair/sombre automatique selon le systeme
+// Sur tablette : layout 2 colonnes formulaire/liste
 // =====================================================
 
 import {
@@ -17,6 +18,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useState, useEffect } from "react";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
@@ -33,13 +35,19 @@ interface Invitation {
 }
 
 export default function TeamScreen() {
+  // Recupere l'ID du projet depuis l'URL
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  // Hook theme pour les couleurs adaptees
+  // Hook theme — retourne les couleurs selon mode clair/sombre
   const { theme } = useTheme();
+  // Hook breakpoint — isTablet est true si l'ecran est >= 768px
+  const { isTablet } = useBreakpoint();
 
+  // ETATS — liste des invitations
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // ETATS — formulaire d'invitation
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("dev");
   const [isSending, setIsSending] = useState(false);
@@ -51,10 +59,12 @@ export default function TeamScreen() {
     { value: "client", label: "👤 Client" },
   ];
 
+  // Charge les invitations au demarrage
   useEffect(() => {
     loadInvitations();
   }, [id]);
 
+  // Recupere les invitations depuis l'API
   const loadInvitations = async () => {
     try {
       const { data } = await apiClient.get(
@@ -68,6 +78,7 @@ export default function TeamScreen() {
     }
   };
 
+  // Envoie une invitation par email
   const handleInvite = async () => {
     if (!email.trim()) {
       Alert.alert("Champ requis", "Veuillez entrer un email.");
@@ -94,7 +105,7 @@ export default function TeamScreen() {
     }
   };
 
-  // Retourne la couleur selon le statut
+  // Retourne la couleur selon le statut de l'invitation
   const getStatusColor = (status: string) => {
     switch (status) {
       case "accepted":
@@ -133,6 +144,165 @@ export default function TeamScreen() {
     );
   }
 
+  // =====================================================
+  // FORMULAIRE D'INVITATION — reutilise sur mobile et tablette
+  // =====================================================
+  const InviteForm = () => (
+    <View
+      style={[
+        styles.section,
+        { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+      ]}
+    >
+      <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+        Inviter un membre
+      </Text>
+
+      {/* Champ email */}
+      <View style={styles.field}>
+        <Text style={[styles.label, { color: theme.textPrimary }]}>Email</Text>
+        <TextInput
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+              color: theme.textPrimary,
+            },
+          ]}
+          placeholder="email@exemple.com"
+          placeholderTextColor={theme.textTertiary}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          maxLength={100}
+        />
+      </View>
+
+      {/* Selecteur de role */}
+      <View style={styles.field}>
+        <Text style={[styles.label, { color: theme.textPrimary }]}>Role</Text>
+        <View style={styles.rolesRow}>
+          {ROLES.map((r) => (
+            <TouchableOpacity
+              key={r.value}
+              style={[
+                styles.roleOption,
+                {
+                  borderColor: theme.border,
+                  backgroundColor: theme.backgroundSecondary,
+                },
+                // Role actif — fond primaire
+                role === r.value && {
+                  backgroundColor: theme.primary,
+                  borderColor: theme.primary,
+                },
+              ]}
+              onPress={() => setRole(r.value)}
+            >
+              <Text
+                style={[
+                  styles.roleText,
+                  { color: theme.textSecondary },
+                  role === r.value && styles.roleTextActive,
+                ]}
+              >
+                {r.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Bouton envoyer l'invitation */}
+      <TouchableOpacity
+        style={[
+          styles.inviteButton,
+          { backgroundColor: theme.primary },
+          isSending && styles.inviteButtonDisabled,
+        ]}
+        onPress={handleInvite}
+        disabled={isSending}
+      >
+        {isSending ? (
+          <ActivityIndicator color="#FFFFFF" size="small" />
+        ) : (
+          <Text style={styles.inviteButtonText}>✉️ Envoyer l'invitation</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
+  // =====================================================
+  // LISTE DES INVITATIONS — reutilisee sur mobile et tablette
+  // =====================================================
+  const InvitationList = () => (
+    <View
+      style={[
+        styles.section,
+        { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+      ]}
+    >
+      <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+        Invitations ({invitations.length})
+      </Text>
+
+      {invitations.length === 0 ? (
+        // Message si aucune invitation
+        <View style={styles.empty}>
+          <Text style={styles.emptyIcon}>👥</Text>
+          <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
+            Aucune invitation envoyee
+          </Text>
+        </View>
+      ) : (
+        // Liste des invitations
+        invitations.map((invitation) => (
+          <View
+            key={invitation.id}
+            style={[styles.invitationCard, { borderBottomColor: theme.border }]}
+          >
+            <View style={styles.invitationInfo}>
+              <Text
+                style={[styles.invitationEmail, { color: theme.textPrimary }]}
+              >
+                {invitation.email}
+              </Text>
+              <Text
+                style={[styles.invitationRole, { color: theme.textSecondary }]}
+              >
+                Role : {invitation.role}
+              </Text>
+              <Text
+                style={[styles.invitationDate, { color: theme.textTertiary }]}
+              >
+                Envoye le{" "}
+                {new Date(invitation.createdAt).toLocaleDateString("fr-FR")}
+              </Text>
+            </View>
+            {/* Badge de statut colore */}
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(invitation.status) + "20" },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.statusText,
+                  { color: getStatusColor(invitation.status) },
+                ]}
+              >
+                {getStatusLabel(invitation.status)}
+              </Text>
+            </View>
+          </View>
+        ))
+      )}
+    </View>
+  );
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
@@ -161,189 +331,46 @@ export default function TeamScreen() {
         </Text>
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Section formulaire d'invitation */}
-        <View
-          key="invite-form"
-          style={[
-            styles.section,
-            {
-              backgroundColor: theme.backgroundPrimary,
-              borderColor: theme.border,
-            },
-          ]}
+      {isTablet ? (
+        // =====================================================
+        // LAYOUT TABLETTE — formulaire a gauche, liste a droite
+        // =====================================================
+        <ScrollView
+          contentContainerStyle={styles.contentTablet}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-            Inviter un membre
-          </Text>
-
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: theme.textPrimary }]}>
-              Email
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  borderColor: theme.border,
-                  color: theme.textPrimary,
-                },
-              ]}
-              placeholder="email@exemple.com"
-              placeholderTextColor={theme.textTertiary}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              maxLength={100}
-            />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: theme.textPrimary }]}>
-              Role
-            </Text>
-            <View style={styles.rolesRow}>
-              {ROLES.map((r) => (
-                <TouchableOpacity
-                  key={r.value}
-                  style={[
-                    styles.roleOption,
-                    {
-                      borderColor: theme.border,
-                      backgroundColor: theme.backgroundSecondary,
-                    },
-                    role === r.value && {
-                      backgroundColor: theme.primary,
-                      borderColor: theme.primary,
-                    },
-                  ]}
-                  onPress={() => setRole(r.value)}
-                >
-                  <Text
-                    style={[
-                      styles.roleText,
-                      { color: theme.textSecondary },
-                      role === r.value && styles.roleTextActive,
-                    ]}
-                  >
-                    {r.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+          <View style={styles.tabletLayout}>
+            {/* Colonne gauche — formulaire d'invitation */}
+            <View style={styles.tabletLeft}>
+              <InviteForm />
+            </View>
+            {/* Colonne droite — liste des invitations */}
+            <View style={styles.tabletRight}>
+              <InvitationList />
             </View>
           </View>
-
-          <TouchableOpacity
-            style={[
-              styles.inviteButton,
-              { backgroundColor: theme.primary },
-              isSending && styles.inviteButtonDisabled,
-            ]}
-            onPress={handleInvite}
-            disabled={isSending}
-          >
-            {isSending ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <Text style={styles.inviteButtonText}>
-                ✉️ Envoyer l'invitation
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Section liste des invitations */}
-        <View
-          key="invite-list"
-          style={[
-            styles.section,
-            {
-              backgroundColor: theme.backgroundPrimary,
-              borderColor: theme.border,
-            },
-          ]}
+        </ScrollView>
+      ) : (
+        // =====================================================
+        // LAYOUT MOBILE — formulaire puis liste en colonne
+        // =====================================================
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-            Invitations ({invitations.length})
-          </Text>
-
-          {invitations.length === 0 ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyIcon}>👥</Text>
-              <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
-                Aucune invitation envoyee
-              </Text>
-            </View>
-          ) : (
-            invitations.map((invitation) => (
-              <View
-                key={invitation.id}
-                style={[
-                  styles.invitationCard,
-                  { borderBottomColor: theme.border },
-                ]}
-              >
-                <View style={styles.invitationInfo}>
-                  <Text
-                    style={[
-                      styles.invitationEmail,
-                      { color: theme.textPrimary },
-                    ]}
-                  >
-                    {invitation.email}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.invitationRole,
-                      { color: theme.textSecondary },
-                    ]}
-                  >
-                    Role : {invitation.role}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.invitationDate,
-                      { color: theme.textTertiary },
-                    ]}
-                  >
-                    Envoye le{" "}
-                    {new Date(invitation.createdAt).toLocaleDateString("fr-FR")}
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.statusBadge,
-                    {
-                      backgroundColor: getStatusColor(invitation.status) + "20",
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.statusText,
-                      { color: getStatusColor(invitation.status) },
-                    ]}
-                  >
-                    {getStatusLabel(invitation.status)}
-                  </Text>
-                </View>
-              </View>
-            ))
-          )}
-        </View>
-      </ScrollView>
+          <InviteForm />
+          <InvitationList />
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
 
 // =====================
 // STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -360,9 +387,23 @@ const styles = StyleSheet.create({
   backText: { fontSize: 15 },
   title: { fontSize: 18, fontWeight: "600", flex: 1 },
   count: { fontSize: 13 },
+
+  // Layout mobile — colonne unique
   content: { padding: 16, gap: 16 },
+
+  // Layout tablette — 2 colonnes
+  contentTablet: { padding: 24 },
+  tabletLayout: { flexDirection: "row", gap: 24, alignItems: "flex-start" },
+  // Colonne gauche — formulaire
+  tabletLeft: { flex: 1 },
+  // Colonne droite — liste
+  tabletRight: { flex: 1 },
+
+  // Section
   section: { borderRadius: 16, padding: 16, gap: 14, borderWidth: 0.5 },
   sectionTitle: { fontSize: 15, fontWeight: "600" },
+
+  // Champs formulaire
   field: { gap: 6 },
   label: { fontSize: 14, fontWeight: "500" },
   input: {
@@ -372,6 +413,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 15,
   },
+
+  // Selecteur de role
   rolesRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   roleOption: {
     paddingHorizontal: 12,
@@ -381,6 +424,8 @@ const styles = StyleSheet.create({
   },
   roleText: { fontSize: 13 },
   roleTextActive: { color: "#FFFFFF", fontWeight: "500" },
+
+  // Bouton invitation
   inviteButton: {
     height: 48,
     borderRadius: 12,
@@ -389,6 +434,8 @@ const styles = StyleSheet.create({
   },
   inviteButtonDisabled: { opacity: 0.5 },
   inviteButtonText: { fontSize: 15, fontWeight: "600", color: "#FFFFFF" },
+
+  // Carte invitation
   invitationCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -400,8 +447,12 @@ const styles = StyleSheet.create({
   invitationEmail: { fontSize: 14, fontWeight: "500" },
   invitationRole: { fontSize: 12 },
   invitationDate: { fontSize: 11 },
+
+  // Badge statut
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   statusText: { fontSize: 12, fontWeight: "500" },
+
+  // Etat vide
   empty: { alignItems: "center", gap: 8, padding: 20 },
   emptyIcon: { fontSize: 32 },
   emptyText: { fontSize: 14 },

@@ -3,6 +3,7 @@
 // Formulaire pre-rempli avec les donnees du projet
 // Champs : nom, statut, couleur
 // Theme clair/sombre automatique selon le systeme
+// Sur tablette : formulaire centre avec largeur max
 // =====================================================
 
 import {
@@ -20,6 +21,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useProject, useUpdateProject } from "@/hooks/useProjects";
 import { useTheme } from "@/hooks/useTheme";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { Colors } from "@/constants/colors";
 
 // Statuts disponibles pour un projet
@@ -29,7 +31,7 @@ const STATUSES = [
   { value: "archived", label: "📦 Archive" },
 ];
 
-// Couleurs disponibles pour un projet — fixes independamment du theme
+// Couleurs disponibles — fixes independamment du theme
 const PROJECT_COLORS = [
   { value: "#6366F1", label: "Indigo" },
   { value: "#22C55E", label: "Vert" },
@@ -40,15 +42,18 @@ const PROJECT_COLORS = [
 ];
 
 export default function EditProjectScreen() {
+  // Recupere l'ID du projet depuis l'URL
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  // Hook theme pour les couleurs adaptees
+  // Hook theme — retourne les couleurs selon mode clair/sombre
   const { theme } = useTheme();
+  // Hook breakpoint — isTablet est true si l'ecran est >= 768px
+  const { isTablet } = useBreakpoint();
 
   const { data: project, isLoading } = useProject(Number(id));
   const updateProject = useUpdateProject();
 
-  // Champs du formulaire
+  // ETATS — champs du formulaire
   const [name, setName] = useState("");
   const [status, setStatus] = useState("active");
   const [color, setColor] = useState("#6366F1");
@@ -69,14 +74,12 @@ export default function EditProjectScreen() {
       Alert.alert("Champ requis", "Le nom du projet est obligatoire.");
       return;
     }
-
     setIsSubmitting(true);
     try {
       await updateProject.mutateAsync({
         id: Number(id),
         payload: { name: name.trim(), status: status as any, color },
       });
-
       Alert.alert("Succes", "Projet modifie avec succes !", [
         {
           text: "Voir les projets",
@@ -89,7 +92,6 @@ export default function EditProjectScreen() {
         },
       ]);
     } catch (error: any) {
-      console.log("Erreur modification projet:", error?.response?.data);
       Alert.alert("Erreur", "Impossible de modifier le projet.");
     } finally {
       setIsSubmitting(false);
@@ -153,8 +155,12 @@ export default function EditProjectScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Formulaire — centre sur tablette */}
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isTablet && styles.contentTablet,
+        ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -195,6 +201,7 @@ export default function EditProjectScreen() {
                     borderColor: theme.border,
                     backgroundColor: theme.backgroundPrimary,
                   },
+                  // Statut actif — fond primaire leger
                   status === s.value && {
                     backgroundColor: theme.primary + "20",
                     borderColor: theme.primary,
@@ -231,6 +238,7 @@ export default function EditProjectScreen() {
                 style={[
                   styles.colorOption,
                   { backgroundColor: c.value },
+                  // Coche blanche si couleur selectionnee
                   color === c.value && styles.colorOptionSelected,
                 ]}
                 onPress={() => setColor(c.value)}
@@ -247,6 +255,7 @@ export default function EditProjectScreen() {
 
 // =====================
 // STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -265,7 +274,15 @@ const styles = StyleSheet.create({
   saveButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   saveButtonDisabled: { opacity: 0.4 },
   saveButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
+  // Contenu mobile
   content: { padding: 20, gap: 20 },
+  // Contenu tablette — centre avec largeur max
+  contentTablet: {
+    maxWidth: 700,
+    alignSelf: "center",
+    width: "100%",
+    padding: 32,
+  },
   field: { gap: 8 },
   label: { fontSize: 14, fontWeight: "500" },
   input: {

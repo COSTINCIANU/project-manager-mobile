@@ -4,6 +4,7 @@
 // nom, description, priorite, date echeance
 // Note : DatePicker natif desactive pour Expo Go
 // Theme clair/sombre automatique selon le systeme
+// Sur tablette : formulaire centre avec largeur max
 // =====================================================
 
 import {
@@ -21,6 +22,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { useCreateTask } from "@/hooks/useTasks";
 import { useTheme } from "@/hooks/useTheme";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { Colors } from "@/constants/colors";
 
 // Priorites disponibles — couleurs fixes independamment du theme
@@ -32,13 +34,16 @@ const PRIORITIES = [
 ];
 
 export default function CreateTaskScreen() {
+  // Recupere l'ID du projet depuis l'URL
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const createTask = useCreateTask();
-  // Hook theme pour les couleurs adaptees
+  // Hook theme — retourne les couleurs selon mode clair/sombre
   const { theme } = useTheme();
+  // Hook breakpoint — isTablet est true si l'ecran est >= 768px
+  const { isTablet } = useBreakpoint();
 
-  // Champs du formulaire
+  // ETATS — champs du formulaire
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("normale");
@@ -87,12 +92,10 @@ export default function CreateTaskScreen() {
         color: "#6366F1",
         progress: 0,
       } as any);
-
       Alert.alert("Succes", "Tache creee avec succes !", [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error: any) {
-      console.log("Erreur creation tache:", error?.response?.data);
       Alert.alert("Erreur", "Impossible de creer la tache.");
     } finally {
       setIsSubmitting(false);
@@ -141,8 +144,12 @@ export default function CreateTaskScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Formulaire — centre sur tablette */}
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isTablet && styles.contentTablet,
+        ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -262,6 +269,7 @@ export default function CreateTaskScreen() {
 
 // =====================
 // STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -279,7 +287,15 @@ const styles = StyleSheet.create({
   createButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   createButtonDisabled: { opacity: 0.4 },
   createButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
+  // Contenu mobile
   content: { padding: 20, gap: 20 },
+  // Contenu tablette — centre avec largeur max
+  contentTablet: {
+    maxWidth: 700,
+    alignSelf: "center",
+    width: "100%",
+    padding: 32,
+  },
   field: { gap: 8 },
   label: { fontSize: 14, fontWeight: "500" },
   hint: { fontSize: 12 },

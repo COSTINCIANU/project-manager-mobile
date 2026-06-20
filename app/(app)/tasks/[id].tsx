@@ -3,6 +3,9 @@
 // Affiche les infos, sous-taches, commentaires
 // et fichiers attaches a la tache
 // Theme clair/sombre automatique selon le systeme
+// Sur tablette : layout 2 colonnes
+//   Gauche : infos, sous-taches, fichiers
+//   Droite : commentaires
 // =====================================================
 
 import {
@@ -26,6 +29,7 @@ import { useTask } from "@/hooks/useTasks";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
 import { useTheme } from "@/hooks/useTheme";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { Colors } from "@/constants/colors";
 
 // Type pour un commentaire
@@ -54,16 +58,22 @@ interface SubTask {
 }
 
 export default function TaskDetailScreen() {
+  // Recupere l'ID de la tache depuis l'URL
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { data: task, isLoading } = useTask(Number(id));
   const queryClient = useQueryClient();
-  // Hook theme pour les couleurs adaptees
+  // Hook theme — retourne les couleurs selon mode clair/sombre
   const { theme } = useTheme();
+  // Hook breakpoint — isTablet est true si l'ecran est >= 768px
+  const { isTablet } = useBreakpoint();
 
+  // ETATS — donnees chargees depuis l'API
   const [comments, setComments] = useState<Comment[]>([]);
   const [subtasks, setSubtasks] = useState<SubTask[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+
+  // ETATS — formulaires et chargement
   const [newComment, setNewComment] = useState("");
   const [sendingComment, setSendingComment] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -71,11 +81,13 @@ export default function TaskDetailScreen() {
   const [newSubtask, setNewSubtask] = useState("");
   const [addingSubtask, setAddingSubtask] = useState(false);
 
+  // Charge les donnees au demarrage
   useEffect(() => {
     if (!id) return;
     loadData();
   }, [id]);
 
+  // Charge commentaires, fichiers et sous-taches en parallele
   const loadData = async () => {
     try {
       const [commentsRes, attachmentsRes] = await Promise.all([
@@ -83,6 +95,7 @@ export default function TaskDetailScreen() {
         apiClient.get(API_ENDPOINTS.ATTACHMENTS(Number(id))),
       ]);
       setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
+      // Utilise les sous-taches deja chargees via useTask
       setSubtasks(task?.subTasks ?? []);
       setAttachments(
         Array.isArray(attachmentsRes.data) ? attachmentsRes.data : [],
@@ -94,6 +107,7 @@ export default function TaskDetailScreen() {
     }
   };
 
+  // Envoie un nouveau commentaire
   const handleSendComment = async () => {
     if (!newComment.trim()) return;
     setSendingComment(true);
@@ -111,6 +125,7 @@ export default function TaskDetailScreen() {
     }
   };
 
+  // Coche ou decoche une sous-tache
   const handleToggleSubtask = async (subtask: SubTask) => {
     try {
       await apiClient.put(API_ENDPOINTS.SUBTASK(subtask.id), {
@@ -126,6 +141,7 @@ export default function TaskDetailScreen() {
     }
   };
 
+  // Ajoute une nouvelle sous-tache
   const handleAddSubtask = async () => {
     if (!newSubtask.trim()) return;
     setAddingSubtask(true);
@@ -146,6 +162,7 @@ export default function TaskDetailScreen() {
     }
   };
 
+  // Supprime une sous-tache avec confirmation
   const handleDeleteSubtask = async (subtaskId: number) => {
     Alert.alert("Supprimer", "Voulez-vous supprimer cette sous-tache ?", [
       { text: "Annuler", style: "cancel" },
@@ -164,6 +181,7 @@ export default function TaskDetailScreen() {
     ]);
   };
 
+  // Ouvre le selecteur de fichier et uploade
   const handleUploadFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -193,6 +211,7 @@ export default function TaskDetailScreen() {
     }
   };
 
+  // Supprime un fichier avec confirmation
   const handleDeleteAttachment = async (attachmentId: number) => {
     Alert.alert("Supprimer", "Voulez-vous supprimer ce fichier ?", [
       { text: "Annuler", style: "cancel" },
@@ -211,6 +230,7 @@ export default function TaskDetailScreen() {
     ]);
   };
 
+  // Retourne une icone selon le type MIME du fichier
   const getFileIcon = (mimeType: string): string => {
     if (mimeType.includes("image")) return "🖼";
     if (mimeType.includes("pdf")) return "📄";
@@ -236,6 +256,300 @@ export default function TaskDetailScreen() {
   }
 
   if (!task) return null;
+
+  // =====================================================
+  // CONTENU COLONNE GAUCHE — infos, sous-taches, fichiers
+  // Utilise sur mobile (inline) et tablette (colonne)
+  // =====================================================
+  const LeftContent = () => (
+    <>
+      {/* Badges statut et priorite */}
+      <View style={styles.badgesRow}>
+        <View
+          style={[
+            styles.statusBadge,
+            {
+              backgroundColor: task.done
+                ? Colors.success + "20"
+                : task.inProgress
+                  ? Colors.warning + "20"
+                  : theme.textTertiary + "20",
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.statusText,
+              {
+                color: task.done
+                  ? Colors.success
+                  : task.inProgress
+                    ? Colors.warning
+                    : theme.textTertiary,
+              },
+            ]}
+          >
+            {task.done
+              ? "✅ Termine"
+              : task.inProgress
+                ? "🔄 En cours"
+                : "⏳ A faire"}
+          </Text>
+        </View>
+        <View
+          style={[
+            styles.priorityBadge,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.priorityText, { color: theme.textSecondary }]}>
+            {task.priority}
+          </Text>
+        </View>
+      </View>
+
+      {/* Description */}
+      {task.description ? (
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
+            Description
+          </Text>
+          <Text style={[styles.description, { color: theme.textSecondary }]}>
+            {task.description}
+          </Text>
+        </View>
+      ) : null}
+
+      {/* Date d'echeance */}
+      {task.dueDate && (
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.backgroundPrimary,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
+            Date d'echeance
+          </Text>
+          <Text style={[styles.dueDate, { color: theme.textPrimary }]}>
+            📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
+          </Text>
+        </View>
+      )}
+
+      {/* Sous-taches */}
+      <View
+        style={[
+          styles.section,
+          {
+            backgroundColor: theme.backgroundPrimary,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
+            Sous-taches ({subtasks.filter((s) => s.completed).length}/
+            {subtasks.length})
+          </Text>
+        </View>
+        {subtasks.map((subtask) => (
+          <View key={subtask.id} style={styles.subtaskRow}>
+            <TouchableOpacity onPress={() => handleToggleSubtask(subtask)}>
+              <View
+                style={[
+                  styles.checkbox,
+                  { borderColor: theme.border },
+                  subtask.completed && styles.checkboxDone,
+                ]}
+              >
+                {subtask.completed && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+            </TouchableOpacity>
+            <Text
+              style={[
+                styles.subtaskTitle,
+                { color: theme.textPrimary },
+                subtask.completed && {
+                  textDecorationLine: "line-through",
+                  color: theme.textTertiary,
+                },
+              ]}
+            >
+              {subtask.title}
+            </Text>
+            <TouchableOpacity onPress={() => handleDeleteSubtask(subtask.id)}>
+              <Text style={{ fontSize: 14, color: Colors.danger }}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+        {/* Champ ajout sous-tache */}
+        <View style={styles.subtaskInputRow}>
+          <TextInput
+            style={[
+              styles.subtaskInput,
+              {
+                borderColor: theme.border,
+                color: theme.textPrimary,
+                backgroundColor: theme.backgroundSecondary,
+              },
+            ]}
+            placeholder="Ajouter une sous-tache..."
+            placeholderTextColor={theme.textTertiary}
+            value={newSubtask}
+            onChangeText={setNewSubtask}
+            maxLength={100}
+            onSubmitEditing={handleAddSubtask}
+          />
+          <TouchableOpacity
+            onPress={handleAddSubtask}
+            disabled={!newSubtask.trim() || addingSubtask}
+            style={[
+              styles.subtaskAddButton,
+              { backgroundColor: theme.primary },
+              (!newSubtask.trim() || addingSubtask) &&
+                styles.sendButtonDisabled,
+            ]}
+          >
+            {addingSubtask ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.sendButtonText}>+</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Fichiers */}
+      <View
+        style={[
+          styles.section,
+          {
+            backgroundColor: theme.backgroundPrimary,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
+            Fichiers ({attachments.length})
+          </Text>
+          <TouchableOpacity
+            onPress={handleUploadFile}
+            disabled={uploadingFile}
+            style={[
+              styles.uploadButton,
+              { backgroundColor: theme.primary + "15" },
+            ]}
+          >
+            {uploadingFile ? (
+              <ActivityIndicator size="small" color={theme.primary} />
+            ) : (
+              <Text style={[styles.uploadButtonText, { color: theme.primary }]}>
+                + Ajouter
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+        {attachments.length === 0 ? (
+          <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
+            Aucun fichier attache
+          </Text>
+        ) : (
+          attachments.map((attachment) => (
+            <View key={attachment.id} style={styles.attachmentRow}>
+              <Text style={styles.attachmentIcon}>
+                {getFileIcon(attachment.mimeType)}
+              </Text>
+              <View style={styles.attachmentInfo}>
+                <Text
+                  style={[styles.attachmentName, { color: theme.textPrimary }]}
+                  numberOfLines={1}
+                >
+                  {attachment.filename}
+                </Text>
+                <Text
+                  style={[styles.attachmentSize, { color: theme.textTertiary }]}
+                >
+                  {new Date(attachment.uploadedAt).toLocaleDateString("fr-FR")}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => handleDeleteAttachment(attachment.id)}
+                style={styles.deleteButton}
+              >
+                <Text style={styles.deleteButtonText}>🗑</Text>
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
+      </View>
+    </>
+  );
+
+  // =====================================================
+  // CONTENU COLONNE DROITE — commentaires
+  // Utilise sur mobile (inline) et tablette (colonne)
+  // =====================================================
+  const RightContent = () => (
+    <View
+      style={[
+        styles.section,
+        { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+      ]}
+    >
+      <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
+        Commentaires ({comments.length})
+      </Text>
+      {loadingData ? (
+        <ActivityIndicator color={theme.primary} />
+      ) : comments.length === 0 ? (
+        <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
+          Aucun commentaire
+        </Text>
+      ) : (
+        comments.map((comment) => (
+          <View
+            key={comment.id}
+            style={[
+              styles.commentCard,
+              { backgroundColor: theme.backgroundSecondary },
+            ]}
+          >
+            <View style={styles.commentHeader}>
+              <Text
+                style={[styles.commentAuthor, { color: theme.textPrimary }]}
+              >
+                {comment.author?.name ?? comment.author?.email ?? "Utilisateur"}
+              </Text>
+              <Text style={[styles.commentDate, { color: theme.textTertiary }]}>
+                {new Date(comment.createdAt).toLocaleDateString("fr-FR")}
+              </Text>
+            </View>
+            <Text
+              style={[styles.commentContent, { color: theme.textSecondary }]}
+            >
+              {comment.content}
+            </Text>
+          </View>
+        ))
+      )}
+    </View>
+  );
 
   return (
     <SafeAreaView
@@ -269,6 +583,7 @@ export default function TaskDetailScreen() {
           >
             {task.name}
           </Text>
+          {/* Bouton modifier la tache */}
           <TouchableOpacity
             onPress={() =>
               router.push(
@@ -284,6 +599,7 @@ export default function TaskDetailScreen() {
               ✏️ Modifier
             </Text>
           </TouchableOpacity>
+          {/* Bouton supprimer la tache */}
           <TouchableOpacity
             onPress={() => {
               Alert.alert(
@@ -316,376 +632,123 @@ export default function TaskDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Badges statut et priorite */}
-          <View style={styles.badgesRow}>
-            <View
-              style={[
-                styles.statusBadge,
-                {
-                  backgroundColor: task.done
-                    ? Colors.success + "20"
-                    : task.inProgress
-                      ? Colors.warning + "20"
-                      : theme.textTertiary + "20",
-                },
-              ]}
-            >
-              <Text
+        {isTablet ? (
+          // =====================================================
+          // LAYOUT TABLETTE — 2 colonnes sans zone de saisie fixe
+          // =====================================================
+          <ScrollView
+            contentContainerStyle={styles.contentTablet}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Colonne gauche — infos, sous-taches, fichiers */}
+            <View style={styles.tabletLeft}>
+              <LeftContent />
+            </View>
+            {/* Colonne droite — commentaires + saisie */}
+            <View style={styles.tabletRight}>
+              <RightContent />
+              {/* Zone de saisie commentaire dans la colonne droite sur tablette */}
+              <View
                 style={[
-                  styles.statusText,
+                  styles.commentInputContainerTablet,
                   {
-                    color: task.done
-                      ? Colors.success
-                      : task.inProgress
-                        ? Colors.warning
-                        : theme.textTertiary,
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
                   },
                 ]}
               >
-                {task.done
-                  ? "✅ Termine"
-                  : task.inProgress
-                    ? "🔄 En cours"
-                    : "⏳ A faire"}
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.priorityBadge,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  borderColor: theme.border,
-                },
-              ]}
-            >
-              <Text
-                style={[styles.priorityText, { color: theme.textSecondary }]}
-              >
-                {task.priority}
-              </Text>
-            </View>
-          </View>
-
-          {/* Description */}
-          {task.description ? (
-            <View
-              style={[
-                styles.section,
-                {
-                  backgroundColor: theme.backgroundPrimary,
-                  borderColor: theme.border,
-                },
-              ]}
-            >
-              <Text
-                style={[styles.sectionTitle, { color: theme.textTertiary }]}
-              >
-                Description
-              </Text>
-              <Text
-                style={[styles.description, { color: theme.textSecondary }]}
-              >
-                {task.description}
-              </Text>
-            </View>
-          ) : null}
-
-          {/* Date d'echeance */}
-          {task.dueDate && (
-            <View
-              style={[
-                styles.section,
-                {
-                  backgroundColor: theme.backgroundPrimary,
-                  borderColor: theme.border,
-                },
-              ]}
-            >
-              <Text
-                style={[styles.sectionTitle, { color: theme.textTertiary }]}
-              >
-                Date d'echeance
-              </Text>
-              <Text style={[styles.dueDate, { color: theme.textPrimary }]}>
-                📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
-              </Text>
-            </View>
-          )}
-
-          {/* Sous-taches */}
-          <View
-            style={[
-              styles.section,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <View style={styles.sectionHeader}>
-              <Text
-                style={[styles.sectionTitle, { color: theme.textTertiary }]}
-              >
-                Sous-taches ({subtasks.filter((s) => s.completed).length}/
-                {subtasks.length})
-              </Text>
-            </View>
-            {subtasks.map((subtask) => (
-              <View key={subtask.id} style={styles.subtaskRow}>
-                <TouchableOpacity onPress={() => handleToggleSubtask(subtask)}>
-                  <View
-                    style={[
-                      styles.checkbox,
-                      { borderColor: theme.border },
-                      subtask.completed && styles.checkboxDone,
-                    ]}
-                  >
-                    {subtask.completed && (
-                      <Text style={styles.checkmark}>✓</Text>
-                    )}
-                  </View>
-                </TouchableOpacity>
-                <Text
+                <TextInput
                   style={[
-                    styles.subtaskTitle,
-                    { color: theme.textPrimary },
-                    subtask.completed && {
-                      textDecorationLine: "line-through",
-                      color: theme.textTertiary,
+                    styles.commentInput,
+                    {
+                      borderColor: theme.border,
+                      color: theme.textPrimary,
+                      backgroundColor: theme.backgroundSecondary,
                     },
                   ]}
-                >
-                  {subtask.title}
-                </Text>
+                  placeholder="Ajouter un commentaire..."
+                  placeholderTextColor={theme.textTertiary}
+                  value={newComment}
+                  onChangeText={setNewComment}
+                  multiline
+                  maxLength={500}
+                />
                 <TouchableOpacity
-                  onPress={() => handleDeleteSubtask(subtask.id)}
+                  style={[
+                    styles.sendButton,
+                    { backgroundColor: theme.primary },
+                    (!newComment.trim() || sendingComment) &&
+                      styles.sendButtonDisabled,
+                  ]}
+                  onPress={handleSendComment}
+                  disabled={!newComment.trim() || sendingComment}
                 >
-                  <Text style={{ fontSize: 14, color: Colors.danger }}>✕</Text>
+                  {sendingComment ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <Text style={styles.sendButtonText}>→</Text>
+                  )}
                 </TouchableOpacity>
               </View>
-            ))}
-            <View style={styles.subtaskInputRow}>
+            </View>
+          </ScrollView>
+        ) : (
+          // =====================================================
+          // LAYOUT MOBILE — colonne unique avec saisie en bas
+          // =====================================================
+          <>
+            <ScrollView
+              contentContainerStyle={styles.content}
+              showsVerticalScrollIndicator={false}
+            >
+              <LeftContent />
+              <RightContent />
+            </ScrollView>
+            {/* Zone de saisie fixe en bas sur mobile */}
+            <View
+              style={[
+                styles.commentInputContainer,
+                {
+                  backgroundColor: theme.backgroundPrimary,
+                  borderTopColor: theme.border,
+                },
+              ]}
+            >
               <TextInput
                 style={[
-                  styles.subtaskInput,
+                  styles.commentInput,
                   {
                     borderColor: theme.border,
                     color: theme.textPrimary,
                     backgroundColor: theme.backgroundSecondary,
                   },
                 ]}
-                placeholder="Ajouter une sous-tache..."
+                placeholder="Ajouter un commentaire..."
                 placeholderTextColor={theme.textTertiary}
-                value={newSubtask}
-                onChangeText={setNewSubtask}
-                maxLength={100}
-                onSubmitEditing={handleAddSubtask}
+                value={newComment}
+                onChangeText={setNewComment}
+                multiline
+                maxLength={500}
               />
               <TouchableOpacity
-                onPress={handleAddSubtask}
-                disabled={!newSubtask.trim() || addingSubtask}
                 style={[
-                  styles.subtaskAddButton,
+                  styles.sendButton,
                   { backgroundColor: theme.primary },
-                  (!newSubtask.trim() || addingSubtask) &&
+                  (!newComment.trim() || sendingComment) &&
                     styles.sendButtonDisabled,
                 ]}
+                onPress={handleSendComment}
+                disabled={!newComment.trim() || sendingComment}
               >
-                {addingSubtask ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                {sendingComment ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
-                  <Text style={styles.sendButtonText}>+</Text>
+                  <Text style={styles.sendButtonText}>→</Text>
                 )}
               </TouchableOpacity>
             </View>
-          </View>
-
-          {/* Fichiers */}
-          <View
-            style={[
-              styles.section,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <View style={styles.sectionHeader}>
-              <Text
-                style={[styles.sectionTitle, { color: theme.textTertiary }]}
-              >
-                Fichiers ({attachments.length})
-              </Text>
-              <TouchableOpacity
-                onPress={handleUploadFile}
-                disabled={uploadingFile}
-                style={[
-                  styles.uploadButton,
-                  { backgroundColor: theme.primary + "15" },
-                ]}
-              >
-                {uploadingFile ? (
-                  <ActivityIndicator size="small" color={theme.primary} />
-                ) : (
-                  <Text
-                    style={[styles.uploadButtonText, { color: theme.primary }]}
-                  >
-                    + Ajouter
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-            {attachments.length === 0 ? (
-              <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
-                Aucun fichier attache
-              </Text>
-            ) : (
-              attachments.map((attachment) => (
-                <View key={attachment.id} style={styles.attachmentRow}>
-                  <Text style={styles.attachmentIcon}>
-                    {getFileIcon(attachment.mimeType)}
-                  </Text>
-                  <View style={styles.attachmentInfo}>
-                    <Text
-                      style={[
-                        styles.attachmentName,
-                        { color: theme.textPrimary },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {attachment.filename}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.attachmentSize,
-                        { color: theme.textTertiary },
-                      ]}
-                    >
-                      {new Date(attachment.uploadedAt).toLocaleDateString(
-                        "fr-FR",
-                      )}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => handleDeleteAttachment(attachment.id)}
-                    style={styles.deleteButton}
-                  >
-                    <Text style={styles.deleteButtonText}>🗑</Text>
-                  </TouchableOpacity>
-                </View>
-              ))
-            )}
-          </View>
-
-          {/* Commentaires */}
-          <View
-            style={[
-              styles.section,
-              {
-                backgroundColor: theme.backgroundPrimary,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
-              Commentaires ({comments.length})
-            </Text>
-            {loadingData ? (
-              <ActivityIndicator color={theme.primary} />
-            ) : comments.length === 0 ? (
-              <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
-                Aucun commentaire
-              </Text>
-            ) : (
-              comments.map((comment) => (
-                <View
-                  key={comment.id}
-                  style={[
-                    styles.commentCard,
-                    { backgroundColor: theme.backgroundSecondary },
-                  ]}
-                >
-                  <View style={styles.commentHeader}>
-                    <Text
-                      style={[
-                        styles.commentAuthor,
-                        { color: theme.textPrimary },
-                      ]}
-                    >
-                      {comment.author?.name ??
-                        comment.author?.email ??
-                        "Utilisateur"}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.commentDate,
-                        { color: theme.textTertiary },
-                      ]}
-                    >
-                      {new Date(comment.createdAt).toLocaleDateString("fr-FR")}
-                    </Text>
-                  </View>
-                  <Text
-                    style={[
-                      styles.commentContent,
-                      { color: theme.textSecondary },
-                    ]}
-                  >
-                    {comment.content}
-                  </Text>
-                </View>
-              ))
-            )}
-          </View>
-        </ScrollView>
-
-        {/* Zone de saisie commentaire */}
-        <View
-          style={[
-            styles.commentInputContainer,
-            {
-              backgroundColor: theme.backgroundPrimary,
-              borderTopColor: theme.border,
-            },
-          ]}
-        >
-          <TextInput
-            style={[
-              styles.commentInput,
-              {
-                borderColor: theme.border,
-                color: theme.textPrimary,
-                backgroundColor: theme.backgroundSecondary,
-              },
-            ]}
-            placeholder="Ajouter un commentaire..."
-            placeholderTextColor={theme.textTertiary}
-            value={newComment}
-            onChangeText={setNewComment}
-            multiline
-            maxLength={500}
-          />
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              { backgroundColor: theme.primary },
-              (!newComment.trim() || sendingComment) &&
-                styles.sendButtonDisabled,
-            ]}
-            onPress={handleSendComment}
-            disabled={!newComment.trim() || sendingComment}
-          >
-            {sendingComment ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <Text style={styles.sendButtonText}>→</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+          </>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -693,6 +756,7 @@ export default function TaskDetailScreen() {
 
 // =====================
 // STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -708,7 +772,19 @@ const styles = StyleSheet.create({
   backButton: { padding: 4 },
   backText: { fontSize: 15 },
   title: { fontSize: 16, fontWeight: "600", flex: 1 },
+
+  // Layout mobile — colonne unique
   content: { padding: 16, gap: 16 },
+  // Layout tablette — 2 colonnes
+  contentTablet: {
+    padding: 24,
+    flexDirection: "row",
+    gap: 24,
+    alignItems: "flex-start",
+  },
+  tabletLeft: { flex: 1, gap: 16 },
+  tabletRight: { flex: 1, gap: 16 },
+
   badgesRow: { flexDirection: "row", gap: 8 },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   statusText: { fontSize: 13, fontWeight: "500" },
@@ -729,6 +805,8 @@ const styles = StyleSheet.create({
   description: { fontSize: 14, lineHeight: 20 },
   dueDate: { fontSize: 14 },
   emptyText: { fontSize: 14, textAlign: "center", padding: 8 },
+
+  // Sous-taches
   subtaskRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -749,53 +827,6 @@ const styles = StyleSheet.create({
   },
   checkmark: { fontSize: 12, color: "#FFFFFF", fontWeight: "700" },
   subtaskTitle: { fontSize: 14, flex: 1 },
-  uploadButton: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
-  uploadButtonText: { fontSize: 13, fontWeight: "500" },
-  attachmentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 6,
-  },
-  attachmentIcon: { fontSize: 20 },
-  attachmentInfo: { flex: 1 },
-  attachmentName: { fontSize: 13, fontWeight: "500" },
-  attachmentSize: { fontSize: 11 },
-  deleteButton: { padding: 4 },
-  deleteButtonText: { fontSize: 16 },
-  commentCard: { borderRadius: 8, padding: 12, gap: 6 },
-  commentHeader: { flexDirection: "row", justifyContent: "space-between" },
-  commentAuthor: { fontSize: 13, fontWeight: "600" },
-  commentDate: { fontSize: 11 },
-  commentContent: { fontSize: 14, lineHeight: 20 },
-  commentInputContainer: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: 8,
-    padding: 12,
-    borderTopWidth: 0.5,
-  },
-  commentInput: {
-    flex: 1,
-    minHeight: 40,
-    maxHeight: 100,
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 14,
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  sendButtonDisabled: { opacity: 0.4 },
-  sendButtonText: { fontSize: 18, color: "#FFFFFF", fontWeight: "700" },
-  editButton: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20 },
-  editButtonText: { fontSize: 12, fontWeight: "500" },
   subtaskInputRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -817,4 +848,68 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
+  // Fichiers
+  uploadButton: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
+  uploadButtonText: { fontSize: 13, fontWeight: "500" },
+  attachmentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 6,
+  },
+  attachmentIcon: { fontSize: 20 },
+  attachmentInfo: { flex: 1 },
+  attachmentName: { fontSize: 13, fontWeight: "500" },
+  attachmentSize: { fontSize: 11 },
+  deleteButton: { padding: 4 },
+  deleteButtonText: { fontSize: 16 },
+
+  // Commentaires
+  commentCard: { borderRadius: 8, padding: 12, gap: 6 },
+  commentHeader: { flexDirection: "row", justifyContent: "space-between" },
+  commentAuthor: { fontSize: 13, fontWeight: "600" },
+  commentDate: { fontSize: 11 },
+  commentContent: { fontSize: 14, lineHeight: 20 },
+
+  // Zone saisie mobile — fixe en bas
+  commentInputContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 8,
+    padding: 12,
+    borderTopWidth: 0.5,
+  },
+  // Zone saisie tablette — dans la colonne droite
+  commentInputContainerTablet: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 8,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    marginTop: 8,
+  },
+
+  commentInput: {
+    flex: 1,
+    minHeight: 40,
+    maxHeight: 100,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 14,
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sendButtonDisabled: { opacity: 0.4 },
+  sendButtonText: { fontSize: 18, color: "#FFFFFF", fontWeight: "700" },
+  editButton: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20 },
+  editButtonText: { fontSize: 12, fontWeight: "500" },
 });

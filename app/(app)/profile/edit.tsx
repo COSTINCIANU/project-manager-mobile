@@ -3,6 +3,7 @@
 // Permet de changer son nom, email et mot de passe
 // Utilise la route PUT /api/auth/profile
 // Theme clair/sombre automatique selon le systeme
+// Sur tablette : formulaire centre avec largeur max
 // =====================================================
 
 import {
@@ -22,21 +23,28 @@ import { useAuthStore } from "@/stores/authStore";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
 import { useTheme } from "@/hooks/useTheme";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { Colors } from "@/constants/colors";
 
 export default function EditProfileScreen() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
-  // Hook theme pour les couleurs adaptees
+  // Hook theme — retourne les couleurs selon mode clair/sombre
   const { theme } = useTheme();
+  // Hook breakpoint — isTablet est true si l'ecran est >= 768px
+  const { isTablet } = useBreakpoint();
 
+  // ETATS — champs du formulaire pre-remplis avec les donnees actuelles
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
+
+  // ETATS — champs mot de passe vides par defaut pour securite
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Soumet les modifications du profil
   const handleUpdate = async () => {
     if (!email.trim()) {
       Alert.alert("Champ requis", "L'email est obligatoire.");
@@ -58,6 +66,7 @@ export default function EditProfileScreen() {
     }
     setIsSubmitting(true);
     try {
+      // Prepare le payload — inclut le mot de passe seulement si renseigne
       const payload: any = { name: name.trim() || null, email: email.trim() };
       if (newPassword && currentPassword) {
         payload.password = newPassword;
@@ -67,6 +76,7 @@ export default function EditProfileScreen() {
         API_ENDPOINTS.UPDATE_PROFILE,
         payload,
       );
+      // Met a jour le store avec les nouvelles informations
       if (user) {
         setUser({ ...user, name: data.name, email: data.email });
       }
@@ -122,8 +132,12 @@ export default function EditProfileScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Formulaire — centre sur tablette */}
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isTablet && styles.contentTablet,
+        ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -141,6 +155,7 @@ export default function EditProfileScreen() {
             Informations personnelles
           </Text>
 
+          {/* Champ nom */}
           <View style={styles.field}>
             <Text style={[styles.label, { color: theme.textPrimary }]}>
               Nom
@@ -162,6 +177,7 @@ export default function EditProfileScreen() {
             />
           </View>
 
+          {/* Champ email — obligatoire */}
           <View style={styles.field}>
             <Text style={[styles.label, { color: theme.textPrimary }]}>
               Email <Text style={{ color: Colors.danger }}>*</Text>
@@ -203,6 +219,7 @@ export default function EditProfileScreen() {
             Laissez vide si vous ne souhaitez pas changer votre mot de passe
           </Text>
 
+          {/* Mot de passe actuel */}
           <View style={styles.field}>
             <Text style={[styles.label, { color: theme.textPrimary }]}>
               Mot de passe actuel
@@ -225,6 +242,7 @@ export default function EditProfileScreen() {
             />
           </View>
 
+          {/* Nouveau mot de passe */}
           <View style={styles.field}>
             <Text style={[styles.label, { color: theme.textPrimary }]}>
               Nouveau mot de passe
@@ -247,6 +265,7 @@ export default function EditProfileScreen() {
             />
           </View>
 
+          {/* Confirmation nouveau mot de passe */}
           <View style={styles.field}>
             <Text style={[styles.label, { color: theme.textPrimary }]}>
               Confirmer le mot de passe
@@ -259,6 +278,7 @@ export default function EditProfileScreen() {
                   borderColor: theme.border,
                   color: theme.textPrimary,
                 },
+                // Bordure rouge si les mots de passe ne correspondent pas
                 confirmPassword && newPassword !== confirmPassword
                   ? styles.inputError
                   : null,
@@ -270,6 +290,7 @@ export default function EditProfileScreen() {
               secureTextEntry
               maxLength={100}
             />
+            {/* Message d'erreur */}
             {confirmPassword && newPassword !== confirmPassword && (
               <Text style={styles.errorText}>
                 Les mots de passe ne correspondent pas
@@ -278,7 +299,7 @@ export default function EditProfileScreen() {
           </View>
         </View>
 
-        {/* Info sur le role */}
+        {/* Info sur le role — non modifiable */}
         <View
           style={[
             styles.infoBox,
@@ -299,6 +320,7 @@ export default function EditProfileScreen() {
 
 // =====================
 // STYLES — valeurs fixes uniquement
+// Les couleurs sont appliquees dynamiquement via theme
 // =====================
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -316,7 +338,15 @@ const styles = StyleSheet.create({
   saveButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   saveButtonDisabled: { opacity: 0.4 },
   saveButtonText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
+  // Contenu mobile
   content: { padding: 20, gap: 16 },
+  // Contenu tablette — centre avec largeur max
+  contentTablet: {
+    maxWidth: 700,
+    alignSelf: "center",
+    width: "100%",
+    padding: 32,
+  },
   section: { borderRadius: 16, padding: 16, gap: 14, borderWidth: 0.5 },
   sectionTitle: { fontSize: 15, fontWeight: "600" },
   sectionSubtitle: { fontSize: 12, marginTop: -8 },
