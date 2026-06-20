@@ -15,6 +15,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useTasks } from "@/hooks/useTasks";
@@ -45,17 +46,19 @@ const PRIORITY_COLORS: Record<string, string> = {
 // =====================
 // CARTE TACHE
 // =====================
-function TaskCard({ task }: { task: Task }) {
+function TaskCard({ task }: { task: Task; isTablet: boolean }) {
   const router = useRouter();
   // Hook theme pour les couleurs adaptees
   const { theme } = useTheme();
   const priorityColor = PRIORITY_COLORS[task.priority] ?? theme.textTertiary;
+  const { isTablet } = useBreakpoint();
 
   return (
     <TouchableOpacity
       style={[
         styles.taskCard,
         { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+        isTablet && { flex: 1 },
       ]}
       onPress={() => router.push(`/(app)/tasks/${task.id}` as any)}
       activeOpacity={0.7}
@@ -123,6 +126,7 @@ export default function TasksScreen() {
   // Hook theme pour les couleurs adaptees
   const { theme } = useTheme();
   const { data: tasks, isLoading, refetch, isFetching } = useTasks();
+  const { isTablet } = useBreakpoint();
 
   const filteredTasks =
     tasks?.filter((task) => {
@@ -186,9 +190,13 @@ export default function TasksScreen() {
         <FlatList
           data={filteredTasks}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <TaskCard task={item} />}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <TaskCard task={item} isTablet={isTablet} />
+          )}
+          numColumns={isTablet ? 2 : 1}
+          key={isTablet ? "tablet" : "mobile"}
+          columnWrapperStyle={isTablet ? { gap: 10 } : undefined}
+          contentContainerStyle={[styles.list, isTablet && { padding: 24 }]}
           refreshControl={
             <RefreshControl
               refreshing={isFetching}

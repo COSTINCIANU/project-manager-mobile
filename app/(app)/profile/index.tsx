@@ -15,6 +15,7 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
@@ -32,6 +33,8 @@ export default function ProfileScreen() {
   const router = useRouter();
   // Hook theme pour les couleurs adaptees et le toggle
   const { isDark, toggleTheme, theme } = useTheme();
+
+  const { isTablet } = useBreakpoint();
 
   // Confirmation avant deconnexion
   const handleLogout = () => {
@@ -92,7 +95,10 @@ export default function ProfileScreen() {
       style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
     >
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isTablet && styles.contentTablet,
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* En-tete */}
@@ -353,4 +359,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logoutText: { fontSize: 16, fontWeight: "600", color: "#FFFFFF" },
+  contentTablet: {
+    maxWidth: 600,
+    alignSelf: "center",
+    width: "100%",
+    padding: 32,
+  },
 });

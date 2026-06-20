@@ -14,6 +14,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useRouter } from "expo-router";
 import { useProjects } from "@/hooks/useProjects";
 import { useTheme } from "@/hooks/useTheme";
@@ -47,9 +48,11 @@ const STATUS_LABELS: Record<string, string> = {
 function ProjectCard({
   project,
   onPress,
+  isTablet,
 }: {
   project: Project;
   onPress: () => void;
+  isTablet: boolean;
 }) {
   // Hook theme pour les couleurs adaptees
   const { theme } = useTheme();
@@ -60,6 +63,7 @@ function ProjectCard({
       style={[
         styles.card,
         { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
+        isTablet && styles.cardTablet,
       ]}
       onPress={onPress}
       activeOpacity={0.7}
@@ -132,6 +136,8 @@ export default function ProjectsScreen() {
   const router = useRouter();
   // Hook theme pour les couleurs adaptees
   const { theme } = useTheme();
+
+  const { isTablet } = useBreakpoint();
   const {
     data: projects,
     isLoading,
@@ -203,9 +209,14 @@ export default function ProjectsScreen() {
           <ProjectCard
             project={item}
             onPress={() => router.push(`/(app)/projects/${item.id}`)}
+            isTablet={isTablet}
           />
         )}
-        contentContainerStyle={styles.list}
+        // Grille 2 colonnes sur tablette, 1 colonne sur mobile
+        numColumns={isTablet ? 2 : 1}
+        key={isTablet ? "tablet" : "mobile"}
+        columnWrapperStyle={isTablet ? { gap: 12 } : undefined}
+        contentContainerStyle={[styles.list, isTablet && styles.listTablet]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -242,6 +253,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 24, fontWeight: "700" },
   list: { padding: 16, gap: 12 },
+  listTablet: { padding: 24 },
   card: { borderRadius: 12, padding: 16, borderWidth: 0.5, gap: 10 },
   cardHeader: {
     flexDirection: "row",
@@ -249,6 +261,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cardTitle: { fontSize: 16, fontWeight: "600", flex: 1, marginRight: 8 },
+  cardTablet: { flex: 1 },
   priorityBadge: {
     paddingHorizontal: 10,
     paddingVertical: 3,

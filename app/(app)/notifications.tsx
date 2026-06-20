@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { apiClient } from "@/api/client";
@@ -40,6 +41,8 @@ export default function NotificationsScreen() {
   const router = useRouter();
   // Hook theme pour les couleurs adaptees
   const { theme } = useTheme();
+
+  const { isTablet } = useBreakpoint();
 
   // Charge les notifications depuis l'API
   const loadNotifications = async () => {
@@ -142,8 +145,7 @@ export default function NotificationsScreen() {
       <FlatList
         data={notifications}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.list, isTablet && styles.listTablet]}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -288,4 +290,11 @@ const styles = StyleSheet.create({
   emptyIcon: { fontSize: 48, marginBottom: 8 },
   emptyText: { fontSize: 16, fontWeight: "600" },
   emptySubtext: { fontSize: 14, textAlign: "center", lineHeight: 20 },
+  // Ajoute ici
+  listTablet: {
+    padding: 24,
+    maxWidth: 800,
+    alignSelf: "center",
+    width: "100%",
+  },
 });
