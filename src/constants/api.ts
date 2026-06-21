@@ -98,4 +98,15 @@ export const API_ENDPOINTS = {
   CUSTOM_FIELD_CREATE: "/api/custom-fields",
   CUSTOM_FIELD_UPDATE: (id: number) => `/api/custom-fields/${id}`,
   CUSTOM_FIELD_DELETE: (id: number) => `/api/custom-fields/${id}`,
+
+  // Sprints et Backlog
+  SPRINTS_BY_PROJECT: (projectId: number) =>
+    `/api/sprints/project/${projectId}`,
+  SPRINT_BACKLOG: (projectId: number) =>
+    `/api/sprints/project/${projectId}/backlog`,
+  SPRINT_CREATE: "/api/sprints",
+  SPRINT_UPDATE: (id: number) => `/api/sprints/${id}`,
+  SPRINT_DELETE: (id: number) => `/api/sprints/${id}`,
+  SPRINT_ASSIGN_TASK: (id: number) => `/api/sprints/${id}/assign-task`,
+  SPRINT_REMOVE_TASK: (id: number) => `/api/sprints/${id}/remove-task`,
 } as const;
