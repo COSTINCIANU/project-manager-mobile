@@ -112,4 +112,10 @@ export const API_ENDPOINTS = {
 
   // Recherche globale
   SEARCH: "/api/search",
+
+  // Rapports
+  REPORT_BURNDOWN: (sprintId: number) =>
+    `/api/reports/sprint/${sprintId}/burndown`,
+  REPORT_PROJECT_STATS: (projectId: number) =>
+    `/api/reports/project/${projectId}/stats`,
 } as const;

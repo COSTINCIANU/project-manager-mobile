@@ -34,6 +34,7 @@ const ACTIONS = [
   { icon: "👥", label: "Equipe", path: "team" },
   { icon: "⚙️", label: "Champs", path: "custom-fields" },
   { icon: "📦", label: "Backlog", path: "backlog" },
+  { icon: "📊", label: "Rapports", path: "burndown" },
 ];
 
 export default function ProjectDetailScreen() {
