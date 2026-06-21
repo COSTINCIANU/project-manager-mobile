@@ -1,7 +1,7 @@
 // =====================================================
 // CreateTaskScreen — Creer une nouvelle tache
 // Formulaire de creation avec les champs :
-// nom, description, priorite, date echeance
+// nom, description, type de ticket, priorite, date echeance
 // Note : DatePicker natif desactive pour Expo Go
 // Theme clair/sombre automatique selon le systeme
 // Sur tablette : formulaire centre avec largeur max
@@ -33,6 +33,14 @@ const PRIORITIES = [
   { value: "critique", label: "Critique", color: Colors.priorityCritical },
 ];
 
+// Types de tickets disponibles — comme Jira
+const TICKET_TYPES = [
+  { value: "task", label: "Tâche", icon: "✅", color: "#378ADD" },
+  { value: "bug", label: "Bug", icon: "🐛", color: "#E74C3C" },
+  { value: "story", label: "Story", icon: "📖", color: "#27AE60" },
+  { value: "epic", label: "Épic", icon: "⚡", color: "#9B7FD4" },
+];
+
 export default function CreateTaskScreen() {
   // Recupere l'ID du projet depuis l'URL
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -47,6 +55,7 @@ export default function CreateTaskScreen() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("normale");
+  const [ticketType, setTicketType] = useState("task");
   const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -83,8 +92,8 @@ export default function CreateTaskScreen() {
         name: name.trim(),
         description: description.trim() || undefined,
         priority,
+        ticketType,
         projectId: Number(id),
-        // Convertit la date du format francais JJ/MM/AAAA vers AAAA-MM-JJ pour l'API
         dueDate: dueDate.trim() ? formatDateForApi(dueDate.trim()) : undefined,
         done: false,
         inProgress: false,
@@ -153,6 +162,43 @@ export default function CreateTaskScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Type de ticket — comme Jira */}
+        <View style={styles.field}>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>
+            Type de ticket
+          </Text>
+          <View style={styles.ticketTypesRow}>
+            {TICKET_TYPES.map((t) => (
+              <TouchableOpacity
+                key={t.value}
+                style={[
+                  styles.ticketTypeOption,
+                  {
+                    borderColor: theme.border,
+                    backgroundColor: theme.backgroundPrimary,
+                  },
+                  ticketType === t.value && {
+                    backgroundColor: t.color,
+                    borderColor: t.color,
+                  },
+                ]}
+                onPress={() => setTicketType(t.value)}
+              >
+                <Text style={styles.ticketTypeIcon}>{t.icon}</Text>
+                <Text
+                  style={[
+                    styles.ticketTypeText,
+                    { color: theme.textSecondary },
+                    ticketType === t.value && { color: "#FFFFFF" },
+                  ]}
+                >
+                  {t.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {/* Nom — obligatoire */}
         <View style={styles.field}>
           <Text style={[styles.label, { color: theme.textPrimary }]}>
@@ -307,6 +353,20 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   textArea: { minHeight: 100, textAlignVertical: "top", paddingTop: 12 },
+  // Types de tickets
+  ticketTypesRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  ticketTypeOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  ticketTypeIcon: { fontSize: 14 },
+  ticketTypeText: { fontSize: 13, fontWeight: "500" },
+  // Priorites
   prioritiesRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   priorityOption: {
     paddingHorizontal: 14,
