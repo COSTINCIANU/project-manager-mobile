@@ -188,20 +188,38 @@ export default function ProjectsScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
     >
-      {/* En-tete avec titre et bouton creer un nouveau projet */}
+      {/* En-tete avec titre et boutons */}
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.textPrimary }]}>
           Projets
         </Text>
-        {/* Bouton pour naviguer vers le formulaire de creation */}
-        <TouchableOpacity
-          onPress={() => router.push("/(app)/projects/create" as any)}
-          style={[styles.addButton, { backgroundColor: theme.primary }]}
-        >
-          <Text style={styles.addButtonText}>+ Nouveau</Text>
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          {/* Bouton pour créer depuis un template */}
+          <TouchableOpacity
+            onPress={() => router.push("/(app)/projects/templates" as any)}
+            style={[
+              styles.templateButton,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <Text
+              style={[styles.templateButtonText, { color: theme.textPrimary }]}
+            >
+              📋 Templates
+            </Text>
+          </TouchableOpacity>
+          {/* Bouton pour naviguer vers le formulaire de creation */}
+          <TouchableOpacity
+            onPress={() => router.push("/(app)/projects/create" as any)}
+            style={[styles.addButton, { backgroundColor: theme.primary }]}
+          >
+            <Text style={styles.addButtonText}>+ Nouveau</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-
       <FlatList
         data={projects}
         keyExtractor={(item) => item.id.toString()}
@@ -283,4 +301,13 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 15 },
   addButton: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   addButtonText: { fontSize: 13, color: "#FFFFFF", fontWeight: "600" },
+
+  headerButtons: { flexDirection: "row", gap: 8, alignItems: "center" },
+  templateButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  templateButtonText: { fontSize: 13, fontWeight: "500" },
 });

@@ -83,4 +83,10 @@ export const API_ENDPOINTS = {
   // Admin
   ADMIN_STATS: "/api/admin/stats",
   ADMIN_USERS: "/api/admin/users",
+
+  // Templates
+  TEMPLATES: "/api/templates",
+  TEMPLATE: (id: number) => `/api/templates/${id}`,
+  TEMPLATE_CREATE_PROJECT: (id: number) =>
+    `/api/templates/${id}/create-project`,
 } as const;
