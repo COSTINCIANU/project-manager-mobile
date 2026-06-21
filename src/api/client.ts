@@ -70,11 +70,13 @@ apiClient.interceptors.response.use(
         const { data } = await axios.post(
           `${API_BASE_URL}${API_ENDPOINTS.REFRESH}`,
           {
-            refresh_token: refreshToken,
+            // refresh_token: refreshToken,
+            refreshToken: refreshToken, // ✅ correspond à ton API Symfony
           },
         );
 
-        await tokenService.saveTokens(data.token, data.refresh_token);
+        // await tokenService.saveTokens(data.token, data.refresh_token);
+        await tokenService.saveTokens(data.token, data.refreshToken); // ✅ correspond à ton API Symfony
         processQueue(null, data.token);
         originalRequest.headers.Authorization = `Bearer ${data.token}`;
         return apiClient(originalRequest);
