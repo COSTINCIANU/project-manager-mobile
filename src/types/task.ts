@@ -16,6 +16,7 @@ export interface Task {
   done: boolean;
   inProgress: boolean;
   priority: string;
+  ticketType: string | null; // Type de ticket : task, bug, story, epic
   projectId: number;
   assignedTo: User | null;
   dueDate: string | null;
@@ -36,6 +37,7 @@ export interface CreateTaskPayload {
   name: string;
   description?: string;
   priority: string;
+  ticketType?: string; // Type de ticket
   projectId: number;
   assignedTo?: number;
   dueDate?: string;

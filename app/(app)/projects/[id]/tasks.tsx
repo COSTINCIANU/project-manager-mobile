@@ -34,6 +34,14 @@ const PRIORITY_COLORS: Record<string, string> = {
   critical: Colors.priorityCritical,
 };
 
+// Icones par type de ticket
+const TICKET_TYPE_ICONS: Record<string, string> = {
+  task: "✅",
+  bug: "🐛",
+  story: "📖",
+  epic: "⚡",
+};
+
 // =====================================================
 // TaskItem — Carte tache cliquable dans la liste
 // =====================================================
@@ -54,7 +62,7 @@ function TaskItem({ task, isTablet }: { task: Task; isTablet: boolean }) {
       onPress={() => router.push(`/(app)/tasks/${task.id}` as any)}
       activeOpacity={0.7}
     >
-      {/* En-tete : point de statut + nom */}
+      {/* En-tete : icone type + point de statut + nom */}
       <View style={styles.taskHeader}>
         <View
           style={[
@@ -68,6 +76,10 @@ function TaskItem({ task, isTablet }: { task: Task; isTablet: boolean }) {
             },
           ]}
         />
+        {/* Icone du type de ticket */}
+        <Text style={styles.ticketTypeIcon}>
+          {TICKET_TYPE_ICONS[task.ticketType ?? "task"] ?? "✅"}
+        </Text>
         <Text
           style={[
             styles.taskName,
@@ -79,7 +91,6 @@ function TaskItem({ task, isTablet }: { task: Task; isTablet: boolean }) {
           {task.name}
         </Text>
       </View>
-
       {/* Pied de carte : priorite + date + statut */}
       <View style={styles.taskFooter}>
         <View
@@ -229,4 +240,6 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 15 },
   addButton: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   addButtonText: { fontSize: 13, color: "#FFFFFF", fontWeight: "600" },
+
+  ticketTypeIcon: { fontSize: 13 },
 });
