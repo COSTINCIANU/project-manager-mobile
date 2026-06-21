@@ -58,7 +58,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     // L'API retourne token mais pas refresh_token
     // On sauvegarde une string vide si refresh_token est absent
-    await tokenService.saveTokens(result.token, result.refresh_token ?? "");
+    // await tokenService.saveTokens(result.token, result.refresh_token ?? "");
+
+    // On sauvegarde le JWT + le refresh token retournes par l'API
+    await tokenService.saveTokens(result.token, result.refreshToken ?? "");
     const user = await authApi.getProfile();
     // Met a jour le store
     set({

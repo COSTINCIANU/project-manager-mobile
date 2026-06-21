@@ -28,7 +28,8 @@ export const authApi = {
 
   async refreshToken(refreshToken: string): Promise<AuthTokens> {
     const { data } = await apiClient.post(API_ENDPOINTS.REFRESH, {
-      refresh_token: refreshToken,
+      // refresh_token: refreshToken,
+      refreshToken: refreshToken, // ✅ camelCase
     });
     return data;
   },

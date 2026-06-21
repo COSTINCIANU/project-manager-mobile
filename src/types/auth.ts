@@ -5,7 +5,8 @@ export interface LoginPayload {
 
 export interface AuthTokens {
   token: string;
-  refresh_token: string;
+  // refresh_token: string;
+  refreshToken: string; // ✅ camelCase comme l'API Symfony
 }
 
 export interface TwoFactorPayload {
