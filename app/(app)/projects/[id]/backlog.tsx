@@ -97,6 +97,10 @@ export default function BacklogScreen() {
   const [objectifSprint, setObjectifSprint] = useState("");
   const [dateDebut, setDateDebut] = useState("");
   const [dateFin, setDateFin] = useState("");
+  // Tâche pour laquelle on affiche le sélecteur de sprint inline
+  const [tacheSelectionnee, setTacheSelectionnee] = useState<SprintTask | null>(
+    null,
+  );
 
   // Récupère le backlog
   const {
@@ -168,6 +172,7 @@ export default function BacklogScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["backlog", projectId] });
       queryClient.invalidateQueries({ queryKey: ["sprints", projectId] });
+      setTacheSelectionnee(null);
     },
     onError: () => Alert.alert("Erreur", "Impossible d'assigner la tâche."),
   });
@@ -208,29 +213,20 @@ export default function BacklogScreen() {
     },
   });
 
-  // Demande à l'utilisateur dans quel sprint assigner une tâche
+  // Affiche le sélecteur inline — fonctionne sur iOS, Android et Web
   const choisirSprint = (tache: SprintTask) => {
-    if (!sprints || sprints.length === 0) {
+    if (
+      !sprints ||
+      sprints.filter((s) => s.status !== "termine").length === 0
+    ) {
       Alert.alert(
         "Aucun sprint",
         "Créez d'abord un sprint dans l'onglet Sprints.",
       );
       return;
     }
-
-    const options = sprints
-      .filter((s) => s.status !== "termine")
-      .map((s) => ({
-        text: s.name,
-        onPress: () =>
-          assignerTache.mutate({ sprintId: s.id, taskId: tache.id }),
-      }));
-
-    Alert.alert(
-      "Assigner au sprint",
-      `Choisir un sprint pour "${tache.name}"`,
-      [...options, { text: "Annuler", style: "cancel" as const }],
-    );
+    // Toggle le sélecteur inline
+    setTacheSelectionnee(tacheSelectionnee?.id === tache.id ? null : tache);
   };
 
   // Demande confirmation pour retirer une tâche du sprint
@@ -427,19 +423,98 @@ export default function BacklogScreen() {
                             {tache.priority}
                           </Text>
                         </View>
-                        {/* Bouton assigner au sprint */}
                         <TouchableOpacity
                           style={[
                             styles.boutonAssigner,
-                            { backgroundColor: theme.primary },
+                            {
+                              backgroundColor:
+                                tacheSelectionnee?.id === tache.id
+                                  ? theme.backgroundSecondary
+                                  : theme.primary,
+                              borderWidth:
+                                tacheSelectionnee?.id === tache.id ? 1 : 0,
+                              borderColor: theme.primary,
+                            },
                           ]}
                           onPress={() => choisirSprint(tache)}
                         >
-                          <Text style={styles.texteBoutonAssigner}>
-                            → Sprint
+                          <Text
+                            style={[
+                              styles.texteBoutonAssigner,
+                              {
+                                color:
+                                  tacheSelectionnee?.id === tache.id
+                                    ? theme.primary
+                                    : "#fff",
+                              },
+                            ]}
+                          >
+                            {tacheSelectionnee?.id === tache.id
+                              ? "✕ Fermer"
+                              : "→ Sprint"}
                           </Text>
                         </TouchableOpacity>
                       </View>
+
+                      {/* Sélecteur de sprint inline — visible sur web et tablette */}
+                      {tacheSelectionnee?.id === tache.id && (
+                        <View
+                          style={[
+                            styles.selecteurSprint,
+                            {
+                              backgroundColor: theme.backgroundPrimary,
+                              borderColor: theme.border,
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.titreSelecteur,
+                              { color: theme.textSecondary },
+                            ]}
+                          >
+                            Choisir un sprint :
+                          </Text>
+                          {sprints
+                            ?.filter((s) => s.status !== "termine")
+                            .map((sprint) => (
+                              <TouchableOpacity
+                                key={sprint.id}
+                                style={[
+                                  styles.optionSprint,
+                                  { borderColor: theme.border },
+                                ]}
+                                onPress={() =>
+                                  assignerTache.mutate({
+                                    sprintId: sprint.id,
+                                    taskId: tache.id,
+                                  })
+                                }
+                              >
+                                <Text
+                                  style={[
+                                    styles.texteOptionSprint,
+                                    { color: theme.textPrimary },
+                                  ]}
+                                >
+                                  {sprint.status === "actif" ? "🏃 " : "📋 "}
+                                  {sprint.name}
+                                </Text>
+                                <Text
+                                  style={[
+                                    styles.statut,
+                                    {
+                                      color:
+                                        SPRINT_STATUS_COLORS[sprint.status],
+                                    },
+                                  ]}
+                                >
+                                  {SPRINT_STATUS_LABELS[sprint.status]}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                        </View>
+                      )}
                     </View>
                   ))}
                 </View>
@@ -450,7 +525,6 @@ export default function BacklogScreen() {
           {/* ===== ONGLET SPRINTS ===== */}
           {ongletActif === "sprints" && (
             <View style={styles.section}>
-              {/* Bouton créer un sprint */}
               <TouchableOpacity
                 style={[
                   styles.boutonCreerSprint,
@@ -463,7 +537,6 @@ export default function BacklogScreen() {
                 </Text>
               </TouchableOpacity>
 
-              {/* Formulaire de création */}
               {afficherFormulaire && (
                 <View
                   style={[
@@ -482,7 +555,6 @@ export default function BacklogScreen() {
                   >
                     Nouveau sprint
                   </Text>
-
                   <TextInput
                     style={[
                       styles.input,
@@ -545,7 +617,6 @@ export default function BacklogScreen() {
                       maxLength={10}
                     />
                   </View>
-
                   <View style={styles.boutonsFormulaire}>
                     <TouchableOpacity
                       style={[
@@ -587,7 +658,6 @@ export default function BacklogScreen() {
                 </View>
               )}
 
-              {/* Liste des sprints */}
               {sprints && sprints.length === 0 ? (
                 <View style={styles.vide}>
                   <Text
@@ -610,7 +680,6 @@ export default function BacklogScreen() {
                         },
                       ]}
                     >
-                      {/* En-tête du sprint */}
                       <View style={styles.enteteSprint}>
                         <View style={styles.infosSprint}>
                           <Text
@@ -640,8 +709,6 @@ export default function BacklogScreen() {
                             </Text>
                           </View>
                         </View>
-
-                        {/* Boutons changer statut */}
                         <View style={styles.boutonsSprint}>
                           {sprint.status === "planifie" && (
                             <TouchableOpacity
@@ -682,7 +749,6 @@ export default function BacklogScreen() {
                         </View>
                       </View>
 
-                      {/* Objectif */}
                       {sprint.goal && (
                         <Text
                           style={[
@@ -694,7 +760,6 @@ export default function BacklogScreen() {
                         </Text>
                       )}
 
-                      {/* Dates */}
                       {(sprint.startDate || sprint.endDate) && (
                         <Text
                           style={[
@@ -706,7 +771,6 @@ export default function BacklogScreen() {
                         </Text>
                       )}
 
-                      {/* Progression */}
                       <View style={styles.progressionSprint}>
                         <View
                           style={[
@@ -735,7 +799,6 @@ export default function BacklogScreen() {
                         </Text>
                       </View>
 
-                      {/* Tâches du sprint */}
                       {sprint.tasks.length > 0 && (
                         <View style={styles.tachesDuSprint}>
                           {sprint.tasks.map((tache) => (
@@ -771,7 +834,6 @@ export default function BacklogScreen() {
                                     ? "🔄"
                                     : "⏳"}
                               </Text>
-                              {/* Bouton retirer du sprint */}
                               <TouchableOpacity
                                 onPress={() => confirmerRetrait(sprint, tache)}
                               >
@@ -824,15 +886,8 @@ const styles = StyleSheet.create({
   boutonRetour: { padding: 4, minWidth: 60 },
   texteBoutonRetour: { fontSize: 15 },
   titre: { fontSize: 18, fontWeight: "600" },
-  onglets: {
-    flexDirection: "row",
-    borderBottomWidth: 0.5,
-  },
-  onglet: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
+  onglets: { flexDirection: "row", borderBottomWidth: 0.5 },
+  onglet: { flex: 1, paddingVertical: 12, alignItems: "center" },
   texteOnglet: { fontSize: 14, fontWeight: "500" },
   centre: { flex: 1, justifyContent: "center", alignItems: "center" },
   contenu: { padding: 16, gap: 16 },
@@ -863,7 +918,25 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 20,
   },
-  texteBoutonAssigner: { color: "#fff", fontSize: 12, fontWeight: "600" },
+  texteBoutonAssigner: { fontSize: 12, fontWeight: "600" },
+  // Sélecteur de sprint inline
+  selecteurSprint: {
+    borderRadius: 8,
+    borderWidth: 1,
+    overflow: "hidden",
+    marginTop: 4,
+  },
+  titreSelecteur: { fontSize: 12, padding: 8, fontStyle: "italic" },
+  optionSprint: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    borderTopWidth: 0.5,
+  },
+  texteOptionSprint: { fontSize: 14, fontWeight: "500" },
+  statut: { fontSize: 11, fontWeight: "600" },
+  // Sprints
   boutonCreerSprint: { padding: 12, borderRadius: 10, alignItems: "center" },
   texteBoutonCreerSprint: { color: "#fff", fontSize: 14, fontWeight: "600" },
   formulaire: { borderRadius: 12, borderWidth: 1, padding: 16, gap: 12 },
