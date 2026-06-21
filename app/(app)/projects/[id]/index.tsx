@@ -32,6 +32,7 @@ const ACTIONS = [
   { icon: "📚", label: "Wiki", path: "wiki" },
   { icon: "💬", label: "Chat", path: "chat" },
   { icon: "👥", label: "Equipe", path: "team" },
+  { icon: "⚙️", label: "Champs", path: "custom-fields" },
 ];
 
 export default function ProjectDetailScreen() {

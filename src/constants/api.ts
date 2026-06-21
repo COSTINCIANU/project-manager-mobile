@@ -89,4 +89,13 @@ export const API_ENDPOINTS = {
   TEMPLATE: (id: number) => `/api/templates/${id}`,
   TEMPLATE_CREATE_PROJECT: (id: number) =>
     `/api/templates/${id}/create-project`,
+
+  // Champs personnalisés
+  CUSTOM_FIELDS_BY_PROJECT: (projectId: number) =>
+    `/api/custom-fields/project/${projectId}`,
+  CUSTOM_FIELDS_BY_TASK: (taskId: number) =>
+    `/api/custom-fields/task/${taskId}`,
+  CUSTOM_FIELD_CREATE: "/api/custom-fields",
+  CUSTOM_FIELD_UPDATE: (id: number) => `/api/custom-fields/${id}`,
+  CUSTOM_FIELD_DELETE: (id: number) => `/api/custom-fields/${id}`,
 } as const;
