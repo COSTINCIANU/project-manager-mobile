@@ -109,4 +109,7 @@ export const API_ENDPOINTS = {
   SPRINT_DELETE: (id: number) => `/api/sprints/${id}`,
   SPRINT_ASSIGN_TASK: (id: number) => `/api/sprints/${id}/assign-task`,
   SPRINT_REMOVE_TASK: (id: number) => `/api/sprints/${id}/remove-task`,
+
+  // Recherche globale
+  SEARCH: "/api/search",
 } as const;

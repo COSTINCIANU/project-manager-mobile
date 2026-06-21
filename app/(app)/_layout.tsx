@@ -28,10 +28,18 @@ function AndroidTopBar() {
   const { theme } = useTheme();
 
   // Definition des onglets
+  // const tabs = [
+  //   { name: "Accueil", path: "/(app)", icon: "home-outline" },
+  //   { name: "Projets", path: "/(app)/projects", icon: "folder-outline" },
+  //   { name: "Taches", path: "/(app)/tasks", icon: "checkmark-circle-outline" },
+  //   { name: "Alertes", path: "/(app)/notifications", icon: "notifications-outline"},
+  //   { name: "Profil", path: "/(app)/profile", icon: "person-outline" },
+  // ];
+
   const tabs = [
     { name: "Accueil", path: "/(app)", icon: "home-outline" },
     { name: "Projets", path: "/(app)/projects", icon: "folder-outline" },
-    { name: "Taches", path: "/(app)/tasks", icon: "checkmark-circle-outline" },
+    { name: "Recherche", path: "/(app)/search", icon: "search-outline" },
     {
       name: "Alertes",
       path: "/(app)/notifications",
@@ -160,7 +168,7 @@ export default function AppLayout() {
             ),
           }}
         />
-        <Tabs.Screen
+        {/* <Tabs.Screen
           name="tasks"
           options={{
             title: "Taches",
@@ -170,6 +178,23 @@ export default function AppLayout() {
                 size={size}
                 color={color}
               />
+            ),
+          }}
+        /> */}
+
+        <Tabs.Screen
+          name="tasks"
+          options={{
+            title: "Taches",
+            href: null, // Cache cet onglet de la tab bar
+          }}
+        />
+        <Tabs.Screen
+          name="search"
+          options={{
+            title: "Recherche",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="search-outline" size={size} color={color} />
             ),
           }}
         />
