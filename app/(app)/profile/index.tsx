@@ -260,6 +260,15 @@ export default function ProfileScreen() {
           <Text style={styles.editProfileText}>✏️ Modifier le profil</Text>
         </TouchableOpacity>
 
+        {/* Bouton abonnement */}
+        <TouchableOpacity
+          style={[styles.editProfileButton, { backgroundColor: "#9B7FD4" }]}
+          onPress={() => router.push("/(app)/subscription" as any)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.editProfileText}>💳 Mon abonnement</Text>
+        </TouchableOpacity>
+
         {/* Bouton deconnexion */}
         <TouchableOpacity
           style={styles.logoutButton}

@@ -118,4 +118,10 @@ export const API_ENDPOINTS = {
     `/api/reports/sprint/${sprintId}/burndown`,
   REPORT_PROJECT_STATS: (projectId: number) =>
     `/api/reports/project/${projectId}/stats`,
+
+  // Stripe
+  STRIPE_CHECKOUT: "/api/stripe/checkout",
+  STRIPE_PORTAL: "/api/stripe/portal",
+  STRIPE_PLAN: "/api/stripe/plan",
+  STRIPE_PUBLIC_KEY: "/api/stripe/public-key",
 } as const;
