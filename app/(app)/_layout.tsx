@@ -220,6 +220,13 @@ export default function AppLayout() {
             ),
           }}
         />
+
+        <Tabs.Screen
+          name="subscription"
+          options={{
+            href: null, // Cache cet onglet de la tab bar
+          }}
+        />
       </Tabs>
     </View>
   );
