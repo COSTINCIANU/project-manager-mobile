@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
   Linking,
 } from "react-native";
+import { tokenService } from "@/services/tokenService";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
@@ -309,9 +310,18 @@ export default function SubscriptionScreen() {
         {planActuel?.plan !== "free" && (
           <TouchableOpacity
             style={[styles.boutonPortail, { borderColor: theme.border }]}
-            onPress={() => {
-              const url = `https://api.costincianu.fr${API_ENDPOINTS.STRIPE_INVOICE(planActuel?.plan ?? "pro")}`;
-              Linking.openURL(url);
+            onPress={async () => {
+              try {
+                // Génère un token temporaire de téléchargement
+                const { data } = await apiClient.post(
+                  API_ENDPOINTS.STRIPE_INVOICE_TOKEN,
+                );
+                if (data.url) {
+                  Linking.openURL(data.url);
+                }
+              } catch (e) {
+                Alert.alert("Erreur", "Impossible de télécharger la facture.");
+              }
             }}
           >
             <Text style={[styles.texteBoutonPortail, { color: theme.primary }]}>
@@ -319,7 +329,6 @@ export default function SubscriptionScreen() {
             </Text>
           </TouchableOpacity>
         )}
-
         {/* Portail de facturation */}
         {planActuel?.plan !== "free" && (
           <TouchableOpacity
