@@ -124,4 +124,6 @@ export const API_ENDPOINTS = {
   STRIPE_PORTAL: "/api/stripe/portal",
   STRIPE_PLAN: "/api/stripe/plan",
   STRIPE_PUBLIC_KEY: "/api/stripe/public-key",
+
+  STRIPE_INVOICE: (plan: string) => `/api/stripe/invoice/${plan}`,
 } as const;

@@ -305,6 +305,21 @@ export default function SubscriptionScreen() {
           })}
         </View>
 
+        {/* Télécharger la facture */}
+        {planActuel?.plan !== "free" && (
+          <TouchableOpacity
+            style={[styles.boutonPortail, { borderColor: theme.border }]}
+            onPress={() => {
+              const url = `https://api.costincianu.fr${API_ENDPOINTS.STRIPE_INVOICE(planActuel?.plan ?? "pro")}`;
+              Linking.openURL(url);
+            }}
+          >
+            <Text style={[styles.texteBoutonPortail, { color: theme.primary }]}>
+              📄 Télécharger ma dernière facture
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* Portail de facturation */}
         {planActuel?.plan !== "free" && (
           <TouchableOpacity
