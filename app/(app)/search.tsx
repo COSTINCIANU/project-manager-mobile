@@ -1,7 +1,7 @@
 // =====================================================
-// SearchScreen — Recherche globale
+// SearchScreen — Recherche avancée
 // Cherche dans les projets et tâches simultanément
-// Filtres : type de ticket, priorité, statut
+// Filtres : terme, type, priorité, statut, projet, date
 // =====================================================
 
 import React, { useState } from "react";
@@ -13,6 +13,7 @@ import {
   StyleSheet,
   TextInput,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,7 +24,10 @@ import { useTheme } from "@/hooks/useTheme";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { Colors } from "@/constants/colors";
 
-// Types des résultats
+// =====================
+// TYPES
+// =====================
+
 interface ResultatProjet {
   id: number;
   name: string;
@@ -43,6 +47,8 @@ interface ResultatTache {
   done: boolean;
   inProgress: boolean;
   projectId: number;
+  assignedTo: number | null;
+  sprintId: number | null;
   dueDate: string | null;
   type: "task";
 }
@@ -53,7 +59,11 @@ interface ResultatsRecherche {
   total: number;
 }
 
-// Icones par type de ticket
+// =====================
+// CONSTANTES
+// =====================
+
+// Icônes par type de ticket
 const TICKET_ICONS: Record<string, string> = {
   task: "✅",
   bug: "🐛",
@@ -66,10 +76,10 @@ const PRIORITY_COLORS: Record<string, string> = {
   haute: Colors.priorityHigh,
   critique: Colors.priorityCritical,
   normale: Colors.info,
-  faible: Colors.priorityLow,
+  basse: Colors.priorityLow,
 };
 
-// Filtres disponibles
+// Options des filtres
 const FILTRES_TYPE = [
   { value: "", label: "Tous" },
   { value: "task", label: "✅ Tâche" },
@@ -80,10 +90,10 @@ const FILTRES_TYPE = [
 
 const FILTRES_PRIORITE = [
   { value: "", label: "Toutes" },
-  { value: "critique", label: "Critique" },
-  { value: "haute", label: "Haute" },
-  { value: "normale", label: "Normale" },
-  { value: "faible", label: "Faible" },
+  { value: "critique", label: "🔴 Critique" },
+  { value: "haute", label: "🟠 Haute" },
+  { value: "normale", label: "🟡 Normale" },
+  { value: "basse", label: "🟢 Basse" },
 ];
 
 const FILTRES_STATUT = [
@@ -93,56 +103,189 @@ const FILTRES_STATUT = [
   { value: "done", label: "✅ Terminé" },
 ];
 
+// =====================
+// COMPOSANT PRINCIPAL
+// =====================
 export default function SearchScreen() {
   const { theme } = useTheme();
   const { isTablet } = useBreakpoint();
   const router = useRouter();
 
-  // États de recherche
+  // =====================
+  // ÉTATS DES FILTRES
+  // =====================
+
+  // Terme de recherche saisi
   const [terme, setTerme] = useState("");
+
+  // Terme actif — déclenche la requête
   const [termeActif, setTermeActif] = useState("");
+
+  // Filtre par type de ticket
   const [filtreType, setFiltreType] = useState("");
+
+  // Filtre par priorité
   const [filtrePriorite, setFiltrePriorite] = useState("");
+
+  // Filtre par statut
   const [filtreStatut, setFiltreStatut] = useState("");
+
+  // Filtre par projet — identifiant numérique
+  const [filtreProjetId, setFiltreProjetId] = useState("");
+
+  // Filtre par date de début
+  const [filtreDateDebut, setFiltreDateDebut] = useState("");
+
+  // Filtre par date de fin
+  const [filtreDateFin, setFiltreDateFin] = useState("");
+
+  // Afficher ou masquer le panneau de filtres
   const [afficherFiltres, setAfficherFiltres] = useState(false);
 
-  // Requête de recherche — se déclenche quand termeActif ou filtres changent
+  // =====================
+  // CHARGEMENT DES PROJETS
+  // Pour le sélecteur de projet dans les filtres
+  // =====================
+  const { data: projets = [] } = useQuery<ResultatProjet[]>({
+    queryKey: ["projets-recherche"],
+    queryFn: async () => {
+      const { data } = await apiClient.get("/projects");
+      return data;
+    },
+  });
+
+  // =====================
+  // REQUÊTE DE RECHERCHE
+  // Se déclenche quand un filtre change
+  // =====================
   const { data: resultats, isLoading } = useQuery<ResultatsRecherche>({
-    queryKey: ["search", termeActif, filtreType, filtrePriorite, filtreStatut],
+    queryKey: [
+      "search",
+      termeActif,
+      filtreType,
+      filtrePriorite,
+      filtreStatut,
+      filtreProjetId,
+      filtreDateDebut,
+      filtreDateFin,
+    ],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (termeActif) params.append("q", termeActif);
       if (filtreType) params.append("type", filtreType);
       if (filtrePriorite) params.append("priority", filtrePriorite);
       if (filtreStatut) params.append("status", filtreStatut);
+      if (filtreProjetId) params.append("project_id", filtreProjetId);
+      if (filtreDateDebut) params.append("date_from", filtreDateDebut);
+      if (filtreDateFin) params.append("date_to", filtreDateFin);
 
       const { data } = await apiClient.get(
         `${API_ENDPOINTS.SEARCH}?${params.toString()}`,
       );
       return data;
     },
-    enabled: !!(termeActif || filtreType || filtrePriorite || filtreStatut),
+    enabled: !!(
+      termeActif ||
+      filtreType ||
+      filtrePriorite ||
+      filtreStatut ||
+      filtreProjetId ||
+      filtreDateDebut ||
+      filtreDateFin
+    ),
   });
 
-  // Lance la recherche
-  const lancerRecherche = () => {
-    setTermeActif(terme);
-  };
+  // =====================
+  // FONCTIONS
+  // =====================
 
-  // Réinitialise tous les filtres
-  const reinitialiser = () => {
+  // Lance la recherche avec le terme saisi
+  function lancerRecherche() {
+    setTermeActif(terme);
+  }
+
+  // Réinitialise tous les filtres et résultats
+  function reinitialiser() {
     setTerme("");
     setTermeActif("");
     setFiltreType("");
     setFiltrePriorite("");
     setFiltreStatut("");
-  };
+    setFiltreProjetId("");
+    setFiltreDateDebut("");
+    setFiltreDateFin("");
+  }
 
-  // Nombre de filtres actifs
-  const nombreFiltresActifs = [filtreType, filtrePriorite, filtreStatut].filter(
-    Boolean,
-  ).length;
+  // Nombre de filtres actifs — affiche le badge sur le bouton
+  const nombreFiltresActifs = [
+    filtreType,
+    filtrePriorite,
+    filtreStatut,
+    filtreProjetId,
+    filtreDateDebut,
+    filtreDateFin,
+  ].filter(Boolean).length;
 
+  // =====================
+  // COMPOSANT FILTRE INLINE
+  // Boutons de sélection horizontaux
+  // =====================
+  function FiltreBoutons({
+    label,
+    options,
+    valeur,
+    onChanger,
+  }: {
+    label: string;
+    options: { value: string; label: string }[];
+    valeur: string;
+    onChanger: (v: string) => void;
+  }) {
+    return (
+      <View style={{ marginBottom: 10 }}>
+        <Text style={[styles.labelFiltre, { color: theme.textPrimary }]}>
+          {label}
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={styles.rangeFiltres}>
+            {options.map((opt) => (
+              <TouchableOpacity
+                key={opt.value}
+                onPress={() => onChanger(opt.value)}
+                style={[
+                  styles.optionFiltre,
+                  {
+                    backgroundColor:
+                      valeur === opt.value
+                        ? theme.primary
+                        : theme.backgroundPrimary,
+                    borderColor:
+                      valeur === opt.value ? theme.primary : theme.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.texteOptionFiltre,
+                    {
+                      color:
+                        valeur === opt.value ? "#fff" : theme.textSecondary,
+                    },
+                  ]}
+                >
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // =====================
+  // RENDU
+  // =====================
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
@@ -152,13 +295,14 @@ export default function SearchScreen() {
           styles.contenu,
           isTablet && styles.contenuTablette,
         ]}
+        keyboardShouldPersistTaps="handled"
       >
-        {/* Titre */}
+        {/* ---- TITRE ---- */}
         <Text style={[styles.titre, { color: theme.textPrimary }]}>
-          🔍 Recherche
+          🔍 Recherche avancée
         </Text>
 
-        {/* Barre de recherche */}
+        {/* ---- BARRE DE RECHERCHE ---- */}
         <View
           style={[
             styles.barreRecherche,
@@ -179,7 +323,7 @@ export default function SearchScreen() {
             autoFocus
           />
           {terme.length > 0 && (
-            <TouchableOpacity onPress={reinitialiser}>
+            <TouchableOpacity onPress={() => setTerme("")}>
               <Text
                 style={[styles.boutonEffacer, { color: theme.textSecondary }]}
               >
@@ -198,7 +342,7 @@ export default function SearchScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Bouton filtres */}
+        {/* ---- BOUTON AFFICHER FILTRES ---- */}
         <TouchableOpacity
           style={[
             styles.boutonFiltres,
@@ -223,10 +367,11 @@ export default function SearchScreen() {
           >
             ⚙️ Filtres{" "}
             {nombreFiltresActifs > 0 ? `(${nombreFiltresActifs})` : ""}
+            {afficherFiltres ? " ▲" : " ▼"}
           </Text>
         </TouchableOpacity>
 
-        {/* Panneau de filtres */}
+        {/* ---- PANNEAU DE FILTRES ---- */}
         {afficherFiltres && (
           <View
             style={[
@@ -237,109 +382,141 @@ export default function SearchScreen() {
               },
             ]}
           >
-            {/* Filtre type */}
-            <Text style={[styles.labelFiltre, { color: theme.textPrimary }]}>
-              Type de ticket
-            </Text>
-            <View style={styles.rangeFiltres}>
-              {FILTRES_TYPE.map((f) => (
-                <TouchableOpacity
-                  key={f.value}
-                  style={[
-                    styles.optionFiltre,
-                    {
-                      borderColor: theme.border,
-                      backgroundColor: theme.backgroundPrimary,
-                    },
-                    filtreType === f.value && {
-                      backgroundColor: theme.primary,
-                      borderColor: theme.primary,
-                    },
-                  ]}
-                  onPress={() => setFiltreType(f.value)}
-                >
-                  <Text
-                    style={[
-                      styles.texteOptionFiltre,
-                      { color: theme.textSecondary },
-                      filtreType === f.value && { color: "#fff" },
-                    ]}
-                  >
-                    {f.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {/* Filtre type de ticket */}
+            <FiltreBoutons
+              label="Type de ticket"
+              options={FILTRES_TYPE}
+              valeur={filtreType}
+              onChanger={setFiltreType}
+            />
 
             {/* Filtre priorité */}
-            <Text style={[styles.labelFiltre, { color: theme.textPrimary }]}>
-              Priorité
-            </Text>
-            <View style={styles.rangeFiltres}>
-              {FILTRES_PRIORITE.map((f) => (
-                <TouchableOpacity
-                  key={f.value}
-                  style={[
-                    styles.optionFiltre,
-                    {
-                      borderColor: theme.border,
-                      backgroundColor: theme.backgroundPrimary,
-                    },
-                    filtrePriorite === f.value && {
-                      backgroundColor: theme.primary,
-                      borderColor: theme.primary,
-                    },
-                  ]}
-                  onPress={() => setFiltrePriorite(f.value)}
-                >
-                  <Text
-                    style={[
-                      styles.texteOptionFiltre,
-                      { color: theme.textSecondary },
-                      filtrePriorite === f.value && { color: "#fff" },
-                    ]}
-                  >
-                    {f.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <FiltreBoutons
+              label="Priorité"
+              options={FILTRES_PRIORITE}
+              valeur={filtrePriorite}
+              onChanger={setFiltrePriorite}
+            />
 
             {/* Filtre statut */}
+            <FiltreBoutons
+              label="Statut"
+              options={FILTRES_STATUT}
+              valeur={filtreStatut}
+              onChanger={setFiltreStatut}
+            />
+
+            {/* Filtre projet — sélecteur inline */}
             <Text style={[styles.labelFiltre, { color: theme.textPrimary }]}>
-              Statut
+              Projet
             </Text>
-            <View style={styles.rangeFiltres}>
-              {FILTRES_STATUT.map((f) => (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.rangeFiltres}>
                 <TouchableOpacity
-                  key={f.value}
+                  onPress={() => setFiltreProjetId("")}
                   style={[
                     styles.optionFiltre,
                     {
-                      borderColor: theme.border,
-                      backgroundColor: theme.backgroundPrimary,
-                    },
-                    filtreStatut === f.value && {
-                      backgroundColor: theme.primary,
-                      borderColor: theme.primary,
+                      backgroundColor:
+                        filtreProjetId === ""
+                          ? theme.primary
+                          : theme.backgroundPrimary,
+                      borderColor:
+                        filtreProjetId === "" ? theme.primary : theme.border,
                     },
                   ]}
-                  onPress={() => setFiltreStatut(f.value)}
                 >
                   <Text
                     style={[
                       styles.texteOptionFiltre,
-                      { color: theme.textSecondary },
-                      filtreStatut === f.value && { color: "#fff" },
+                      {
+                        color:
+                          filtreProjetId === "" ? "#fff" : theme.textSecondary,
+                      },
                     ]}
                   >
-                    {f.label}
+                    Tous
                   </Text>
                 </TouchableOpacity>
-              ))}
+                {projets.map((projet) => (
+                  <TouchableOpacity
+                    key={projet.id}
+                    onPress={() => setFiltreProjetId(String(projet.id))}
+                    style={[
+                      styles.optionFiltre,
+                      {
+                        backgroundColor:
+                          filtreProjetId === String(projet.id)
+                            ? theme.primary
+                            : theme.backgroundPrimary,
+                        borderColor:
+                          filtreProjetId === String(projet.id)
+                            ? theme.primary
+                            : theme.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.texteOptionFiltre,
+                        {
+                          color:
+                            filtreProjetId === String(projet.id)
+                              ? "#fff"
+                              : theme.textSecondary,
+                        },
+                      ]}
+                    >
+                      {projet.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+
+            {/* Filtre date début */}
+            <View style={{ marginTop: 10, marginBottom: 4 }}>
+              <Text style={[styles.labelFiltre, { color: theme.textPrimary }]}>
+                Date d'échéance — du
+              </Text>
+              <TextInput
+                value={filtreDateDebut}
+                onChangeText={setFiltreDateDebut}
+                placeholder="AAAA-MM-JJ"
+                placeholderTextColor={theme.textSecondary}
+                style={[
+                  styles.inputDate,
+                  {
+                    color: theme.textPrimary,
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
+                  },
+                ]}
+              />
             </View>
 
-            {/* Bouton réinitialiser */}
+            {/* Filtre date fin */}
+            <View style={{ marginBottom: 10 }}>
+              <Text style={[styles.labelFiltre, { color: theme.textPrimary }]}>
+                Date d'échéance — au
+              </Text>
+              <TextInput
+                value={filtreDateFin}
+                onChangeText={setFiltreDateFin}
+                placeholder="AAAA-MM-JJ"
+                placeholderTextColor={theme.textSecondary}
+                style={[
+                  styles.inputDate,
+                  {
+                    color: theme.textPrimary,
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
+                  },
+                ]}
+              />
+            </View>
+
+            {/* Bouton réinitialiser les filtres */}
             {nombreFiltresActifs > 0 && (
               <TouchableOpacity
                 style={[styles.boutonReinit, { borderColor: theme.border }]}
@@ -347,6 +524,9 @@ export default function SearchScreen() {
                   setFiltreType("");
                   setFiltrePriorite("");
                   setFiltreStatut("");
+                  setFiltreProjetId("");
+                  setFiltreDateDebut("");
+                  setFiltreDateFin("");
                 }}
               >
                 <Text
@@ -362,16 +542,17 @@ export default function SearchScreen() {
           </View>
         )}
 
-        {/* Chargement */}
+        {/* ---- CHARGEMENT ---- */}
         {isLoading && (
           <View style={styles.centre}>
             <ActivityIndicator size="large" color={theme.primary} />
           </View>
         )}
 
-        {/* Résultats */}
+        {/* ---- RÉSULTATS ---- */}
         {resultats && !isLoading && (
           <View style={styles.resultats}>
+            {/* Compteur */}
             <Text
               style={[styles.nombreResultats, { color: theme.textSecondary }]}
             >
@@ -379,7 +560,7 @@ export default function SearchScreen() {
               {resultats.total > 1 ? "s" : ""}
             </Text>
 
-            {/* Résultats projets */}
+            {/* Projets */}
             {resultats.projects.length > 0 && (
               <View style={styles.sectionResultats}>
                 <Text
@@ -408,17 +589,6 @@ export default function SearchScreen() {
                     >
                       {projet.name}
                     </Text>
-                    {projet.description && (
-                      <Text
-                        style={[
-                          styles.descriptionResultat,
-                          { color: theme.textSecondary },
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {projet.description}
-                      </Text>
-                    )}
                     <View style={styles.piedResultat}>
                       <Text
                         style={[
@@ -434,7 +604,7 @@ export default function SearchScreen() {
               </View>
             )}
 
-            {/* Résultats tâches */}
+            {/* Tâches */}
             {resultats.tasks.length > 0 && (
               <View style={styles.sectionResultats}>
                 <Text
@@ -517,6 +687,17 @@ export default function SearchScreen() {
                             ? "🔄 En cours"
                             : "⏳ À faire"}
                       </Text>
+                      {tache.dueDate && (
+                        <Text
+                          style={[
+                            styles.metaResultat,
+                            { color: theme.textSecondary },
+                          ]}
+                        >
+                          📅{" "}
+                          {new Date(tache.dueDate).toLocaleDateString("fr-FR")}
+                        </Text>
+                      )}
                     </View>
                   </TouchableOpacity>
                 ))}
@@ -529,18 +710,19 @@ export default function SearchScreen() {
                 <Text
                   style={[styles.texteVide, { color: theme.textSecondary }]}
                 >
-                  Aucun résultat pour "{termeActif}"
+                  Aucun résultat pour ces critères
                 </Text>
               </View>
             )}
           </View>
         )}
 
-        {/* Message initial */}
+        {/* ---- MESSAGE INITIAL ---- */}
         {!resultats && !isLoading && (
           <View style={styles.vide}>
             <Text style={[styles.texteVide, { color: theme.textSecondary }]}>
-              Tapez un mot-clé pour chercher{"\n"}dans vos projets et tâches
+              Tapez un mot-clé ou sélectionnez{"\n"}un filtre pour lancer la
+              recherche
             </Text>
           </View>
         )}
@@ -549,6 +731,9 @@ export default function SearchScreen() {
   );
 }
 
+// =====================
+// STYLES
+// =====================
 const styles = StyleSheet.create({
   container: { flex: 1 },
   contenu: { padding: 16, gap: 16 },
@@ -583,9 +768,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   texteBoutonFiltres: { fontSize: 14, fontWeight: "500" },
-  panneauFiltres: { borderRadius: 12, borderWidth: 1, padding: 14, gap: 10 },
-  labelFiltre: { fontSize: 13, fontWeight: "600" },
-  rangeFiltres: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  panneauFiltres: { borderRadius: 12, borderWidth: 1, padding: 14, gap: 6 },
+  labelFiltre: { fontSize: 12, fontWeight: "600", marginBottom: 6 },
+  rangeFiltres: { flexDirection: "row", gap: 8 },
   optionFiltre: {
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -593,6 +778,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   texteOptionFiltre: { fontSize: 12, fontWeight: "500" },
+  inputDate: {
+    padding: 10,
+    borderWidth: 1,
+    borderRadius: 8,
+    fontSize: 13,
+    marginTop: 4,
+  },
   boutonReinit: {
     padding: 10,
     borderRadius: 8,
@@ -611,7 +803,12 @@ const styles = StyleSheet.create({
   iconeTicket: { fontSize: 14 },
   nomResultat: { fontSize: 14, fontWeight: "600", flex: 1 },
   descriptionResultat: { fontSize: 12 },
-  piedResultat: { flexDirection: "row", alignItems: "center", gap: 8 },
+  piedResultat: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
   badgePriorite: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   texteBadge: { fontSize: 11, fontWeight: "600" },
   metaResultat: { fontSize: 11 },
