@@ -89,8 +89,13 @@ export default function AutomatisationsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const projetId = parseInt(id);
   const router = useRouter();
-  const theme = useTheme();
-  const { estTablette } = useBreakpoint();
+
+  // Hook thème — retourne { theme, isDark, toggleTheme }
+  const { theme } = useTheme();
+
+  // Hook responsive — retourne { isTablet, isDesktop, width }
+  const { isTablet } = useBreakpoint();
+
   const queryClient = useQueryClient();
 
   // =====================
@@ -135,15 +140,14 @@ export default function AutomatisationsScreen() {
   // MUTATION — CRÉER UNE RÈGLE
   // =====================
   const mutationCreer = useMutation({
-    mutationFn: async (données: NouvelleRegle) => {
+    mutationFn: async (donnees: NouvelleRegle) => {
       const reponse = await apiClient.post(
         `/projects/${projetId}/regles`,
-        données,
+        donnees,
       );
       return reponse.data;
     },
     onSuccess: () => {
-      // Recharge la liste des règles
       queryClient.invalidateQueries({ queryKey: ["regles", projetId] });
       setAfficherFormulaire(false);
       setFormulaire({
@@ -244,15 +248,15 @@ export default function AutomatisationsScreen() {
                 style={[
                   styles.optionBadge,
                   {
-                    background:
+                    backgroundColor:
                       valeurSelectionnee === option.valeur
                         ? theme.primary
-                        : theme.cardBackground,
+                        : theme.backgroundSecondary,
                     borderColor:
                       valeurSelectionnee === option.valeur
                         ? theme.primary
                         : theme.border,
-                  } as any,
+                  },
                 ]}
               >
                 <Text
@@ -261,7 +265,7 @@ export default function AutomatisationsScreen() {
                     color:
                       valeurSelectionnee === option.valeur
                         ? "#fff"
-                        : theme.text,
+                        : theme.textPrimary,
                     fontWeight:
                       valeurSelectionnee === option.valeur ? "600" : "400",
                   }}
@@ -281,17 +285,17 @@ export default function AutomatisationsScreen() {
   // =====================
   return (
     <SafeAreaView
-      style={[styles.conteneur, { backgroundColor: theme.background }]}
+      style={[styles.conteneur, { backgroundColor: theme.backgroundTertiary }]}
     >
       {/* ---- EN-TÊTE ---- */}
-      <View style={styles.entete}>
+      <View style={[styles.entete, { borderBottomColor: theme.border }]}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.boutonRetour}
         >
           <Text style={{ color: theme.primary, fontSize: 14 }}>← Retour</Text>
         </TouchableOpacity>
-        <Text style={[styles.titre, { color: theme.text }]}>
+        <Text style={[styles.titre, { color: theme.textPrimary }]}>
           Automatisations
         </Text>
         <TouchableOpacity
@@ -307,7 +311,7 @@ export default function AutomatisationsScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.contenu,
-          estTablette && styles.contenuTablette,
+          isTablet && styles.contenuTablette,
         ]}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
@@ -341,12 +345,12 @@ export default function AutomatisationsScreen() {
             style={[
               styles.carte,
               {
-                backgroundColor: theme.cardBackground,
+                backgroundColor: theme.backgroundPrimary,
                 borderColor: theme.border,
               },
             ]}
           >
-            <Text style={[styles.titreCarte, { color: theme.text }]}>
+            <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
               Nouvelle règle automatique
             </Text>
 
@@ -364,8 +368,8 @@ export default function AutomatisationsScreen() {
               style={[
                 styles.champTexte,
                 {
-                  color: theme.text,
-                  backgroundColor: theme.background,
+                  color: theme.textPrimary,
+                  backgroundColor: theme.backgroundSecondary,
                   borderColor: theme.border,
                 },
               ]}
@@ -452,12 +456,12 @@ export default function AutomatisationsScreen() {
           style={[
             styles.carte,
             {
-              backgroundColor: theme.cardBackground,
+              backgroundColor: theme.backgroundPrimary,
               borderColor: theme.border,
             },
           ]}
         >
-          <Text style={[styles.titreCarte, { color: theme.text }]}>
+          <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
             {regles.length} règle{regles.length > 1 ? "s" : ""}
           </Text>
 
@@ -484,17 +488,17 @@ export default function AutomatisationsScreen() {
                 styles.carteRegle,
                 {
                   borderColor: theme.border,
-                  backgroundColor: theme.background,
+                  backgroundColor: theme.backgroundSecondary,
                   opacity: regle.active ? 1 : 0.5,
                 },
               ]}
             >
               {/* Nom de la règle */}
-              <Text style={[styles.nomRegle, { color: theme.text }]}>
+              <Text style={[styles.nomRegle, { color: theme.textPrimary }]}>
                 {regle.nom}
               </Text>
 
-              {/* Description de la règle */}
+              {/* Description lisible de la règle */}
               <Text
                 style={[
                   styles.descriptionRegle,
@@ -555,12 +559,9 @@ export default function AutomatisationsScreen() {
 // STYLES
 // =====================
 const styles = StyleSheet.create({
-  // Conteneur principal
   conteneur: {
     flex: 1,
   },
-
-  // En-tête avec retour, titre et bouton nouvelle règle
   entete: {
     flexDirection: "row",
     alignItems: "center",
@@ -568,66 +569,49 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
-
   boutonRetour: {
     paddingVertical: 4,
     paddingHorizontal: 8,
   },
-
   titre: {
     fontSize: 16,
     fontWeight: "600",
   },
-
   boutonNouvelle: {
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
   },
-
-  // Contenu scrollable
   contenu: {
     padding: 16,
     gap: 12,
   },
-
-  // Contenu en mode tablette — largeur limitée et centré
   contenuTablette: {
     maxWidth: 700,
     alignSelf: "center",
     width: "100%",
   },
-
-  // Message succès ou erreur
   message: {
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
   },
-
-  // Carte générique
   carte: {
     borderRadius: 12,
     borderWidth: 1,
     padding: 16,
     gap: 8,
   },
-
   titreCarte: {
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 8,
   },
-
-  // Label d'un champ de formulaire
   labelChamp: {
     fontSize: 11,
     marginBottom: 4,
   },
-
-  // Champ texte du formulaire
   champTexte: {
     fontSize: 13,
     padding: 10,
@@ -635,31 +619,23 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
   },
-
-  // Badge de sélection inline
   optionBadge: {
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 20,
     borderWidth: 1,
   },
-
-  // Bouton créer la règle
   boutonCreer: {
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
     marginTop: 8,
   },
-
-  // Texte état vide
   texteVide: {
     fontSize: 13,
     textAlign: "center",
     paddingVertical: 20,
   },
-
-  // Carte d'une règle individuelle
   carteRegle: {
     borderWidth: 1,
     borderRadius: 10,
@@ -667,30 +643,24 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     gap: 6,
   },
-
   nomRegle: {
     fontSize: 13,
     fontWeight: "500",
   },
-
   descriptionRegle: {
     fontSize: 12,
     lineHeight: 18,
   },
-
-  // Ligne des boutons d'une règle
   boutonsRegle: {
     flexDirection: "row",
     gap: 8,
     marginTop: 4,
   },
-
   boutonToggle: {
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 6,
   },
-
   boutonSupprimer: {
     paddingVertical: 4,
     paddingHorizontal: 10,
