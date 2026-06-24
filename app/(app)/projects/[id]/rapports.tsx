@@ -93,39 +93,33 @@ interface SprintComparatif {
 
 // =====================
 // COMPOSANT GRAPHIQUE BARRE SVG
-// Affiche un graphique en barres simple avec SVG natif
-// Compatible iOS et Android sans dépendances externes
-// =====================
-// =====================
-// COMPOSANT GRAPHIQUE BARRE SVG — corrigé pour tablette
+// Compatible iOS, Android et tablette
 // =====================
 function GraphiqueBarre({
-  données,
-  cléValeur,
+  donnees,
+  cleValeur,
   couleur,
   hauteur = 160,
   theme,
   largeurMax,
 }: {
-  données: any[];
-  cléValeur: string;
+  donnees: any[];
+  cleValeur: string;
   couleur: string;
   hauteur?: number;
   theme: any;
   largeurMax?: number;
 }) {
-  // Utilise la largeur passée en prop ou calcule depuis l'écran
   const largeur = largeurMax ?? Dimensions.get("window").width - 64;
-  const maxVal = Math.max(...données.map((d) => d[cléValeur] || 0), 1);
-  const largBarre = (largeur - 40) / données.length - 8;
+  const maxVal = Math.max(...donnees.map((d) => d[cleValeur] || 0), 1);
+  const largBarre = (largeur - 40) / donnees.length - 8;
 
   return (
     <Svg width={largeur} height={hauteur + 30}>
-      {données.map((item, index) => {
-        const hauteurBarre = ((item[cléValeur] || 0) / maxVal) * hauteur;
-        const x = 40 + index * ((largeur - 40) / données.length);
+      {donnees.map((item, index) => {
+        const hauteurBarre = ((item[cleValeur] || 0) / maxVal) * hauteur;
+        const x = 40 + index * ((largeur - 40) / donnees.length);
         const y = hauteur - hauteurBarre;
-
         return (
           <React.Fragment key={index}>
             <Rect
@@ -143,7 +137,7 @@ function GraphiqueBarre({
               fill={theme.textSecondary}
               textAnchor="middle"
             >
-              {item[cléValeur] || 0}
+              {item[cleValeur] || 0}
             </SvgText>
             <SvgText
               x={x + largBarre / 2}
@@ -168,6 +162,7 @@ function GraphiqueBarre({
     </Svg>
   );
 }
+
 // =====================
 // COMPOSANT PRINCIPAL
 // =====================
@@ -177,19 +172,20 @@ export default function RapportsScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const { isTablet } = useBreakpoint();
+  const { width: largeurEcran } = useWindowDimensions();
 
-  // Onglet actif — velocite | temps | multi
+  // Onglet actif
   const [ongletActif, setOngletActif] = useState<
     "velocite" | "temps" | "multi"
   >("velocite");
 
-  const { width: largeurEcran } = useWindowDimensions();
+  // Largeur graphique adaptée tablette ou mobile
   const largeurGraphique = isTablet
     ? Math.min(largeurEcran - 80, 700)
     : largeurEcran - 64;
 
   // =====================
-  // CHARGEMENT VÉLOCITÉ
+  // CHARGEMENT VELOCITE
   // =====================
   const {
     data: donneesVelocite,
@@ -210,7 +206,7 @@ export default function RapportsScreen() {
   });
 
   // =====================
-  // CHARGEMENT TEMPS PASSÉ
+  // CHARGEMENT TEMPS PASSE
   // =====================
   const {
     data: donneesTemps,
@@ -251,36 +247,20 @@ export default function RapportsScreen() {
     retry: false,
   });
 
-  // =====================
-  // LOGS DEBUG — à supprimer après vérification
-  // =====================
-  //   console.log("=== RAPPORTS DEBUG ===");
-  //   console.log("projetId:", projetId);
-  //   console.log("chargementVelocite:", chargementVelocite);
-  //   console.log("donneesVelocite:", JSON.stringify(donneesVelocite));
-  //   console.log("chargementTemps:", chargementTemps);
-  //   console.log("donneesTemps:", JSON.stringify(donneesTemps));
-  //   console.log("chargementMulti:", chargementMulti);
-  //   console.log("donneesMulti:", JSON.stringify(donneesMulti));
-
-  // =====================
-  // FONCTIONS
-  // =====================
-
-  // Détermine si un chargement est en cours selon l'onglet
+  // Chargement en cours selon onglet actif
   const estEnChargement =
     (ongletActif === "velocite" && chargementVelocite) ||
     (ongletActif === "temps" && chargementTemps) ||
     (ongletActif === "multi" && chargementMulti);
 
-  // Recharge selon l'onglet actif
+  // Recharge les données de l'onglet actif
   function recharger() {
     if (ongletActif === "velocite") rechargerVelocite();
     if (ongletActif === "temps") rechargerTemps();
     if (ongletActif === "multi") rechargerMulti();
   }
 
-  // Partage le lien CSV via le système de partage natif iOS/Android
+  // Partage le lien CSV via le systeme natif iOS/Android
   async function partagerCsv() {
     try {
       await Share.share({
@@ -292,7 +272,7 @@ export default function RapportsScreen() {
     }
   }
 
-  // Couleur du badge statut sprint
+  // Couleurs du badge statut sprint
   function couleurStatut(statut: string): { bg: string; text: string } {
     switch (statut) {
       case "completed":
@@ -311,9 +291,9 @@ export default function RapportsScreen() {
     <SafeAreaView
       style={[styles.conteneur, { backgroundColor: theme.backgroundTertiary }]}
     >
-      {/* Wrapper centré sur tablette */}
+      {/* Wrapper centre sur tablette, plein ecran sur mobile */}
       <View style={isTablet ? styles.wrapperTablette : styles.wrapperMobile}>
-        {/* ---- EN-TÊTE ---- */}
+        {/* EN-TETE */}
         <View style={[styles.entete, { borderBottomColor: theme.border }]}>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -334,19 +314,13 @@ export default function RapportsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ---- ONGLETS ---- */}
+        {/* ONGLETS */}
         <View style={[styles.onglets, { borderBottomColor: theme.border }]}>
           {(["velocite", "temps", "multi"] as const).map((onglet) => (
             <TouchableOpacity
               key={onglet}
               onPress={() => setOngletActif(onglet)}
-              style={[
-                styles.onglet,
-                ongletActif === onglet && {
-                  borderBottomColor: theme.primary,
-                  borderBottomWidth: 2,
-                },
-              ]}
+              style={styles.onglet}
             >
               <Text
                 style={[
@@ -365,10 +339,20 @@ export default function RapportsScreen() {
                     ? "⏱️ Temps"
                     : "📊 Sprints"}
               </Text>
+              {/* Ligne active centree sous le texte */}
+              {ongletActif === onglet && (
+                <View
+                  style={[
+                    styles.ligneActive,
+                    { backgroundColor: theme.primary },
+                  ]}
+                />
+              )}
             </TouchableOpacity>
           ))}
         </View>
 
+        {/* CONTENU SCROLLABLE */}
         <ScrollView
           contentContainerStyle={styles.contenu}
           refreshControl={
@@ -380,16 +364,14 @@ export default function RapportsScreen() {
             />
           }
         >
-          {/* ---- CHARGEMENT ---- */}
+          {/* Indicateur de chargement */}
           {estEnChargement && (
             <View style={styles.centre}>
               <ActivityIndicator size="large" color={theme.primary} />
             </View>
           )}
 
-          {/* ════════════════════════════════════
-              ONGLET VÉLOCITÉ
-          ════════════════════════════════════ */}
+          {/* ONGLET VELOCITE */}
           {ongletActif === "velocite" &&
             donneesVelocite &&
             !chargementVelocite && (
@@ -457,8 +439,8 @@ export default function RapportsScreen() {
                       Tâches terminées par sprint
                     </Text>
                     <GraphiqueBarre
-                      données={donneesVelocite.sprints}
-                      cléValeur="tachesTerminees"
+                      donnees={donneesVelocite.sprints}
+                      cleValeur="tachesTerminees"
                       couleur={theme.primary}
                       theme={theme}
                       largeurMax={largeurGraphique}
@@ -572,9 +554,7 @@ export default function RapportsScreen() {
               </View>
             )}
 
-          {/* ════════════════════════════════════
-              ONGLET TEMPS PASSÉ
-          ════════════════════════════════════ */}
+          {/* ONGLET TEMPS PASSE */}
           {ongletActif === "temps" && donneesTemps && !chargementTemps && (
             <View style={{ gap: 12 }}>
               <View
@@ -613,8 +593,8 @@ export default function RapportsScreen() {
                     Top tâches par temps estimé
                   </Text>
                   <GraphiqueBarre
-                    données={donneesTemps.parTache.slice(0, 8)}
-                    cléValeur="heuresEstimees"
+                    donnees={donneesTemps.parTache.slice(0, 8)}
+                    cleValeur="heuresEstimees"
                     couleur="#378ADD"
                     theme={theme}
                     largeurMax={largeurGraphique}
@@ -679,9 +659,7 @@ export default function RapportsScreen() {
             </View>
           )}
 
-          {/* ════════════════════════════════════
-              ONGLET MULTI-SPRINTS
-          ════════════════════════════════════ */}
+          {/* ONGLET MULTI-SPRINTS */}
           {ongletActif === "multi" && donneesMulti && !chargementMulti && (
             <View style={{ gap: 12 }}>
               {donneesMulti.sprints.length > 0 && (
@@ -700,8 +678,8 @@ export default function RapportsScreen() {
                     Tâches terminées par sprint
                   </Text>
                   <GraphiqueBarre
-                    données={donneesMulti.sprints}
-                    cléValeur="tachesTerminees"
+                    donnees={donneesMulti.sprints}
+                    cleValeur="tachesTerminees"
                     couleur="#639922"
                     theme={theme}
                     largeurMax={largeurGraphique}
@@ -848,6 +826,13 @@ export default function RapportsScreen() {
 // =====================
 const styles = StyleSheet.create({
   conteneur: { flex: 1 },
+  wrapperMobile: { flex: 1 },
+  wrapperTablette: {
+    flex: 1,
+    maxWidth: 860,
+    alignSelf: "center",
+    width: "100%",
+  },
   entete: {
     flexDirection: "row",
     alignItems: "center",
@@ -860,18 +845,24 @@ const styles = StyleSheet.create({
   titre: { fontSize: 16, fontWeight: "600" },
   boutonCsv: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },
   onglets: { flexDirection: "row", borderBottomWidth: 1 },
-  onglet: { flex: 1, paddingVertical: 12, alignItems: "center" },
-  texteOnglet: { fontSize: 13, fontWeight: "500" },
-  //   contenu: { padding: 16, gap: 12 },
-  // Tablette — centré et plus large
-  contenuTablette: {
-    maxWidth: 860,
-    alignSelf: "center",
-    width: "100%",
-    padding: 24,
+  onglet: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
+  ligneActive: {
+    position: "absolute",
+    bottom: 0,
+    left: "20%",
+    right: "20%",
+    height: 2,
+    borderRadius: 2,
+  },
+  texteOnglet: { fontSize: 13, fontWeight: "500" },
+  contenu: { padding: 16, gap: 12 },
   centre: { padding: 40, alignItems: "center" },
-  // Grille 3 colonnes sur tablette, 2 sur mobile
   grilleStats: { flexDirection: "row", gap: 12 },
   carteStatut: {
     flex: 1,
@@ -917,12 +908,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     gap: 4,
   },
-  ligneEntete: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 6,
-    gap: 4,
-  },
   celluleEntete: {
     flex: 1,
     fontSize: 11,
@@ -936,13 +921,4 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 20,
   },
-
-  wrapperMobile: { flex: 1 },
-  wrapperTablette: {
-    flex: 1,
-    maxWidth: 860,
-    alignSelf: "center",
-    width: "100%",
-  },
-  contenu: { padding: 16, gap: 12 },
 });
