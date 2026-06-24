@@ -35,6 +35,7 @@ const ACTIONS = [
   { icon: "⚙️", label: "Champs", path: "custom-fields" },
   { icon: "📦", label: "Backlog", path: "backlog" },
   { icon: "📊", label: "Rapports", path: "burndown" },
+  { icon: "📈", label: "Rapports", path: "rapports" },
   { icon: "🔁", label: "Automatisations", path: "automatisations" },
 ];
 
