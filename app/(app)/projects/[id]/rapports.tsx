@@ -14,6 +14,7 @@ import {
   RefreshControl,
   Dimensions,
   Share,
+  useWindowDimensions,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -95,20 +96,26 @@ interface SprintComparatif {
 // Affiche un graphique en barres simple avec SVG natif
 // Compatible iOS et Android sans dépendances externes
 // =====================
+// =====================
+// COMPOSANT GRAPHIQUE BARRE SVG — corrigé pour tablette
+// =====================
 function GraphiqueBarre({
   données,
   cléValeur,
   couleur,
   hauteur = 160,
   theme,
+  largeurMax,
 }: {
   données: any[];
   cléValeur: string;
   couleur: string;
   hauteur?: number;
   theme: any;
+  largeurMax?: number;
 }) {
-  const largeur = Dimensions.get("window").width - 64;
+  // Utilise la largeur passée en prop ou calcule depuis l'écran
+  const largeur = largeurMax ?? Dimensions.get("window").width - 64;
   const maxVal = Math.max(...données.map((d) => d[cléValeur] || 0), 1);
   const largBarre = (largeur - 40) / données.length - 8;
 
@@ -121,7 +128,6 @@ function GraphiqueBarre({
 
         return (
           <React.Fragment key={index}>
-            {/* Barre */}
             <Rect
               x={x}
               y={y}
@@ -130,7 +136,6 @@ function GraphiqueBarre({
               fill={couleur}
               rx={4}
             />
-            {/* Valeur au-dessus de la barre */}
             <SvgText
               x={x + largBarre / 2}
               y={y - 4}
@@ -140,7 +145,6 @@ function GraphiqueBarre({
             >
               {item[cléValeur] || 0}
             </SvgText>
-            {/* Label en bas */}
             <SvgText
               x={x + largBarre / 2}
               y={hauteur + 20}
@@ -153,7 +157,6 @@ function GraphiqueBarre({
           </React.Fragment>
         );
       })}
-      {/* Ligne de base */}
       <Line
         x1={40}
         y1={hauteur}
@@ -165,7 +168,6 @@ function GraphiqueBarre({
     </Svg>
   );
 }
-
 // =====================
 // COMPOSANT PRINCIPAL
 // =====================
@@ -180,6 +182,11 @@ export default function RapportsScreen() {
   const [ongletActif, setOngletActif] = useState<
     "velocite" | "temps" | "multi"
   >("velocite");
+
+  const { width: largeurEcran } = useWindowDimensions();
+  const largeurGraphique = isTablet
+    ? Math.min(largeurEcran - 80, 700)
+    : largeurEcran - 64;
 
   // =====================
   // CHARGEMENT VÉLOCITÉ
@@ -452,6 +459,7 @@ export default function RapportsScreen() {
                     cléValeur="tachesTerminees"
                     couleur={theme.primary}
                     theme={theme}
+                    largeurMax={largeurGraphique}
                   />
                 </View>
               )}
@@ -604,6 +612,7 @@ export default function RapportsScreen() {
                   cléValeur="heuresEstimees"
                   couleur="#378ADD"
                   theme={theme}
+                  largeurMax={largeurGraphique}
                 />
               </View>
             )}
@@ -687,6 +696,7 @@ export default function RapportsScreen() {
                   cléValeur="tachesTerminees"
                   couleur="#639922"
                   theme={theme}
+                  largeurMax={largeurGraphique}
                 />
               </View>
             )}
@@ -845,8 +855,15 @@ const styles = StyleSheet.create({
   onglet: { flex: 1, paddingVertical: 12, alignItems: "center" },
   texteOnglet: { fontSize: 13, fontWeight: "500" },
   contenu: { padding: 16, gap: 12 },
-  contenuTablette: { maxWidth: 700, alignSelf: "center", width: "100%" },
+  // Tablette — centré et plus large
+  contenuTablette: {
+    maxWidth: 860,
+    alignSelf: "center",
+    width: "100%",
+    padding: 24,
+  },
   centre: { padding: 40, alignItems: "center" },
+  // Grille 3 colonnes sur tablette, 2 sur mobile
   grilleStats: { flexDirection: "row", gap: 12 },
   carteStatut: {
     flex: 1,
@@ -870,7 +887,7 @@ const styles = StyleSheet.create({
   },
   nomSprint: { fontSize: 13, fontWeight: "500" },
   dateSprint: { fontSize: 11, marginTop: 2 },
-  statsSprintDroite: { alignItems: "center", minWidth: 50 },
+  statsSprintDroite: { alignItems: "center", minWidth: 60 },
   chiffreSprint: { fontSize: 16, fontWeight: "700" },
   labelChiffreSprint: { fontSize: 9 },
   badgeStatut: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 },
