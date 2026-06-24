@@ -311,135 +311,380 @@ export default function RapportsScreen() {
     <SafeAreaView
       style={[styles.conteneur, { backgroundColor: theme.backgroundTertiary }]}
     >
-      {/* ---- EN-TÊTE ---- */}
-      <View style={[styles.entete, { borderBottomColor: theme.border }]}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.boutonRetour}
-        >
-          <Text style={{ color: theme.primary, fontSize: 14 }}>← Retour</Text>
-        </TouchableOpacity>
-        <Text style={[styles.titre, { color: theme.textPrimary }]}>
-          Rapports
-        </Text>
-        {/* Bouton export CSV via partage natif */}
-        <TouchableOpacity
-          onPress={partagerCsv}
-          style={[styles.boutonCsv, { backgroundColor: "#639922" }]}
-        >
-          <Text style={{ color: "#fff", fontSize: 11, fontWeight: "600" }}>
-            ⬇️ CSV
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* ---- ONGLETS ---- */}
-      <View style={[styles.onglets, { borderBottomColor: theme.border }]}>
-        {(["velocite", "temps", "multi"] as const).map((onglet) => (
+      {/* Wrapper centré sur tablette */}
+      <View style={isTablet ? styles.wrapperTablette : styles.wrapperMobile}>
+        {/* ---- EN-TÊTE ---- */}
+        <View style={[styles.entete, { borderBottomColor: theme.border }]}>
           <TouchableOpacity
-            key={onglet}
-            onPress={() => setOngletActif(onglet)}
-            style={[
-              styles.onglet,
-              ongletActif === onglet && {
-                borderBottomColor: theme.primary,
-                borderBottomWidth: 2,
-              },
-            ]}
+            onPress={() => router.back()}
+            style={styles.boutonRetour}
           >
-            <Text
+            <Text style={{ color: theme.primary, fontSize: 14 }}>← Retour</Text>
+          </TouchableOpacity>
+          <Text style={[styles.titre, { color: theme.textPrimary }]}>
+            Rapports
+          </Text>
+          <TouchableOpacity
+            onPress={partagerCsv}
+            style={[styles.boutonCsv, { backgroundColor: "#639922" }]}
+          >
+            <Text style={{ color: "#fff", fontSize: 11, fontWeight: "600" }}>
+              ⬇️ CSV
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ---- ONGLETS ---- */}
+        <View style={[styles.onglets, { borderBottomColor: theme.border }]}>
+          {(["velocite", "temps", "multi"] as const).map((onglet) => (
+            <TouchableOpacity
+              key={onglet}
+              onPress={() => setOngletActif(onglet)}
               style={[
-                styles.texteOnglet,
-                {
-                  color:
-                    ongletActif === onglet
-                      ? theme.primary
-                      : theme.textSecondary,
+                styles.onglet,
+                ongletActif === onglet && {
+                  borderBottomColor: theme.primary,
+                  borderBottomWidth: 2,
                 },
               ]}
             >
-              {onglet === "velocite"
-                ? "📈 Vélocité"
-                : onglet === "temps"
-                  ? "⏱️ Temps"
-                  : "📊 Sprints"}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+              <Text
+                style={[
+                  styles.texteOnglet,
+                  {
+                    color:
+                      ongletActif === onglet
+                        ? theme.primary
+                        : theme.textSecondary,
+                  },
+                ]}
+              >
+                {onglet === "velocite"
+                  ? "📈 Vélocité"
+                  : onglet === "temps"
+                    ? "⏱️ Temps"
+                    : "📊 Sprints"}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.contenu,
-          isTablet && styles.contenuTablette,
-        ]}
-        refreshControl={
-          <RefreshControl
-            refreshing={
-              rechargementVelocite || rechargementTemps || rechargementMulti
-            }
-            onRefresh={recharger}
-          />
-        }
-      >
-        {/* ---- CHARGEMENT ---- */}
-        {estEnChargement && (
-          <View style={styles.centre}>
-            <ActivityIndicator size="large" color={theme.primary} />
-          </View>
-        )}
+        <ScrollView
+          contentContainerStyle={styles.contenu}
+          refreshControl={
+            <RefreshControl
+              refreshing={
+                rechargementVelocite || rechargementTemps || rechargementMulti
+              }
+              onRefresh={recharger}
+            />
+          }
+        >
+          {/* ---- CHARGEMENT ---- */}
+          {estEnChargement && (
+            <View style={styles.centre}>
+              <ActivityIndicator size="large" color={theme.primary} />
+            </View>
+          )}
 
-        {/* ════════════════════════════════════
-            ONGLET VÉLOCITÉ
-        ════════════════════════════════════ */}
-        {ongletActif === "velocite" &&
-          donneesVelocite &&
-          !chargementVelocite && (
-            <View style={{ gap: 12 }}>
-              {/* Cartes résumé */}
-              <View style={styles.grilleStats}>
-                <View
-                  style={[
-                    styles.carteStatut,
-                    {
-                      backgroundColor: theme.backgroundPrimary,
-                      borderColor: theme.border,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[styles.chiffreStatut, { color: theme.primary }]}
+          {/* ════════════════════════════════════
+              ONGLET VÉLOCITÉ
+          ════════════════════════════════════ */}
+          {ongletActif === "velocite" &&
+            donneesVelocite &&
+            !chargementVelocite && (
+              <View style={{ gap: 12 }}>
+                <View style={styles.grilleStats}>
+                  <View
+                    style={[
+                      styles.carteStatut,
+                      {
+                        backgroundColor: theme.backgroundPrimary,
+                        borderColor: theme.border,
+                      },
+                    ]}
                   >
-                    {donneesVelocite.velociteMoyenne}
-                  </Text>
-                  <Text
-                    style={[styles.labelStatut, { color: theme.textSecondary }]}
+                    <Text
+                      style={[styles.chiffreStatut, { color: theme.primary }]}
+                    >
+                      {donneesVelocite.velociteMoyenne}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.labelStatut,
+                        { color: theme.textSecondary },
+                      ]}
+                    >
+                      Vélocité moyenne
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.carteStatut,
+                      {
+                        backgroundColor: theme.backgroundPrimary,
+                        borderColor: theme.border,
+                      },
+                    ]}
                   >
-                    Vélocité moyenne
-                  </Text>
+                    <Text style={[styles.chiffreStatut, { color: "#639922" }]}>
+                      {donneesVelocite.totalSprints}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.labelStatut,
+                        { color: theme.textSecondary },
+                      ]}
+                    >
+                      Total sprints
+                    </Text>
+                  </View>
                 </View>
+
+                {donneesVelocite.sprints.length > 0 && (
+                  <View
+                    style={[
+                      styles.carte,
+                      {
+                        backgroundColor: theme.backgroundPrimary,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[styles.titreCarte, { color: theme.textPrimary }]}
+                    >
+                      Tâches terminées par sprint
+                    </Text>
+                    <GraphiqueBarre
+                      données={donneesVelocite.sprints}
+                      cléValeur="tachesTerminees"
+                      couleur={theme.primary}
+                      theme={theme}
+                      largeurMax={largeurGraphique}
+                    />
+                  </View>
+                )}
+
                 <View
                   style={[
-                    styles.carteStatut,
+                    styles.carte,
                     {
                       backgroundColor: theme.backgroundPrimary,
                       borderColor: theme.border,
                     },
                   ]}
                 >
-                  <Text style={[styles.chiffreStatut, { color: "#639922" }]}>
-                    {donneesVelocite.totalSprints}
-                  </Text>
                   <Text
-                    style={[styles.labelStatut, { color: theme.textSecondary }]}
+                    style={[styles.titreCarte, { color: theme.textPrimary }]}
                   >
-                    Total sprints
+                    Détail par sprint
                   </Text>
+                  {donneesVelocite.sprints.length === 0 ? (
+                    <Text
+                      style={[styles.texteVide, { color: theme.textSecondary }]}
+                    >
+                      Aucun sprint pour ce projet
+                    </Text>
+                  ) : (
+                    donneesVelocite.sprints.map((sprint) => (
+                      <View
+                        key={sprint.sprintId}
+                        style={[
+                          styles.ligneSprint,
+                          { borderBottomColor: theme.border },
+                        ]}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={[
+                              styles.nomSprint,
+                              { color: theme.textPrimary },
+                            ]}
+                          >
+                            {sprint.sprintNom}
+                          </Text>
+                          {sprint.dateDebut && (
+                            <Text
+                              style={[
+                                styles.dateSprint,
+                                { color: theme.textSecondary },
+                              ]}
+                            >
+                              {sprint.dateDebut} → {sprint.dateFin}
+                            </Text>
+                          )}
+                        </View>
+                        <View style={styles.statsSprintDroite}>
+                          <Text
+                            style={[
+                              styles.chiffreSprint,
+                              { color: theme.primary },
+                            ]}
+                          >
+                            {sprint.tachesTerminees}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.labelChiffreSprint,
+                              { color: theme.textSecondary },
+                            ]}
+                          >
+                            terminées
+                          </Text>
+                        </View>
+                        <View style={styles.statsSprintDroite}>
+                          <Text
+                            style={[styles.chiffreSprint, { color: "#639922" }]}
+                          >
+                            {sprint.tauxCompletion}%
+                          </Text>
+                          <Text
+                            style={[
+                              styles.labelChiffreSprint,
+                              { color: theme.textSecondary },
+                            ]}
+                          >
+                            complétion
+                          </Text>
+                        </View>
+                        <View
+                          style={[
+                            styles.badgeStatut,
+                            {
+                              backgroundColor: couleurStatut(sprint.statut).bg,
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.texteStatut,
+                              { color: couleurStatut(sprint.statut).text },
+                            ]}
+                          >
+                            {sprint.statut}
+                          </Text>
+                        </View>
+                      </View>
+                    ))
+                  )}
                 </View>
               </View>
+            )}
 
-              {/* Graphique vélocité */}
-              {donneesVelocite.sprints.length > 0 && (
+          {/* ════════════════════════════════════
+              ONGLET TEMPS PASSÉ
+          ════════════════════════════════════ */}
+          {ongletActif === "temps" && donneesTemps && !chargementTemps && (
+            <View style={{ gap: 12 }}>
+              <View
+                style={[
+                  styles.carte,
+                  {
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
+                    alignItems: "center",
+                  },
+                ]}
+              >
+                <Text style={[styles.chiffreGrand, { color: theme.primary }]}>
+                  {donneesTemps.totalHeures}h
+                </Text>
+                <Text
+                  style={[styles.labelStatut, { color: theme.textSecondary }]}
+                >
+                  Temps total estimé · {donneesTemps.parTache.length} tâches
+                </Text>
+              </View>
+
+              {donneesTemps.parTache.length > 0 && (
+                <View
+                  style={[
+                    styles.carte,
+                    {
+                      backgroundColor: theme.backgroundPrimary,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[styles.titreCarte, { color: theme.textPrimary }]}
+                  >
+                    Top tâches par temps estimé
+                  </Text>
+                  <GraphiqueBarre
+                    données={donneesTemps.parTache.slice(0, 8)}
+                    cléValeur="heuresEstimees"
+                    couleur="#378ADD"
+                    theme={theme}
+                    largeurMax={largeurGraphique}
+                  />
+                </View>
+              )}
+
+              <View
+                style={[
+                  styles.carte,
+                  {
+                    backgroundColor: theme.backgroundPrimary,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
+                  Toutes les tâches
+                </Text>
+                {donneesTemps.parTache.length === 0 ? (
+                  <Text
+                    style={[styles.texteVide, { color: theme.textSecondary }]}
+                  >
+                    Aucune tâche avec temps estimé
+                  </Text>
+                ) : (
+                  donneesTemps.parTache.map((tache) => (
+                    <View
+                      key={tache.tacheId}
+                      style={[
+                        styles.ligneTache,
+                        { borderBottomColor: theme.border },
+                      ]}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={[
+                            styles.nomTache,
+                            { color: theme.textPrimary },
+                          ]}
+                        >
+                          {tache.tacheNom}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.metaTache,
+                            { color: theme.textSecondary },
+                          ]}
+                        >
+                          {tache.priorite} · {tache.statut}
+                        </Text>
+                      </View>
+                      <Text
+                        style={[styles.heuresTache, { color: theme.primary }]}
+                      >
+                        {tache.heuresEstimees}h
+                      </Text>
+                    </View>
+                  ))
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* ════════════════════════════════════
+              ONGLET MULTI-SPRINTS
+          ════════════════════════════════════ */}
+          {ongletActif === "multi" && donneesMulti && !chargementMulti && (
+            <View style={{ gap: 12 }}>
+              {donneesMulti.sprints.length > 0 && (
                 <View
                   style={[
                     styles.carte,
@@ -455,16 +700,15 @@ export default function RapportsScreen() {
                     Tâches terminées par sprint
                   </Text>
                   <GraphiqueBarre
-                    données={donneesVelocite.sprints}
+                    données={donneesMulti.sprints}
                     cléValeur="tachesTerminees"
-                    couleur={theme.primary}
+                    couleur="#639922"
                     theme={theme}
                     largeurMax={largeurGraphique}
                   />
                 </View>
               )}
 
-              {/* Liste des sprints */}
               <View
                 style={[
                   styles.carte,
@@ -475,89 +719,116 @@ export default function RapportsScreen() {
                 ]}
               >
                 <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
-                  Détail par sprint
+                  Comparatif détaillé
                 </Text>
-                {donneesVelocite.sprints.length === 0 ? (
+                <View
+                  style={[
+                    styles.ligneTableau,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.celluleEntete,
+                      { color: theme.textSecondary, flex: 2 },
+                    ]}
+                  >
+                    Sprint
+                  </Text>
+                  <Text style={[styles.celluleEntete, { color: "#639922" }]}>
+                    ✅
+                  </Text>
+                  <Text style={[styles.celluleEntete, { color: "#378ADD" }]}>
+                    🔵
+                  </Text>
+                  <Text
+                    style={[
+                      styles.celluleEntete,
+                      { color: theme.textSecondary },
+                    ]}
+                  >
+                    ⬜
+                  </Text>
+                  <Text
+                    style={[styles.celluleEntete, { color: theme.textPrimary }]}
+                  >
+                    %
+                  </Text>
+                </View>
+                {donneesMulti.sprints.length === 0 ? (
                   <Text
                     style={[styles.texteVide, { color: theme.textSecondary }]}
                   >
-                    Aucun sprint pour ce projet
+                    Aucun sprint disponible
                   </Text>
                 ) : (
-                  donneesVelocite.sprints.map((sprint) => (
+                  donneesMulti.sprints.map((sprint) => (
                     <View
                       key={sprint.sprintId}
                       style={[
-                        styles.ligneSprint,
+                        styles.ligneTableau,
                         { borderBottomColor: theme.border },
                       ]}
                     >
-                      <View style={{ flex: 1 }}>
-                        <Text
-                          style={[
-                            styles.nomSprint,
-                            { color: theme.textPrimary },
-                          ]}
-                        >
-                          {sprint.sprintNom}
-                        </Text>
-                        {sprint.dateDebut && (
-                          <Text
-                            style={[
-                              styles.dateSprint,
-                              { color: theme.textSecondary },
-                            ]}
-                          >
-                            {sprint.dateDebut} → {sprint.dateFin}
-                          </Text>
-                        )}
-                      </View>
-                      <View style={styles.statsSprintDroite}>
-                        <Text
-                          style={[
-                            styles.chiffreSprint,
-                            { color: theme.primary },
-                          ]}
-                        >
-                          {sprint.tachesTerminees}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.labelChiffreSprint,
-                            { color: theme.textSecondary },
-                          ]}
-                        >
-                          terminées
-                        </Text>
-                      </View>
-                      <View style={styles.statsSprintDroite}>
-                        <Text
-                          style={[styles.chiffreSprint, { color: "#639922" }]}
-                        >
-                          {sprint.tauxCompletion}%
-                        </Text>
-                        <Text
-                          style={[
-                            styles.labelChiffreSprint,
-                            { color: theme.textSecondary },
-                          ]}
-                        >
-                          complétion
-                        </Text>
-                      </View>
+                      <Text
+                        style={[
+                          styles.cellule,
+                          { color: theme.textPrimary, flex: 2 },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {sprint.sprintNom}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.cellule,
+                          { color: "#639922", fontWeight: "700" },
+                        ]}
+                      >
+                        {sprint.tachesTerminees}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.cellule,
+                          { color: "#378ADD", fontWeight: "700" },
+                        ]}
+                      >
+                        {sprint.tachesEnCours}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.cellule,
+                          { color: theme.textSecondary, fontWeight: "700" },
+                        ]}
+                      >
+                        {sprint.tachesAFaire}
+                      </Text>
                       <View
                         style={[
-                          styles.badgeStatut,
-                          { backgroundColor: couleurStatut(sprint.statut).bg },
+                          styles.badgePourcentage,
+                          {
+                            backgroundColor:
+                              sprint.tauxCompletion >= 75
+                                ? "#EAF3DE"
+                                : sprint.tauxCompletion >= 50
+                                  ? "#E6F1FB"
+                                  : "#FEF2F2",
+                          },
                         ]}
                       >
                         <Text
-                          style={[
-                            styles.texteStatut,
-                            { color: couleurStatut(sprint.statut).text },
-                          ]}
+                          style={{
+                            fontSize: 10,
+                            fontWeight: "700",
+                            color:
+                              sprint.tauxCompletion >= 75
+                                ? "#3B6D11"
+                                : sprint.tauxCompletion >= 50
+                                  ? "#185FA5"
+                                  : "#B91C1C",
+                          }}
                         >
-                          {sprint.statut}
+                          {sprint.tauxCompletion}%
                         </Text>
                       </View>
                     </View>
@@ -566,271 +837,8 @@ export default function RapportsScreen() {
               </View>
             </View>
           )}
-
-        {/* ════════════════════════════════════
-            ONGLET TEMPS PASSÉ
-        ════════════════════════════════════ */}
-        {ongletActif === "temps" && donneesTemps && !chargementTemps && (
-          <View style={{ gap: 12 }}>
-            {/* Total heures */}
-            <View
-              style={[
-                styles.carte,
-                {
-                  backgroundColor: theme.backgroundPrimary,
-                  borderColor: theme.border,
-                  alignItems: "center",
-                },
-              ]}
-            >
-              <Text style={[styles.chiffreGrand, { color: theme.primary }]}>
-                {donneesTemps.totalHeures}h
-              </Text>
-              <Text
-                style={[styles.labelStatut, { color: theme.textSecondary }]}
-              >
-                Temps total estimé · {donneesTemps.parTache.length} tâches
-              </Text>
-            </View>
-
-            {/* Graphique temps par tâche */}
-            {donneesTemps.parTache.length > 0 && (
-              <View
-                style={[
-                  styles.carte,
-                  {
-                    backgroundColor: theme.backgroundPrimary,
-                    borderColor: theme.border,
-                  },
-                ]}
-              >
-                <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
-                  Top tâches par temps estimé
-                </Text>
-                <GraphiqueBarre
-                  données={donneesTemps.parTache.slice(0, 8)}
-                  cléValeur="heuresEstimees"
-                  couleur="#378ADD"
-                  theme={theme}
-                  largeurMax={largeurGraphique}
-                />
-              </View>
-            )}
-
-            {/* Liste tâches */}
-            <View
-              style={[
-                styles.carte,
-                {
-                  backgroundColor: theme.backgroundPrimary,
-                  borderColor: theme.border,
-                },
-              ]}
-            >
-              <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
-                Toutes les tâches
-              </Text>
-              {donneesTemps.parTache.length === 0 ? (
-                <Text
-                  style={[styles.texteVide, { color: theme.textSecondary }]}
-                >
-                  Aucune tâche avec temps estimé
-                </Text>
-              ) : (
-                donneesTemps.parTache.map((tache) => (
-                  <View
-                    key={tache.tacheId}
-                    style={[
-                      styles.ligneTache,
-                      { borderBottomColor: theme.border },
-                    ]}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={[styles.nomTache, { color: theme.textPrimary }]}
-                      >
-                        {tache.tacheNom}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.metaTache,
-                          { color: theme.textSecondary },
-                        ]}
-                      >
-                        {tache.priorite} · {tache.statut}
-                      </Text>
-                    </View>
-                    <Text
-                      style={[styles.heuresTache, { color: theme.primary }]}
-                    >
-                      {tache.heuresEstimees}h
-                    </Text>
-                  </View>
-                ))
-              )}
-            </View>
-          </View>
-        )}
-
-        {/* ════════════════════════════════════
-            ONGLET MULTI-SPRINTS
-        ════════════════════════════════════ */}
-        {ongletActif === "multi" && donneesMulti && !chargementMulti && (
-          <View style={{ gap: 12 }}>
-            {/* Graphique comparatif */}
-            {donneesMulti.sprints.length > 0 && (
-              <View
-                style={[
-                  styles.carte,
-                  {
-                    backgroundColor: theme.backgroundPrimary,
-                    borderColor: theme.border,
-                  },
-                ]}
-              >
-                <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
-                  Tâches terminées par sprint
-                </Text>
-                <GraphiqueBarre
-                  données={donneesMulti.sprints}
-                  cléValeur="tachesTerminees"
-                  couleur="#639922"
-                  theme={theme}
-                  largeurMax={largeurGraphique}
-                />
-              </View>
-            )}
-
-            {/* Tableau comparatif */}
-            <View
-              style={[
-                styles.carte,
-                {
-                  backgroundColor: theme.backgroundPrimary,
-                  borderColor: theme.border,
-                },
-              ]}
-            >
-              <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
-                Comparatif détaillé
-              </Text>
-
-              {/* En-tête tableau */}
-              <View
-                style={[
-                  styles.ligneTableau,
-                  { backgroundColor: theme.backgroundSecondary },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.celluleEntete,
-                    { color: theme.textSecondary, flex: 2 },
-                  ]}
-                >
-                  Sprint
-                </Text>
-                <Text style={[styles.celluleEntete, { color: "#639922" }]}>
-                  ✅
-                </Text>
-                <Text style={[styles.celluleEntete, { color: "#378ADD" }]}>
-                  🔵
-                </Text>
-                <Text
-                  style={[styles.celluleEntete, { color: theme.textSecondary }]}
-                >
-                  ⬜
-                </Text>
-                <Text
-                  style={[styles.celluleEntete, { color: theme.textPrimary }]}
-                >
-                  %
-                </Text>
-              </View>
-
-              {donneesMulti.sprints.length === 0 ? (
-                <Text
-                  style={[styles.texteVide, { color: theme.textSecondary }]}
-                >
-                  Aucun sprint disponible
-                </Text>
-              ) : (
-                donneesMulti.sprints.map((sprint) => (
-                  <View
-                    key={sprint.sprintId}
-                    style={[
-                      styles.ligneTableau,
-                      { borderBottomColor: theme.border },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.cellule,
-                        { color: theme.textPrimary, flex: 2 },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {sprint.sprintNom}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.cellule,
-                        { color: "#639922", fontWeight: "700" },
-                      ]}
-                    >
-                      {sprint.tachesTerminees}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.cellule,
-                        { color: "#378ADD", fontWeight: "700" },
-                      ]}
-                    >
-                      {sprint.tachesEnCours}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.cellule,
-                        { color: theme.textSecondary, fontWeight: "700" },
-                      ]}
-                    >
-                      {sprint.tachesAFaire}
-                    </Text>
-                    <View
-                      style={[
-                        styles.badgePourcentage,
-                        {
-                          backgroundColor:
-                            sprint.tauxCompletion >= 75
-                              ? "#EAF3DE"
-                              : sprint.tauxCompletion >= 50
-                                ? "#E6F1FB"
-                                : "#FEF2F2",
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 10,
-                          fontWeight: "700",
-                          color:
-                            sprint.tauxCompletion >= 75
-                              ? "#3B6D11"
-                              : sprint.tauxCompletion >= 50
-                                ? "#185FA5"
-                                : "#B91C1C",
-                        }}
-                      >
-                        {sprint.tauxCompletion}%
-                      </Text>
-                    </View>
-                  </View>
-                ))
-              )}
-            </View>
-          </View>
-        )}
-      </ScrollView>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -854,7 +862,7 @@ const styles = StyleSheet.create({
   onglets: { flexDirection: "row", borderBottomWidth: 1 },
   onglet: { flex: 1, paddingVertical: 12, alignItems: "center" },
   texteOnglet: { fontSize: 13, fontWeight: "500" },
-  contenu: { padding: 16, gap: 12 },
+  //   contenu: { padding: 16, gap: 12 },
   // Tablette — centré et plus large
   contenuTablette: {
     maxWidth: 860,
@@ -928,4 +936,13 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 20,
   },
+
+  wrapperMobile: { flex: 1 },
+  wrapperTablette: {
+    flex: 1,
+    maxWidth: 860,
+    alignSelf: "center",
+    width: "100%",
+  },
+  contenu: { padding: 16, gap: 12 },
 });
