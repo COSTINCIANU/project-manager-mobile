@@ -192,13 +192,26 @@ export default function RapportsScreen() {
   } = useQuery<DonneesVelocite>({
     queryKey: ["rapports-velocite", projetId],
     queryFn: async () => {
-      const reponse = await apiClient.get(
-        `/reports/project/${projetId}/velocity`,
-      );
-      return reponse.data;
+      console.log("=== APPEL API velocity ===", projetId);
+      try {
+        const reponse = await apiClient.get(
+          `/reports/project/${projetId}/velocity`,
+        );
+        console.log("=== REPONSE velocity ===", JSON.stringify(reponse.data));
+        return reponse.data;
+      } catch (err: any) {
+        console.log(
+          "=== ERREUR velocity ===",
+          err?.message,
+          err?.response?.status,
+          JSON.stringify(err?.response?.data),
+        );
+        throw err;
+      }
     },
     staleTime: 0,
     gcTime: 0,
+    retry: false,
   });
 
   // =====================
@@ -212,13 +225,26 @@ export default function RapportsScreen() {
   } = useQuery<DonneesTemps>({
     queryKey: ["rapports-temps", projetId],
     queryFn: async () => {
-      const reponse = await apiClient.get(
-        `/reports/project/${projetId}/time-spent`,
-      );
-      return reponse.data;
+      console.log("=== APPEL API time-spent ===", projetId);
+      try {
+        const reponse = await apiClient.get(
+          `/reports/project/${projetId}/time-spent`,
+        );
+        console.log("=== REPONSE time-spent ===", JSON.stringify(reponse.data));
+        return reponse.data;
+      } catch (err: any) {
+        console.log(
+          "=== ERREUR time-spent ===",
+          err?.message,
+          err?.response?.status,
+          JSON.stringify(err?.response?.data),
+        );
+        throw err;
+      }
     },
     staleTime: 0,
     gcTime: 0,
+    retry: false,
   });
 
   // =====================
@@ -232,13 +258,29 @@ export default function RapportsScreen() {
   } = useQuery<DonneesMultiSprint>({
     queryKey: ["rapports-multi", projetId],
     queryFn: async () => {
-      const reponse = await apiClient.get(
-        `/reports/project/${projetId}/multi-sprint`,
-      );
-      return reponse.data;
+      console.log("=== APPEL API multi-sprint ===", projetId);
+      try {
+        const reponse = await apiClient.get(
+          `/reports/project/${projetId}/multi-sprint`,
+        );
+        console.log(
+          "=== REPONSE multi-sprint ===",
+          JSON.stringify(reponse.data),
+        );
+        return reponse.data;
+      } catch (err: any) {
+        console.log(
+          "=== ERREUR multi-sprint ===",
+          err?.message,
+          err?.response?.status,
+          JSON.stringify(err?.response?.data),
+        );
+        throw err;
+      }
     },
     staleTime: 0,
     gcTime: 0,
+    retry: false,
   });
 
   // =====================
