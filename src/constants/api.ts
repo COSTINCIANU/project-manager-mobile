@@ -126,4 +126,14 @@ export const API_ENDPOINTS = {
   STRIPE_PUBLIC_KEY: "/api/stripe/public-key",
 
   STRIPE_INVOICE_TOKEN: "/api/stripe/invoice/token",
+
+  // Rapports avancés
+  REPORT_VELOCITY: (projectId: number) =>
+    `/api/reports/project/${projectId}/velocity`,
+  REPORT_TIME_SPENT: (projectId: number) =>
+    `/api/reports/project/${projectId}/time-spent`,
+  REPORT_MULTI_SPRINT: (projectId: number) =>
+    `/api/reports/project/${projectId}/multi-sprint`,
+  REPORT_EXPORT_CSV: (projectId: number) =>
+    `/api/reports/project/${projectId}/export-csv`,
 } as const;
