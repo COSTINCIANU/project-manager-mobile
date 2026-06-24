@@ -197,7 +197,6 @@ export default function RapportsScreen() {
       );
       return reponse.data;
     },
-    enabled: ongletActif === "velocite",
   });
 
   // =====================
@@ -216,7 +215,6 @@ export default function RapportsScreen() {
       );
       return reponse.data;
     },
-    enabled: ongletActif === "temps",
   });
 
   // =====================
@@ -235,9 +233,7 @@ export default function RapportsScreen() {
       );
       return reponse.data;
     },
-    enabled: ongletActif === "multi",
   });
-
   // =====================
   // FONCTIONS
   // =====================
