@@ -247,14 +247,14 @@ export default function RapportsScreen() {
   // =====================
   // LOGS DEBUG — à supprimer après vérification
   // =====================
-  console.log("=== RAPPORTS DEBUG ===");
-  console.log("projetId:", projetId);
-  console.log("chargementVelocite:", chargementVelocite);
-  console.log("donneesVelocite:", JSON.stringify(donneesVelocite));
-  console.log("chargementTemps:", chargementTemps);
-  console.log("donneesTemps:", JSON.stringify(donneesTemps));
-  console.log("chargementMulti:", chargementMulti);
-  console.log("donneesMulti:", JSON.stringify(donneesMulti));
+  //   console.log("=== RAPPORTS DEBUG ===");
+  //   console.log("projetId:", projetId);
+  //   console.log("chargementVelocite:", chargementVelocite);
+  //   console.log("donneesVelocite:", JSON.stringify(donneesVelocite));
+  //   console.log("chargementTemps:", chargementTemps);
+  //   console.log("donneesTemps:", JSON.stringify(donneesTemps));
+  //   console.log("chargementMulti:", chargementMulti);
+  //   console.log("donneesMulti:", JSON.stringify(donneesMulti));
 
   // =====================
   // FONCTIONS
