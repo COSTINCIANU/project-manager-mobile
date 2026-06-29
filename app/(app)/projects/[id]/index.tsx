@@ -51,12 +51,7 @@ export default function ProjectDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
@@ -90,12 +85,8 @@ export default function ProjectDetailScreen() {
             },
           ]}
         >
-          <Text style={[styles.statValue, { color: theme.primary }]}>
-            {todoTasks.length}
-          </Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-            A faire
-          </Text>
+          <Text style={[styles.statValue, { color: theme.primary }]}>{todoTasks.length}</Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>A faire</Text>
         </View>
         <View
           style={[
@@ -109,9 +100,7 @@ export default function ProjectDetailScreen() {
           <Text style={[styles.statValue, { color: Colors.warning }]}>
             {inProgressTasks.length}
           </Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-            En cours
-          </Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>En cours</Text>
         </View>
         <View
           style={[
@@ -122,23 +111,14 @@ export default function ProjectDetailScreen() {
             },
           ]}
         >
-          <Text style={[styles.statValue, { color: Colors.success }]}>
-            {doneTasks.length}
-          </Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-            Terminees
-          </Text>
+          <Text style={[styles.statValue, { color: Colors.success }]}>{doneTasks.length}</Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Terminees</Text>
         </View>
       </View>
 
       {/* Barre de progression */}
       <View style={styles.progressContainer}>
-        <View
-          style={[
-            styles.progressBar,
-            { backgroundColor: theme.backgroundTertiary },
-          ]}
-        >
+        <View style={[styles.progressBar, { backgroundColor: theme.backgroundTertiary }]}>
           <View
             style={[
               styles.progressFill,
@@ -165,14 +145,10 @@ export default function ProjectDetailScreen() {
                   borderColor: theme.border,
                 },
               ]}
-              onPress={() =>
-                router.push(`/(app)/projects/${id}/${action.path}` as any)
-              }
+              onPress={() => router.push(`/(app)/projects/${id}/${action.path}` as any)}
             >
               <Text style={styles.actionIcon}>{action.icon}</Text>
-              <Text style={[styles.actionText, { color: theme.textPrimary }]}>
-                {action.label}
-              </Text>
+              <Text style={[styles.actionText, { color: theme.textPrimary }]}>{action.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -192,14 +168,10 @@ export default function ProjectDetailScreen() {
                   borderColor: theme.border,
                 },
               ]}
-              onPress={() =>
-                router.push(`/(app)/projects/${id}/${action.path}` as any)
-              }
+              onPress={() => router.push(`/(app)/projects/${id}/${action.path}` as any)}
             >
               <Text style={styles.actionIcon}>{action.icon}</Text>
-              <Text style={[styles.actionText, { color: theme.textPrimary }]}>
-                {action.label}
-              </Text>
+              <Text style={[styles.actionText, { color: theme.textPrimary }]}>{action.label}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -211,12 +183,8 @@ export default function ProjectDetailScreen() {
   const RightContent = () => (
     <>
       {tasks && tasks.length > 0 && (
-        <View
-          style={[styles.section, { backgroundColor: theme.backgroundPrimary }]}
-        >
-          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-            Taches recentes
-          </Text>
+        <View style={[styles.section, { backgroundColor: theme.backgroundPrimary }]}>
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Taches recentes</Text>
           {tasks.slice(0, 5).map((task) => (
             <View key={task.id} style={styles.taskItem}>
               <View
@@ -231,10 +199,7 @@ export default function ProjectDetailScreen() {
                   },
                 ]}
               />
-              <Text
-                style={[styles.taskTitle, { color: theme.textSecondary }]}
-                numberOfLines={1}
-              >
+              <Text style={[styles.taskTitle, { color: theme.textSecondary }]} numberOfLines={1}>
                 {task.name}
               </Text>
             </View>
@@ -245,9 +210,7 @@ export default function ProjectDetailScreen() {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete */}
       <View
         style={[
@@ -258,68 +221,45 @@ export default function ProjectDetailScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: theme.primary }]}>
-            ← Retour
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: theme.primary }]}>← Retour</Text>
         </TouchableOpacity>
-        <Text
-          style={[styles.title, { color: theme.textPrimary }]}
-          numberOfLines={1}
-        >
+        <Text style={[styles.title, { color: theme.textPrimary }]} numberOfLines={1}>
           {project.name}
         </Text>
         <TouchableOpacity
-          onPress={() =>
-            router.push(`/(app)/projects/${id}/edit-project` as any)
-          }
+          onPress={() => router.push(`/(app)/projects/${id}/edit-project` as any)}
           style={[styles.editButton, { backgroundColor: theme.primary + "15" }]}
         >
           <Text style={styles.editButtonText}>✏️</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
-            Alert.alert(
-              "Supprimer",
-              "Voulez-vous vraiment supprimer ce projet ?",
-              [
-                { text: "Annuler", style: "cancel" },
-                {
-                  text: "Supprimer",
-                  style: "destructive",
-                  onPress: async () => {
-                    try {
-                      await apiClient.delete(API_ENDPOINTS.PROJECT(Number(id)));
-                      queryClient.invalidateQueries({ queryKey: ["projects"] });
-                      router.replace("/(app)/projects" as any);
-                    } catch (error) {
-                      Alert.alert(
-                        "Erreur",
-                        "Impossible de supprimer le projet.",
-                      );
-                    }
-                  },
+            Alert.alert("Supprimer", "Voulez-vous vraiment supprimer ce projet ?", [
+              { text: "Annuler", style: "cancel" },
+              {
+                text: "Supprimer",
+                style: "destructive",
+                onPress: async () => {
+                  try {
+                    await apiClient.delete(API_ENDPOINTS.PROJECT(Number(id)));
+                    queryClient.invalidateQueries({ queryKey: ["projects"] });
+                    router.replace("/(app)/projects" as any);
+                  } catch (error) {
+                    Alert.alert("Erreur", "Impossible de supprimer le projet.");
+                  }
                 },
-              ],
-            );
+              },
+            ]);
           }}
-          style={[
-            styles.deleteButton,
-            { backgroundColor: Colors.danger + "15" },
-          ]}
+          style={[styles.deleteButton, { backgroundColor: Colors.danger + "15" }]}
         >
           <Text style={styles.deleteButtonText}>🗑️</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          isTablet && styles.contentTablet,
-        ]}
+        contentContainerStyle={[styles.content, isTablet && styles.contentTablet]}
         showsVerticalScrollIndicator={false}
       >
         {isTablet ? (

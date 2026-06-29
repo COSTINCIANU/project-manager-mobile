@@ -5,13 +5,7 @@
 // Theme clair/sombre automatique selon le systeme
 // =====================================================
 
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/stores/authStore";
@@ -39,13 +33,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 // =====================
 // CARTE PROJET RECENT
 // =====================
-function RecentProjectCard({
-  project,
-  onPress,
-}: {
-  project: Project;
-  onPress: () => void;
-}) {
+function RecentProjectCard({ project, onPress }: { project: Project; onPress: () => void }) {
   // Hook theme pour les couleurs adaptees
   const { theme } = useTheme();
 
@@ -58,19 +46,11 @@ function RecentProjectCard({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Text
-        style={[styles.projectName, { color: theme.textPrimary }]}
-        numberOfLines={1}
-      >
+      <Text style={[styles.projectName, { color: theme.textPrimary }]} numberOfLines={1}>
         {project.name}
       </Text>
       <View style={styles.progressRow}>
-        <View
-          style={[
-            styles.progressBar,
-            { backgroundColor: theme.backgroundTertiary },
-          ]}
-        >
+        <View style={[styles.progressBar, { backgroundColor: theme.backgroundTertiary }]}>
           <View
             style={[
               styles.progressFill,
@@ -109,22 +89,12 @@ function UrgentTaskCard({ task }: { task: Task }) {
     >
       <View style={[styles.urgentBar, { backgroundColor: priorityColor }]} />
       <View style={styles.urgentContent}>
-        <Text
-          style={[styles.urgentName, { color: theme.textPrimary }]}
-          numberOfLines={1}
-        >
+        <Text style={[styles.urgentName, { color: theme.textPrimary }]} numberOfLines={1}>
           {task.name}
         </Text>
         <View style={styles.urgentFooter}>
-          <View
-            style={[
-              styles.priorityBadge,
-              { backgroundColor: priorityColor + "20" },
-            ]}
-          >
-            <Text style={[styles.priorityText, { color: priorityColor }]}>
-              {task.priority}
-            </Text>
+          <View style={[styles.priorityBadge, { backgroundColor: priorityColor + "20" }]}>
+            <Text style={[styles.priorityText, { color: priorityColor }]}>{task.priority}</Text>
           </View>
           {task.dueDate && (
             <Text style={[styles.urgentDate, { color: theme.textSecondary }]}>
@@ -157,10 +127,8 @@ export default function DashboardScreen() {
   const totalProjects = projects?.length ?? 0;
   const totalTasks = tasks?.length ?? 0;
   const doneTasks = tasks?.filter((t) => t.done).length ?? 0;
-  const inProgressTasks =
-    tasks?.filter((t) => t.inProgress && !t.done).length ?? 0;
-  const globalProgress =
-    totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+  const inProgressTasks = tasks?.filter((t) => t.inProgress && !t.done).length ?? 0;
+  const globalProgress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
   // 3 projets les plus recents
   const recentProjects = projects?.slice(0, 3) ?? [];
@@ -177,14 +145,9 @@ export default function DashboardScreen() {
       .slice(0, 5) ?? [];
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          isTablet && styles.contentTablet,
-        ]}
+        contentContainerStyle={[styles.content, isTablet && styles.contentTablet]}
         showsVerticalScrollIndicator={false}
       >
         {/* Layout tablette — 2 colonnes */}
@@ -202,22 +165,12 @@ export default function DashboardScreen() {
                   },
                 ]}
               >
-                <View
-                  style={[styles.avatar, { backgroundColor: theme.primary }]}
-                >
-                  <Text style={styles.avatarText}>
-                    {user ? getUserInitials(user) : "?"}
-                  </Text>
+                <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
+                  <Text style={styles.avatarText}>{user ? getUserInitials(user) : "?"}</Text>
                 </View>
-                <Text style={[styles.greeting, { color: theme.textPrimary }]}>
-                  Bonjour 👋
-                </Text>
-                <Text style={[styles.userName, { color: theme.primary }]}>
-                  {user?.name ?? "—"}
-                </Text>
-                <Text style={[styles.userEmail, { color: theme.textTertiary }]}>
-                  {user?.email}
-                </Text>
+                <Text style={[styles.greeting, { color: theme.textPrimary }]}>Bonjour 👋</Text>
+                <Text style={[styles.userName, { color: theme.primary }]}>{user?.name ?? "—"}</Text>
+                <Text style={[styles.userEmail, { color: theme.textTertiary }]}>{user?.email}</Text>
                 <Text style={[styles.date, { color: theme.textSecondary }]}>
                   {new Date().toLocaleDateString("fr-FR", {
                     weekday: "long",
@@ -241,14 +194,8 @@ export default function DashboardScreen() {
                     },
                   ]}
                 >
-                  <Text style={[styles.statValue, { color: theme.primary }]}>
-                    {totalProjects}
-                  </Text>
-                  <Text
-                    style={[styles.statLabel, { color: theme.textSecondary }]}
-                  >
-                    Projets
-                  </Text>
+                  <Text style={[styles.statValue, { color: theme.primary }]}>{totalProjects}</Text>
+                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Projets</Text>
                 </View>
                 <View
                   style={[
@@ -259,14 +206,8 @@ export default function DashboardScreen() {
                     },
                   ]}
                 >
-                  <Text style={[styles.statValue, { color: theme.primary }]}>
-                    {totalTasks}
-                  </Text>
-                  <Text
-                    style={[styles.statLabel, { color: theme.textSecondary }]}
-                  >
-                    Taches
-                  </Text>
+                  <Text style={[styles.statValue, { color: theme.primary }]}>{totalTasks}</Text>
+                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Taches</Text>
                 </View>
                 <View
                   style={[
@@ -282,11 +223,7 @@ export default function DashboardScreen() {
                   <Text style={[styles.statValue, { color: Colors.warning }]}>
                     {inProgressTasks}
                   </Text>
-                  <Text
-                    style={[styles.statLabel, { color: theme.textSecondary }]}
-                  >
-                    En cours
-                  </Text>
+                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>En cours</Text>
                 </View>
                 <View
                   style={[
@@ -299,14 +236,8 @@ export default function DashboardScreen() {
                     },
                   ]}
                 >
-                  <Text style={[styles.statValue, { color: Colors.success }]}>
-                    {doneTasks}
-                  </Text>
-                  <Text
-                    style={[styles.statLabel, { color: theme.textSecondary }]}
-                  >
-                    Terminees
-                  </Text>
+                  <Text style={[styles.statValue, { color: Colors.success }]}>{doneTasks}</Text>
+                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Terminees</Text>
                 </View>
               </View>
 
@@ -321,28 +252,15 @@ export default function DashboardScreen() {
                 ]}
               >
                 <View style={styles.globalProgressHeader}>
-                  <Text
-                    style={[
-                      styles.globalProgressLabel,
-                      { color: theme.textPrimary },
-                    ]}
-                  >
+                  <Text style={[styles.globalProgressLabel, { color: theme.textPrimary }]}>
                     Progression globale
                   </Text>
-                  <Text
-                    style={[
-                      styles.globalProgressValue,
-                      { color: theme.primary },
-                    ]}
-                  >
+                  <Text style={[styles.globalProgressValue, { color: theme.primary }]}>
                     {globalProgress}%
                   </Text>
                 </View>
                 <View
-                  style={[
-                    styles.globalProgressBar,
-                    { backgroundColor: theme.backgroundTertiary },
-                  ]}
+                  style={[styles.globalProgressBar, { backgroundColor: theme.backgroundTertiary }]}
                 >
                   <View
                     style={[
@@ -354,12 +272,7 @@ export default function DashboardScreen() {
                     ]}
                   />
                 </View>
-                <Text
-                  style={[
-                    styles.globalProgressSub,
-                    { color: theme.textSecondary },
-                  ]}
-                >
+                <Text style={[styles.globalProgressSub, { color: theme.textSecondary }]}>
                   {doneTasks} tache{doneTasks > 1 ? "s" : ""} terminee
                   {doneTasks > 1 ? "s" : ""} sur {totalTasks}
                 </Text>
@@ -372,20 +285,11 @@ export default function DashboardScreen() {
               {recentProjects.length > 0 && (
                 <View>
                   <View style={styles.sectionHeader}>
-                    <Text
-                      style={[
-                        styles.sectionTitle,
-                        { color: theme.textPrimary },
-                      ]}
-                    >
+                    <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
                       Projets recents
                     </Text>
-                    <TouchableOpacity
-                      onPress={() => router.push("/(app)/projects" as any)}
-                    >
-                      <Text style={[styles.seeAll, { color: theme.primary }]}>
-                        Voir tout
-                      </Text>
+                    <TouchableOpacity onPress={() => router.push("/(app)/projects" as any)}>
+                      <Text style={[styles.seeAll, { color: theme.primary }]}>Voir tout</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.projectsList}>
@@ -393,9 +297,7 @@ export default function DashboardScreen() {
                       <RecentProjectCard
                         key={project.id}
                         project={project}
-                        onPress={() =>
-                          router.push(`/(app)/projects/${project.id}` as any)
-                        }
+                        onPress={() => router.push(`/(app)/projects/${project.id}` as any)}
                       />
                     ))}
                   </View>
@@ -406,20 +308,11 @@ export default function DashboardScreen() {
               {urgentTasks.length > 0 && (
                 <View>
                   <View style={styles.sectionHeader}>
-                    <Text
-                      style={[
-                        styles.sectionTitle,
-                        { color: theme.textPrimary },
-                      ]}
-                    >
+                    <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
                       Taches urgentes
                     </Text>
-                    <TouchableOpacity
-                      onPress={() => router.push("/(app)/tasks" as any)}
-                    >
-                      <Text style={[styles.seeAll, { color: theme.primary }]}>
-                        Voir tout
-                      </Text>
+                    <TouchableOpacity onPress={() => router.push("/(app)/tasks" as any)}>
+                      <Text style={[styles.seeAll, { color: theme.primary }]}>Voir tout</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.urgentList}>
@@ -444,19 +337,11 @@ export default function DashboardScreen() {
               ]}
             >
               <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
-                <Text style={styles.avatarText}>
-                  {user ? getUserInitials(user) : "?"}
-                </Text>
+                <Text style={styles.avatarText}>{user ? getUserInitials(user) : "?"}</Text>
               </View>
-              <Text style={[styles.greeting, { color: theme.textPrimary }]}>
-                Bonjour 👋
-              </Text>
-              <Text style={[styles.userName, { color: theme.primary }]}>
-                {user?.name ?? "—"}
-              </Text>
-              <Text style={[styles.userEmail, { color: theme.textTertiary }]}>
-                {user?.email}
-              </Text>
+              <Text style={[styles.greeting, { color: theme.textPrimary }]}>Bonjour 👋</Text>
+              <Text style={[styles.userName, { color: theme.primary }]}>{user?.name ?? "—"}</Text>
+              <Text style={[styles.userEmail, { color: theme.textTertiary }]}>{user?.email}</Text>
               <Text style={[styles.date, { color: theme.textSecondary }]}>
                 {new Date().toLocaleDateString("fr-FR", {
                   weekday: "long",
@@ -466,9 +351,7 @@ export default function DashboardScreen() {
               </Text>
             </View>
 
-            <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-              Vue d'ensemble
-            </Text>
+            <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Vue d'ensemble</Text>
             <View style={styles.statsGrid}>
               <View
                 style={[
@@ -479,14 +362,8 @@ export default function DashboardScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.statValue, { color: theme.primary }]}>
-                  {totalProjects}
-                </Text>
-                <Text
-                  style={[styles.statLabel, { color: theme.textSecondary }]}
-                >
-                  Projets
-                </Text>
+                <Text style={[styles.statValue, { color: theme.primary }]}>{totalProjects}</Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Projets</Text>
               </View>
               <View
                 style={[
@@ -497,14 +374,8 @@ export default function DashboardScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.statValue, { color: theme.primary }]}>
-                  {totalTasks}
-                </Text>
-                <Text
-                  style={[styles.statLabel, { color: theme.textSecondary }]}
-                >
-                  Taches
-                </Text>
+                <Text style={[styles.statValue, { color: theme.primary }]}>{totalTasks}</Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Taches</Text>
               </View>
               <View
                 style={[
@@ -517,14 +388,8 @@ export default function DashboardScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.statValue, { color: Colors.warning }]}>
-                  {inProgressTasks}
-                </Text>
-                <Text
-                  style={[styles.statLabel, { color: theme.textSecondary }]}
-                >
-                  En cours
-                </Text>
+                <Text style={[styles.statValue, { color: Colors.warning }]}>{inProgressTasks}</Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>En cours</Text>
               </View>
               <View
                 style={[
@@ -537,14 +402,8 @@ export default function DashboardScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.statValue, { color: Colors.success }]}>
-                  {doneTasks}
-                </Text>
-                <Text
-                  style={[styles.statLabel, { color: theme.textSecondary }]}
-                >
-                  Terminees
-                </Text>
+                <Text style={[styles.statValue, { color: Colors.success }]}>{doneTasks}</Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Terminees</Text>
               </View>
             </View>
 
@@ -558,25 +417,15 @@ export default function DashboardScreen() {
               ]}
             >
               <View style={styles.globalProgressHeader}>
-                <Text
-                  style={[
-                    styles.globalProgressLabel,
-                    { color: theme.textPrimary },
-                  ]}
-                >
+                <Text style={[styles.globalProgressLabel, { color: theme.textPrimary }]}>
                   Progression globale
                 </Text>
-                <Text
-                  style={[styles.globalProgressValue, { color: theme.primary }]}
-                >
+                <Text style={[styles.globalProgressValue, { color: theme.primary }]}>
                   {globalProgress}%
                 </Text>
               </View>
               <View
-                style={[
-                  styles.globalProgressBar,
-                  { backgroundColor: theme.backgroundTertiary },
-                ]}
+                style={[styles.globalProgressBar, { backgroundColor: theme.backgroundTertiary }]}
               >
                 <View
                   style={[
@@ -588,12 +437,7 @@ export default function DashboardScreen() {
                   ]}
                 />
               </View>
-              <Text
-                style={[
-                  styles.globalProgressSub,
-                  { color: theme.textSecondary },
-                ]}
-              >
+              <Text style={[styles.globalProgressSub, { color: theme.textSecondary }]}>
                 {doneTasks} tache{doneTasks > 1 ? "s" : ""} terminee
                 {doneTasks > 1 ? "s" : ""} sur {totalTasks}
               </Text>
@@ -602,17 +446,11 @@ export default function DashboardScreen() {
             {recentProjects.length > 0 && (
               <View>
                 <View style={styles.sectionHeader}>
-                  <Text
-                    style={[styles.sectionTitle, { color: theme.textPrimary }]}
-                  >
+                  <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
                     Projets recents
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => router.push("/(app)/projects" as any)}
-                  >
-                    <Text style={[styles.seeAll, { color: theme.primary }]}>
-                      Voir tout
-                    </Text>
+                  <TouchableOpacity onPress={() => router.push("/(app)/projects" as any)}>
+                    <Text style={[styles.seeAll, { color: theme.primary }]}>Voir tout</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.projectsList}>
@@ -620,9 +458,7 @@ export default function DashboardScreen() {
                     <RecentProjectCard
                       key={project.id}
                       project={project}
-                      onPress={() =>
-                        router.push(`/(app)/projects/${project.id}` as any)
-                      }
+                      onPress={() => router.push(`/(app)/projects/${project.id}` as any)}
                     />
                   ))}
                 </View>
@@ -632,17 +468,11 @@ export default function DashboardScreen() {
             {urgentTasks.length > 0 && (
               <View>
                 <View style={styles.sectionHeader}>
-                  <Text
-                    style={[styles.sectionTitle, { color: theme.textPrimary }]}
-                  >
+                  <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
                     Taches urgentes
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => router.push("/(app)/tasks" as any)}
-                  >
-                    <Text style={[styles.seeAll, { color: theme.primary }]}>
-                      Voir tout
-                    </Text>
+                  <TouchableOpacity onPress={() => router.push("/(app)/tasks" as any)}>
+                    <Text style={[styles.seeAll, { color: theme.primary }]}>Voir tout</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.urgentList}>

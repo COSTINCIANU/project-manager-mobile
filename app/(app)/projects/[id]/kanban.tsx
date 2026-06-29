@@ -72,20 +72,14 @@ function KanbanCard({
 
   return (
     <View
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
-      ]}
+      style={[styles.card, { backgroundColor: theme.backgroundPrimary, borderColor: theme.border }]}
     >
       {/* Barre coloree en haut de la carte selon la priorite */}
       <View style={[styles.priorityBar, { backgroundColor: priorityColor }]} />
 
       <View style={styles.cardContent}>
         {/* Nom de la tache — 2 lignes max */}
-        <Text
-          style={[styles.cardTitle, { color: theme.textPrimary }]}
-          numberOfLines={2}
-        >
+        <Text style={[styles.cardTitle, { color: theme.textPrimary }]} numberOfLines={2}>
           {task.name}
         </Text>
 
@@ -97,15 +91,8 @@ function KanbanCard({
         )}
 
         {/* Badge de priorite colore */}
-        <View
-          style={[
-            styles.priorityBadge,
-            { backgroundColor: priorityColor + "20" },
-          ]}
-        >
-          <Text style={[styles.priorityText, { color: priorityColor }]}>
-            {task.priority}
-          </Text>
+        <View style={[styles.priorityBadge, { backgroundColor: priorityColor + "20" }]}>
+          <Text style={[styles.priorityText, { color: priorityColor }]}>{task.priority}</Text>
         </View>
 
         {/* Sur mobile — boutons fleches compacts ← → */}
@@ -121,9 +108,7 @@ function KanbanCard({
                 !canMoveLeft && styles.moveButtonDisabled,
               ]}
             >
-              <Text style={[styles.moveButtonText, { color: theme.primary }]}>
-                ←
-              </Text>
+              <Text style={[styles.moveButtonText, { color: theme.primary }]}>←</Text>
             </TouchableOpacity>
             {/* Bouton → desactive si derniere colonne */}
             <TouchableOpacity
@@ -135,9 +120,7 @@ function KanbanCard({
                 !canMoveRight && styles.moveButtonDisabled,
               ]}
             >
-              <Text style={[styles.moveButtonText, { color: theme.primary }]}>
-                →
-              </Text>
+              <Text style={[styles.moveButtonText, { color: theme.primary }]}>→</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -155,9 +138,7 @@ function KanbanCard({
                 !canMoveLeft && styles.moveButtonDisabled,
               ]}
             >
-              <Text style={[styles.moveButtonText, { color: theme.primary }]}>
-                ← Reculer
-              </Text>
+              <Text style={[styles.moveButtonText, { color: theme.primary }]}>← Reculer</Text>
             </TouchableOpacity>
             {/* Bouton Avancer desactive si derniere colonne */}
             <TouchableOpacity
@@ -169,9 +150,7 @@ function KanbanCard({
                 !canMoveRight && styles.moveButtonDisabled,
               ]}
             >
-              <Text style={[styles.moveButtonText, { color: theme.primary }]}>
-                Avancer →
-              </Text>
+              <Text style={[styles.moveButtonText, { color: theme.primary }]}>Avancer →</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -227,35 +206,21 @@ function KanbanColumn({
     >
       {/* En-tete de la colonne avec compteur de taches */}
       <View style={styles.columnHeader}>
-        <Text style={[styles.columnLabel, { color: theme.textPrimary }]}>
-          {label}
-        </Text>
+        <Text style={[styles.columnLabel, { color: theme.textPrimary }]}>{label}</Text>
         {/* Badge avec le nombre de taches dans cette colonne */}
-        <View
-          style={[
-            styles.columnCount,
-            { backgroundColor: theme.backgroundPrimary },
-          ]}
-        >
-          <Text
-            style={[styles.columnCountText, { color: theme.textSecondary }]}
-          >
+        <View style={[styles.columnCount, { backgroundColor: theme.backgroundPrimary }]}>
+          <Text style={[styles.columnCountText, { color: theme.textSecondary }]}>
             {tasks.length}
           </Text>
         </View>
       </View>
 
       {/* Liste des cartes avec scroll vertical */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.columnContent}
-      >
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.columnContent}>
         {tasks.length === 0 ? (
           // Message si la colonne est vide
           <View style={styles.emptyColumn}>
-            <Text
-              style={[styles.emptyColumnText, { color: theme.textTertiary }]}
-            >
+            <Text style={[styles.emptyColumnText, { color: theme.textTertiary }]}>
               Aucune tache
             </Text>
           </View>
@@ -324,8 +289,7 @@ export default function KanbanScreen() {
     try {
       let payload = {};
       // A faire → En cours
-      if (!task.inProgress && !task.done)
-        payload = { done: false, inProgress: true };
+      if (!task.inProgress && !task.done) payload = { done: false, inProgress: true };
       // En cours → Termine
       else if (task.inProgress) payload = { done: true, inProgress: false };
       await updateTask.mutateAsync({ id: task.id, payload: payload as any });
@@ -337,9 +301,7 @@ export default function KanbanScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete avec bouton retour et compteur de taches */}
       <View
         style={[
@@ -350,13 +312,8 @@ export default function KanbanScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: theme.primary }]}>
-            ← Retour
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: theme.primary }]}>← Retour</Text>
         </TouchableOpacity>
         <Text style={[styles.title, { color: theme.textPrimary }]}>Kanban</Text>
         <Text style={[styles.count, { color: theme.textSecondary }]}>

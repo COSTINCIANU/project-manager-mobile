@@ -126,24 +126,19 @@ export default function AIAssistantScreen() {
           setTimeout(() => {
             scrollViewRef.current?.scrollToEnd({ animated: true });
           }, 100);
-          Alert.alert(
-            "Succes",
-            `${response.tasks.length} tache(s) generee(s) !`,
-          );
+          Alert.alert("Succes", `${response.tasks.length} tache(s) generee(s) !`);
         } catch (error) {
           Alert.alert("Erreur", "Impossible de generer les taches.");
         } finally {
           setIsGenerating(false);
         }
       },
-      "plain-text",
+      "plain-text"
     );
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -158,34 +153,20 @@ export default function AIAssistantScreen() {
             },
           ]}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Text style={[styles.backText, { color: theme.primary }]}>
-              ← Retour
-            </Text>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={[styles.backText, { color: theme.primary }]}>← Retour</Text>
           </TouchableOpacity>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>
-            Assistant IA
-          </Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>Assistant IA</Text>
           {/* Bouton pour generer des taches automatiquement */}
           <TouchableOpacity
             onPress={handleGenerateTasks}
             disabled={isGenerating}
-            style={[
-              styles.generateButton,
-              { backgroundColor: theme.primary + "15" },
-            ]}
+            style={[styles.generateButton, { backgroundColor: theme.primary + "15" }]}
           >
             {isGenerating ? (
               <ActivityIndicator size="small" color={theme.primary} />
             ) : (
-              <Text
-                style={[styles.generateButtonText, { color: theme.primary }]}
-              >
-                ✨ Generer
-              </Text>
+              <Text style={[styles.generateButtonText, { color: theme.primary }]}>✨ Generer</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -222,9 +203,7 @@ export default function AIAssistantScreen() {
               >
                 {/* Label "🤖 Assistant" uniquement pour les messages de l'IA */}
                 {message.role === "assistant" && (
-                  <Text
-                    style={[styles.roleLabel, { color: theme.textTertiary }]}
-                  >
+                  <Text style={[styles.roleLabel, { color: theme.textTertiary }]}>
                     🤖 Assistant
                   </Text>
                 )}
@@ -244,10 +223,7 @@ export default function AIAssistantScreen() {
                   style={[
                     styles.messageTime,
                     {
-                      color:
-                        message.role === "user"
-                          ? "rgba(255,255,255,0.7)"
-                          : theme.textTertiary,
+                      color: message.role === "user" ? "rgba(255,255,255,0.7)" : theme.textTertiary,
                     },
                   ]}
                 >
@@ -270,9 +246,7 @@ export default function AIAssistantScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.roleLabel, { color: theme.textTertiary }]}>
-                  🤖 Assistant
-                </Text>
+                <Text style={[styles.roleLabel, { color: theme.textTertiary }]}>🤖 Assistant</Text>
                 <ActivityIndicator color={theme.primary} />
               </View>
             )}

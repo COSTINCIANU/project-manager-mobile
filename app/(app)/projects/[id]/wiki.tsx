@@ -104,13 +104,10 @@ export default function WikiScreen() {
     if (!title.trim() || !selectedPage) return;
     setIsSubmitting(true);
     try {
-      const { data } = await apiClient.put(
-        API_ENDPOINTS.WIKI_UPDATE(selectedPage.id),
-        {
-          title: title.trim(),
-          content: content.trim(),
-        },
-      );
+      const { data } = await apiClient.put(API_ENDPOINTS.WIKI_UPDATE(selectedPage.id), {
+        title: title.trim(),
+        content: content.trim(),
+      });
       setPages((prev) => prev.map((p) => (p.id === data.id ? data : p)));
       setIsEditing(false);
       setSelectedPage(data);
@@ -161,12 +158,7 @@ export default function WikiScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
@@ -177,12 +169,7 @@ export default function WikiScreen() {
   // Formulaire creation/modification
   if (isCreating || isEditing) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         {/* En-tete formulaire */}
         <View
           style={[
@@ -200,9 +187,7 @@ export default function WikiScreen() {
             }}
             style={styles.backButton}
           >
-            <Text style={[styles.backText, { color: Colors.danger }]}>
-              ✕ Annuler
-            </Text>
+            <Text style={[styles.backText, { color: Colors.danger }]}>✕ Annuler</Text>
           </TouchableOpacity>
           <Text style={[styles.title, { color: theme.textPrimary }]}>
             {isCreating ? "Nouvelle page" : "Modifier"}
@@ -226,18 +211,10 @@ export default function WikiScreen() {
 
         {/* Formulaire — centre sur tablette */}
         <ScrollView
-          contentContainerStyle={[
-            styles.content,
-            isTablet && styles.contentTablet,
-          ]}
+          contentContainerStyle={[styles.content, isTablet && styles.contentTablet]}
           keyboardShouldPersistTaps="handled"
         >
-          <View
-            style={[
-              styles.formContainer,
-              isTablet && styles.formContainerTablet,
-            ]}
-          >
+          <View style={[styles.formContainer, isTablet && styles.formContainerTablet]}>
             {/* Champ titre */}
             <View style={styles.field}>
               <Text style={[styles.label, { color: theme.textPrimary }]}>
@@ -263,9 +240,7 @@ export default function WikiScreen() {
 
             {/* Champ contenu */}
             <View style={styles.field}>
-              <Text style={[styles.label, { color: theme.textPrimary }]}>
-                Contenu
-              </Text>
+              <Text style={[styles.label, { color: theme.textPrimary }]}>Contenu</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -295,12 +270,7 @@ export default function WikiScreen() {
   // =====================================================
   if (isTablet) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         {/* En-tete */}
         <View
           style={[
@@ -311,13 +281,8 @@ export default function WikiScreen() {
             },
           ]}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Text style={[styles.backText, { color: theme.primary }]}>
-              ← Retour
-            </Text>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={[styles.backText, { color: theme.primary }]}>← Retour</Text>
           </TouchableOpacity>
           <Text style={[styles.title, { color: theme.textPrimary }]}>Wiki</Text>
           <TouchableOpacity
@@ -347,17 +312,10 @@ export default function WikiScreen() {
               {pages.length === 0 ? (
                 <View style={styles.empty}>
                   <Text style={styles.emptyIcon}>📚</Text>
-                  <Text
-                    style={[styles.emptyText, { color: theme.textPrimary }]}
-                  >
-                    Aucune page
-                  </Text>
+                  <Text style={[styles.emptyText, { color: theme.textPrimary }]}>Aucune page</Text>
                   <TouchableOpacity
                     onPress={openCreate}
-                    style={[
-                      styles.emptyButton,
-                      { backgroundColor: theme.primary },
-                    ]}
+                    style={[styles.emptyButton, { backgroundColor: theme.primary }]}
                   >
                     <Text style={styles.emptyButtonText}>+ Creer</Text>
                   </TouchableOpacity>
@@ -377,17 +335,12 @@ export default function WikiScreen() {
                     onPress={() => setSelectedPage(page)}
                   >
                     <Text
-                      style={[
-                        styles.tabletPageTitle,
-                        { color: theme.textPrimary },
-                      ]}
+                      style={[styles.tabletPageTitle, { color: theme.textPrimary }]}
                       numberOfLines={1}
                     >
                       📄 {page.title}
                     </Text>
-                    <Text
-                      style={[styles.pageDate, { color: theme.textTertiary }]}
-                    >
+                    <Text style={[styles.pageDate, { color: theme.textTertiary }]}>
                       {new Date(page.updatedAt).toLocaleDateString("fr-FR")}
                     </Text>
                   </TouchableOpacity>
@@ -402,30 +355,19 @@ export default function WikiScreen() {
               <ScrollView contentContainerStyle={styles.tabletDetailContent}>
                 {/* En-tete du detail */}
                 <View style={styles.tabletDetailHeader}>
-                  <Text
-                    style={[
-                      styles.tabletDetailTitle,
-                      { color: theme.textPrimary },
-                    ]}
-                  >
+                  <Text style={[styles.tabletDetailTitle, { color: theme.textPrimary }]}>
                     {selectedPage.title}
                   </Text>
                   <View style={{ flexDirection: "row", gap: 8 }}>
                     <TouchableOpacity
                       onPress={() => openEdit(selectedPage)}
-                      style={[
-                        styles.editButton,
-                        { backgroundColor: theme.primary + "15" },
-                      ]}
+                      style={[styles.editButton, { backgroundColor: theme.primary + "15" }]}
                     >
                       <Text style={styles.editButtonText}>✏️</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => handleDelete(selectedPage.id)}
-                      style={[
-                        styles.deleteButton,
-                        { backgroundColor: Colors.danger + "15" },
-                      ]}
+                      style={[styles.deleteButton, { backgroundColor: Colors.danger + "15" }]}
                     >
                       <Text style={styles.deleteButtonText}>🗑️</Text>
                     </TouchableOpacity>
@@ -446,8 +388,7 @@ export default function WikiScreen() {
                   </Text>
                 </View>
                 <Text style={[styles.pageDate, { color: theme.textTertiary }]}>
-                  Mise a jour le{" "}
-                  {new Date(selectedPage.updatedAt).toLocaleDateString("fr-FR")}
+                  Mise a jour le {new Date(selectedPage.updatedAt).toLocaleDateString("fr-FR")}
                 </Text>
               </ScrollView>
             ) : (
@@ -472,12 +413,7 @@ export default function WikiScreen() {
   // Detail d'une page sur mobile
   if (selectedPage) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View
           style={[
             styles.header,
@@ -487,36 +423,22 @@ export default function WikiScreen() {
             },
           ]}
         >
-          <TouchableOpacity
-            onPress={() => setSelectedPage(null)}
-            style={styles.backButton}
-          >
-            <Text style={[styles.backText, { color: theme.primary }]}>
-              ← Retour
-            </Text>
+          <TouchableOpacity onPress={() => setSelectedPage(null)} style={styles.backButton}>
+            <Text style={[styles.backText, { color: theme.primary }]}>← Retour</Text>
           </TouchableOpacity>
-          <Text
-            style={[styles.title, { color: theme.textPrimary }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.title, { color: theme.textPrimary }]} numberOfLines={1}>
             {selectedPage.title}
           </Text>
           <View style={{ flexDirection: "row", gap: 8 }}>
             <TouchableOpacity
               onPress={() => openEdit(selectedPage)}
-              style={[
-                styles.editButton,
-                { backgroundColor: theme.primary + "15" },
-              ]}
+              style={[styles.editButton, { backgroundColor: theme.primary + "15" }]}
             >
               <Text style={styles.editButtonText}>✏️</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleDelete(selectedPage.id)}
-              style={[
-                styles.deleteButton,
-                { backgroundColor: Colors.danger + "15" },
-              ]}
+              style={[styles.deleteButton, { backgroundColor: Colors.danger + "15" }]}
             >
               <Text style={styles.deleteButtonText}>🗑️</Text>
             </TouchableOpacity>
@@ -537,8 +459,7 @@ export default function WikiScreen() {
             </Text>
           </View>
           <Text style={[styles.pageDate, { color: theme.textTertiary }]}>
-            Mise a jour le{" "}
-            {new Date(selectedPage.updatedAt).toLocaleDateString("fr-FR")}
+            Mise a jour le {new Date(selectedPage.updatedAt).toLocaleDateString("fr-FR")}
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -547,9 +468,7 @@ export default function WikiScreen() {
 
   // Liste des pages sur mobile
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       <View
         style={[
           styles.header,
@@ -559,13 +478,8 @@ export default function WikiScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: theme.primary }]}>
-            ← Retour
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: theme.primary }]}>← Retour</Text>
         </TouchableOpacity>
         <Text style={[styles.title, { color: theme.textPrimary }]}>Wiki</Text>
         <TouchableOpacity
@@ -576,16 +490,11 @@ export default function WikiScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {pages.length === 0 ? (
           <View style={styles.empty}>
             <Text style={styles.emptyIcon}>📚</Text>
-            <Text style={[styles.emptyText, { color: theme.textPrimary }]}>
-              Aucune page wiki
-            </Text>
+            <Text style={[styles.emptyText, { color: theme.textPrimary }]}>Aucune page wiki</Text>
             <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
               Cliquez sur "+ Page" pour creer votre premiere page
             </Text>
@@ -624,9 +533,7 @@ export default function WikiScreen() {
                   {new Date(page.updatedAt).toLocaleDateString("fr-FR")}
                 </Text>
               </View>
-              <Text style={[styles.pageArrow, { color: theme.textTertiary }]}>
-                ›
-              </Text>
+              <Text style={[styles.pageArrow, { color: theme.textTertiary }]}>›</Text>
             </TouchableOpacity>
           ))
         )}

@@ -72,17 +72,12 @@ export default function EditProfileScreen() {
         payload.password = newPassword;
         payload.currentPassword = currentPassword;
       }
-      const { data } = await apiClient.put(
-        API_ENDPOINTS.UPDATE_PROFILE,
-        payload,
-      );
+      const { data } = await apiClient.put(API_ENDPOINTS.UPDATE_PROFILE, payload);
       // Met a jour le store avec les nouvelles informations
       if (user) {
         setUser({ ...user, name: data.name, email: data.email });
       }
-      Alert.alert("Succes", "Profil mis a jour !", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert("Succes", "Profil mis a jour !", [{ text: "OK", onPress: () => router.back() }]);
     } catch (error: any) {
       Alert.alert("Erreur", "Impossible de modifier le profil.");
     } finally {
@@ -91,9 +86,7 @@ export default function EditProfileScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete */}
       <View
         style={[
@@ -104,17 +97,10 @@ export default function EditProfileScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: Colors.danger }]}>
-            ✕ Annuler
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: Colors.danger }]}>✕ Annuler</Text>
         </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Modifier le profil
-        </Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Modifier le profil</Text>
         <TouchableOpacity
           onPress={handleUpdate}
           disabled={isSubmitting}
@@ -134,10 +120,7 @@ export default function EditProfileScreen() {
 
       {/* Formulaire — centre sur tablette */}
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          isTablet && styles.contentTablet,
-        ]}
+        contentContainerStyle={[styles.content, isTablet && styles.contentTablet]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -157,9 +140,7 @@ export default function EditProfileScreen() {
 
           {/* Champ nom */}
           <View style={styles.field}>
-            <Text style={[styles.label, { color: theme.textPrimary }]}>
-              Nom
-            </Text>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>Nom</Text>
             <TextInput
               style={[
                 styles.input,
@@ -221,9 +202,7 @@ export default function EditProfileScreen() {
 
           {/* Mot de passe actuel */}
           <View style={styles.field}>
-            <Text style={[styles.label, { color: theme.textPrimary }]}>
-              Mot de passe actuel
-            </Text>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>Mot de passe actuel</Text>
             <TextInput
               style={[
                 styles.input,
@@ -244,9 +223,7 @@ export default function EditProfileScreen() {
 
           {/* Nouveau mot de passe */}
           <View style={styles.field}>
-            <Text style={[styles.label, { color: theme.textPrimary }]}>
-              Nouveau mot de passe
-            </Text>
+            <Text style={[styles.label, { color: theme.textPrimary }]}>Nouveau mot de passe</Text>
             <TextInput
               style={[
                 styles.input,
@@ -279,9 +256,7 @@ export default function EditProfileScreen() {
                   color: theme.textPrimary,
                 },
                 // Bordure rouge si les mots de passe ne correspondent pas
-                confirmPassword && newPassword !== confirmPassword
-                  ? styles.inputError
-                  : null,
+                confirmPassword && newPassword !== confirmPassword ? styles.inputError : null,
               ]}
               placeholder="Repetez le nouveau mot de passe"
               placeholderTextColor={theme.textTertiary}
@@ -292,9 +267,7 @@ export default function EditProfileScreen() {
             />
             {/* Message d'erreur */}
             {confirmPassword && newPassword !== confirmPassword && (
-              <Text style={styles.errorText}>
-                Les mots de passe ne correspondent pas
-              </Text>
+              <Text style={styles.errorText}>Les mots de passe ne correspondent pas</Text>
             )}
           </View>
         </View>

@@ -48,10 +48,7 @@ export default function ProfileScreen() {
   const handleAvatarChange = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permission refusee",
-        "Autorisez l'acces a vos photos dans les reglages.",
-      );
+      Alert.alert("Permission refusee", "Autorisez l'acces a vos photos dans les reglages.");
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -86,26 +83,17 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
-  const avatarUrl = user.avatar
-    ? `https://api.costincianu.fr${user.avatar}`
-    : null;
+  const avatarUrl = user.avatar ? `https://api.costincianu.fr${user.avatar}` : null;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          isTablet && styles.contentTablet,
-        ]}
+        contentContainerStyle={[styles.content, isTablet && styles.contentTablet]}
         showsVerticalScrollIndicator={false}
       >
         {/* En-tete */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>
-            Profil
-          </Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>Profil</Text>
         </View>
 
         {/* Section avatar + nom */}
@@ -150,26 +138,15 @@ export default function ProfileScreen() {
 
           {user.name ? (
             <>
-              <Text style={[styles.userName, { color: theme.textPrimary }]}>
-                {user.name}
-              </Text>
-              <Text style={[styles.userEmail, { color: theme.textSecondary }]}>
-                {user.email}
-              </Text>
+              <Text style={[styles.userName, { color: theme.textPrimary }]}>{user.name}</Text>
+              <Text style={[styles.userEmail, { color: theme.textSecondary }]}>{user.email}</Text>
             </>
           ) : (
-            <Text style={[styles.userName, { color: theme.textPrimary }]}>
-              {user.email}
-            </Text>
+            <Text style={[styles.userName, { color: theme.textPrimary }]}>{user.email}</Text>
           )}
 
           {/* Badge role */}
-          <View
-            style={[
-              styles.roleBadge,
-              { backgroundColor: theme.primary + "20" },
-            ]}
-          >
+          <View style={[styles.roleBadge, { backgroundColor: theme.primary + "20" }]}>
             <Text style={[styles.roleText, { color: theme.primary }]}>
               {user.role === "admin" ? "👑 Admin" : "👤 Utilisateur"}
             </Text>
@@ -186,34 +163,22 @@ export default function ProfileScreen() {
             },
           ]}
         >
-          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
-            Informations
-          </Text>
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Informations</Text>
 
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
-              Email
-            </Text>
-            <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
-              {user.email}
-            </Text>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Email</Text>
+            <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{user.email}</Text>
           </View>
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
-              Nom
-            </Text>
-            <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
-              {user.name || "—"}
-            </Text>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Nom</Text>
+            <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{user.name || "—"}</Text>
           </View>
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
-              Role
-            </Text>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Role</Text>
             <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
               {user.role === "admin" ? "Administrateur" : "Utilisateur"}
             </Text>
@@ -221,13 +186,9 @@ export default function ProfileScreen() {
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>
-              Membre depuis
-            </Text>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Membre depuis</Text>
             <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
-              {user.createdAt
-                ? new Date(user.createdAt).toLocaleDateString("fr-FR")
-                : "—"}
+              {user.createdAt ? new Date(user.createdAt).toLocaleDateString("fr-FR") : "—"}
             </Text>
           </View>
         </View>
@@ -237,9 +198,7 @@ export default function ProfileScreen() {
           style={[
             styles.themeButton,
             {
-              backgroundColor: isDark
-                ? Colors.warning + "20"
-                : theme.primary + "15",
+              backgroundColor: isDark ? Colors.warning + "20" : theme.primary + "15",
               borderColor: theme.border,
             },
           ]}
@@ -270,11 +229,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         {/* Bouton deconnexion */}
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          activeOpacity={0.8}
-        >
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.8}>
           <Text style={styles.logoutText}>Se deconnecter</Text>
         </TouchableOpacity>
       </ScrollView>

@@ -118,8 +118,7 @@ export default function ChatScreen() {
   };
 
   // Verifie si le message appartient a l'utilisateur connecte
-  const isMyMessage = (message: ChatMessage) =>
-    message.senderEmail === user?.email;
+  const isMyMessage = (message: ChatMessage) => message.senderEmail === user?.email;
 
   // Formate l'heure d'un message
   const formatTime = (dateStr: string) =>
@@ -130,12 +129,7 @@ export default function ChatScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
@@ -144,9 +138,7 @@ export default function ChatScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -161,20 +153,13 @@ export default function ChatScreen() {
             },
           ]}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Text style={[styles.backText, { color: theme.primary }]}>
-              ← Retour
-            </Text>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={[styles.backText, { color: theme.primary }]}>← Retour</Text>
           </TouchableOpacity>
           <Text style={[styles.title, { color: theme.textPrimary }]}>Chat</Text>
           {/* Bouton rafraichir les messages */}
           <TouchableOpacity onPress={loadMessages} style={styles.refreshButton}>
-            <Text style={[styles.refreshText, { color: theme.primary }]}>
-              ↻
-            </Text>
+            <Text style={[styles.refreshText, { color: theme.primary }]}>↻</Text>
           </TouchableOpacity>
         </View>
 
@@ -184,12 +169,8 @@ export default function ChatScreen() {
           {messages.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>💬</Text>
-              <Text style={[styles.emptyText, { color: theme.textPrimary }]}>
-                Aucun message
-              </Text>
-              <Text
-                style={[styles.emptySubtext, { color: theme.textSecondary }]}
-              >
+              <Text style={[styles.emptyText, { color: theme.textPrimary }]}>Aucun message</Text>
+              <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
                 Soyez le premier a envoyer un message !
               </Text>
             </View>
@@ -199,10 +180,7 @@ export default function ChatScreen() {
               data={messages}
               keyExtractor={(item) => item.id.toString()}
               // Plus de padding sur tablette
-              contentContainerStyle={[
-                styles.messagesList,
-                isTablet && styles.messagesListTablet,
-              ]}
+              contentContainerStyle={[styles.messagesList, isTablet && styles.messagesListTablet]}
               showsVerticalScrollIndicator={false}
               onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
               renderItem={({ item }) => {
@@ -226,10 +204,7 @@ export default function ChatScreen() {
                           // Bulle plus large sur tablette
                           isTablet && styles.messageBubbleTablet,
                           mine
-                            ? [
-                                styles.myBubble,
-                                { backgroundColor: theme.primary },
-                              ]
+                            ? [styles.myBubble, { backgroundColor: theme.primary }]
                             : [
                                 styles.theirBubble,
                                 {
@@ -241,12 +216,7 @@ export default function ChatScreen() {
                       >
                         {/* Nom de l'auteur pour les messages des autres */}
                         {!mine && (
-                          <Text
-                            style={[
-                              styles.authorName,
-                              { color: theme.textTertiary },
-                            ]}
-                          >
+                          <Text style={[styles.authorName, { color: theme.textTertiary }]}>
                             {item.senderName ?? item.senderEmail}
                           </Text>
                         )}
@@ -256,10 +226,7 @@ export default function ChatScreen() {
                             styles.messageText,
                             mine
                               ? styles.myMessageText
-                              : [
-                                  styles.theirMessageText,
-                                  { color: theme.textPrimary },
-                                ],
+                              : [styles.theirMessageText, { color: theme.textPrimary }],
                           ]}
                         >
                           {item.content}
@@ -270,10 +237,7 @@ export default function ChatScreen() {
                             styles.messageTime,
                             mine
                               ? styles.myMessageTime
-                              : [
-                                  styles.theirMessageTime,
-                                  { color: theme.textTertiary },
-                                ],
+                              : [styles.theirMessageTime, { color: theme.textTertiary }],
                           ]}
                         >
                           {formatTime(item.createdAt)}

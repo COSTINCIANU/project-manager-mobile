@@ -55,17 +55,13 @@ export default function CustomFieldsScreen() {
   const [afficherFormulaire, setAfficherFormulaire] = useState(false);
   const [nomChamp, setNomChamp] = useState("");
   const [labelChamp, setLabelChamp] = useState("");
-  const [typeChamp, setTypeChamp] = useState<
-    "text" | "number" | "date" | "boolean"
-  >("text");
+  const [typeChamp, setTypeChamp] = useState<"text" | "number" | "date" | "boolean">("text");
 
   // Récupère les champs du projet
   const { data: champs, isLoading } = useQuery<CustomField[]>({
     queryKey: ["custom-fields", projectId],
     queryFn: async () => {
-      const { data } = await apiClient.get(
-        API_ENDPOINTS.CUSTOM_FIELDS_BY_PROJECT(projectId),
-      );
+      const { data } = await apiClient.get(API_ENDPOINTS.CUSTOM_FIELDS_BY_PROJECT(projectId));
       return data;
     },
   });
@@ -95,17 +91,10 @@ export default function CustomFieldsScreen() {
 
   // Mise à jour de la valeur d'un champ
   const modifierValeur = useMutation({
-    mutationFn: async ({
-      champId,
-      valeur,
-    }: {
-      champId: number;
-      valeur: string;
-    }) => {
-      const { data } = await apiClient.put(
-        API_ENDPOINTS.CUSTOM_FIELD_UPDATE(champId),
-        { value: valeur },
-      );
+    mutationFn: async ({ champId, valeur }: { champId: number; valeur: string }) => {
+      const { data } = await apiClient.put(API_ENDPOINTS.CUSTOM_FIELD_UPDATE(champId), {
+        value: valeur,
+      });
       return data;
     },
     onSuccess: () => {
@@ -125,18 +114,14 @@ export default function CustomFieldsScreen() {
 
   // Confirme la suppression
   const confirmerSuppression = (champ: CustomField) => {
-    Alert.alert(
-      "Supprimer le champ",
-      `Voulez-vous supprimer le champ "${champ.label}" ?`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: () => supprimerChamp.mutate(champ.id),
-        },
-      ],
-    );
+    Alert.alert("Supprimer le champ", `Voulez-vous supprimer le champ "${champ.label}" ?`, [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Supprimer",
+        style: "destructive",
+        onPress: () => supprimerChamp.mutate(champ.id),
+      },
+    ]);
   };
 
   // Valide et soumet le formulaire
@@ -193,39 +178,23 @@ export default function CustomFieldsScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}>
         <ActivityIndicator size="large" color={theme.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
-    >
-      <ScrollView
-        contentContainerStyle={[
-          styles.contenu,
-          isTablet && styles.contenuTablette,
-        ]}
-      >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}>
+      <ScrollView contentContainerStyle={[styles.contenu, isTablet && styles.contenuTablette]}>
         {/* Bouton retour */}
-        <TouchableOpacity
-          style={styles.boutonRetour}
-          onPress={() => router.back()}
-        >
-          <Text style={[styles.texteBoutonRetour, { color: theme.primary }]}>
-            ← Retour
-          </Text>
+        <TouchableOpacity style={styles.boutonRetour} onPress={() => router.back()}>
+          <Text style={[styles.texteBoutonRetour, { color: theme.primary }]}>← Retour</Text>
         </TouchableOpacity>
 
         {/* Titre */}
         <View style={styles.entete}>
-          <Text style={[styles.titre, { color: theme.textPrimary }]}>
-            Champs personnalisés
-          </Text>
+          <Text style={[styles.titre, { color: theme.textPrimary }]}>Champs personnalisés</Text>
           <TouchableOpacity
             style={[styles.boutonAjouter, { backgroundColor: theme.primary }]}
             onPress={() => setAfficherFormulaire(!afficherFormulaire)}
@@ -249,17 +218,13 @@ export default function CustomFieldsScreen() {
               },
             ]}
           >
-            <Text
-              style={[styles.formulaireTitre, { color: theme.textPrimary }]}
-            >
+            <Text style={[styles.formulaireTitre, { color: theme.textPrimary }]}>
               Nouveau champ
             </Text>
 
             {/* Nom affiché */}
             <View style={styles.champFormulaire}>
-              <Text
-                style={[styles.labelFormulaire, { color: theme.textPrimary }]}
-              >
+              <Text style={[styles.labelFormulaire, { color: theme.textPrimary }]}>
                 Nom affiché *
               </Text>
               <TextInput
@@ -283,9 +248,7 @@ export default function CustomFieldsScreen() {
 
             {/* Type de champ */}
             <View style={styles.champFormulaire}>
-              <Text
-                style={[styles.labelFormulaire, { color: theme.textPrimary }]}
-              >
+              <Text style={[styles.labelFormulaire, { color: theme.textPrimary }]}>
                 Type de champ
               </Text>
               <View style={styles.typesGrille}>
@@ -334,12 +297,7 @@ export default function CustomFieldsScreen() {
                 style={[styles.boutonAnnuler, { borderColor: theme.border }]}
                 onPress={() => setAfficherFormulaire(false)}
               >
-                <Text
-                  style={[
-                    styles.texteBoutonAnnuler,
-                    { color: theme.textSecondary },
-                  ]}
-                >
+                <Text style={[styles.texteBoutonAnnuler, { color: theme.textSecondary }]}>
                   Annuler
                 </Text>
               </TouchableOpacity>
@@ -381,37 +339,20 @@ export default function CustomFieldsScreen() {
               >
                 <View style={styles.enteteChamp}>
                   <View>
-                    <Text
-                      style={[styles.labelChamp, { color: theme.textPrimary }]}
-                    >
+                    <Text style={[styles.labelChamp, { color: theme.textPrimary }]}>
                       {champ.label}
                     </Text>
-                    <Text
-                      style={[
-                        styles.typeChampTexte,
-                        { color: theme.textSecondary },
-                      ]}
-                    >
-                      {
-                        TYPES_DISPONIBLES.find((t) => t.value === champ.type)
-                          ?.label
-                      }
+                    <Text style={[styles.typeChampTexte, { color: theme.textSecondary }]}>
+                      {TYPES_DISPONIBLES.find((t) => t.value === champ.type)?.label}
                     </Text>
                   </View>
                   <TouchableOpacity onPress={() => confirmerSuppression(champ)}>
-                    <Text
-                      style={[
-                        styles.boutonSupprimer,
-                        { color: theme.danger ?? "#e74c3c" },
-                      ]}
-                    >
+                    <Text style={[styles.boutonSupprimer, { color: theme.danger ?? "#e74c3c" }]}>
                       ✕
                     </Text>
                   </TouchableOpacity>
                 </View>
-                <View style={styles.saisieValeur}>
-                  {renderSaisieValeur(champ)}
-                </View>
+                <View style={styles.saisieValeur}>{renderSaisieValeur(champ)}</View>
               </View>
             ))}
           </View>

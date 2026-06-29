@@ -68,9 +68,7 @@ export default function NotificationsScreen() {
     try {
       // L'API utilise PUT et pas POST pour marquer comme lue
       await apiClient.put(API_ENDPOINTS.NOTIFICATION_READ(id), {});
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
-      );
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
     } catch (error) {
       console.log("Erreur mark as read:", error);
     }
@@ -98,12 +96,7 @@ export default function NotificationsScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
@@ -112,15 +105,11 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete */}
       <View style={styles.header}>
         <View>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>
-            Notifications
-          </Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>Notifications</Text>
           {unreadCount > 0 && (
             <Text style={[styles.unreadCount, { color: theme.primary }]}>
               {unreadCount} non lue{unreadCount > 1 ? "s" : ""}
@@ -130,14 +119,9 @@ export default function NotificationsScreen() {
         {unreadCount > 0 && (
           <TouchableOpacity
             onPress={markAllAsRead}
-            style={[
-              styles.markAllButton,
-              { backgroundColor: theme.primary + "15" },
-            ]}
+            style={[styles.markAllButton, { backgroundColor: theme.primary + "15" }]}
           >
-            <Text style={[styles.markAllText, { color: theme.primary }]}>
-              Tout lire
-            </Text>
+            <Text style={[styles.markAllText, { color: theme.primary }]}>Tout lire</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -178,27 +162,17 @@ export default function NotificationsScreen() {
           >
             {/* Indicateur non lu */}
             {!item.isRead && (
-              <View
-                style={[styles.unreadDot, { backgroundColor: theme.primary }]}
-              />
+              <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />
             )}
 
             {/* Icone de la notification — toujours une mention */}
-            <View
-              style={[
-                styles.notifIcon,
-                { backgroundColor: theme.backgroundTertiary },
-              ]}
-            >
+            <View style={[styles.notifIcon, { backgroundColor: theme.backgroundTertiary }]}>
               <Text style={styles.notifIconText}>@</Text>
             </View>
 
             {/* Contenu */}
             <View style={styles.notifContent}>
-              <Text
-                style={[styles.notifMessage, { color: theme.textPrimary }]}
-                numberOfLines={2}
-              >
+              <Text style={[styles.notifMessage, { color: theme.textPrimary }]} numberOfLines={2}>
                 Mention de {item.mentionedByEmail}
               </Text>
               <Text style={[styles.notifDate, { color: theme.textTertiary }]}>

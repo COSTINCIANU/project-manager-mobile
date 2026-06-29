@@ -10,9 +10,7 @@ export const oauthApi = {
    * Echange le code Google contre un JWT Symfony.
    * Appele apres le callback OAuth Google.
    */
-  async loginWithGoogle(
-    code: string,
-  ): Promise<{ token: string; refresh_token: string }> {
+  async loginWithGoogle(code: string): Promise<{ token: string; refresh_token: string }> {
     const { data } = await apiClient.post("/api/auth/google/mobile", { code });
     return data;
   },
@@ -21,9 +19,7 @@ export const oauthApi = {
    * Echange le code GitHub contre un JWT Symfony.
    * Appele apres le callback OAuth GitHub.
    */
-  async loginWithGithub(
-    code: string,
-  ): Promise<{ token: string; refresh_token: string }> {
+  async loginWithGithub(code: string): Promise<{ token: string; refresh_token: string }> {
     const { data } = await apiClient.post("/api/auth/github/mobile", { code });
     return data;
   },

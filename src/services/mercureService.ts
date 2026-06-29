@@ -114,7 +114,7 @@ class MercureService {
     const handlers = this.handlers.get(eventType) ?? [];
     this.handlers.set(
       eventType,
-      handlers.filter((h) => h !== handler),
+      handlers.filter((h) => h !== handler)
     );
   }
 

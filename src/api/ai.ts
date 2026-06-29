@@ -31,10 +31,7 @@ export const aiApi = {
    * Envoie une description du projet a l'IA qui retourne
    * une liste de taches suggereees.
    */
-  async generateTasks(
-    projectId: number,
-    description: string,
-  ): Promise<GenerateTasksResponse> {
+  async generateTasks(projectId: number, description: string): Promise<GenerateTasksResponse> {
     const { data } = await apiClient.post(API_ENDPOINTS.AI_GENERATE_TASKS, {
       projectId,
       description,

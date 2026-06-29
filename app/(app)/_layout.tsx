@@ -62,8 +62,7 @@ function AndroidTopBar() {
       {tabs.map((tab) => {
         // Verifie si cet onglet est actif selon l'URL courante
         const isActive =
-          pathname === tab.path ||
-          (tab.path !== "/(app)" && pathname.startsWith(tab.path));
+          pathname === tab.path || (tab.path !== "/(app)" && pathname.startsWith(tab.path));
 
         return (
           <TouchableOpacity
@@ -203,11 +202,7 @@ export default function AppLayout() {
           options={{
             title: "Alertes",
             tabBarIcon: ({ color, size }) => (
-              <Ionicons
-                name="notifications-outline"
-                size={size}
-                color={color}
-              />
+              <Ionicons name="notifications-outline" size={size} color={color} />
             ),
           }}
         />

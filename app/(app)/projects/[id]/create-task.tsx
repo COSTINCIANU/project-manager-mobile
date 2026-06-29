@@ -79,10 +79,7 @@ export default function CreateTaskScreen() {
       return;
     }
     if (dueDate && !isValidDate(dueDate)) {
-      Alert.alert(
-        "Date invalide",
-        "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)",
-      );
+      Alert.alert("Date invalide", "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)");
       return;
     }
 
@@ -112,9 +109,7 @@ export default function CreateTaskScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete */}
       <View
         style={[
@@ -125,17 +120,10 @@ export default function CreateTaskScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: Colors.danger }]}>
-            ✕ Annuler
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: Colors.danger }]}>✕ Annuler</Text>
         </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Nouvelle tache
-        </Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Nouvelle tache</Text>
         <TouchableOpacity
           onPress={handleCreate}
           disabled={isSubmitting || !name.trim()}
@@ -155,18 +143,13 @@ export default function CreateTaskScreen() {
 
       {/* Formulaire — centre sur tablette */}
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          isTablet && styles.contentTablet,
-        ]}
+        contentContainerStyle={[styles.content, isTablet && styles.contentTablet]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         {/* Type de ticket — comme Jira */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Type de ticket
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Type de ticket</Text>
           <View style={styles.ticketTypesRow}>
             {TICKET_TYPES.map((t) => (
               <TouchableOpacity
@@ -224,9 +207,7 @@ export default function CreateTaskScreen() {
 
         {/* Description — optionnel */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Description
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Description</Text>
           <TextInput
             style={[
               styles.input,
@@ -249,9 +230,7 @@ export default function CreateTaskScreen() {
 
         {/* Priorite */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Priorite
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Priorite</Text>
           <View style={styles.prioritiesRow}>
             {PRIORITIES.map((p) => (
               <TouchableOpacity
@@ -285,9 +264,7 @@ export default function CreateTaskScreen() {
 
         {/* Date d'echeance */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Date d'echeance
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Date d'echeance</Text>
           <TextInput
             style={[
               styles.input,
@@ -304,9 +281,7 @@ export default function CreateTaskScreen() {
             keyboardType="numbers-and-punctuation"
             maxLength={10}
           />
-          <Text style={[styles.hint, { color: theme.textTertiary }]}>
-            Format : JJ/MM/AAAA
-          </Text>
+          <Text style={[styles.hint, { color: theme.textTertiary }]}>Format : JJ/MM/AAAA</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

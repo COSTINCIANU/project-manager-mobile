@@ -100,12 +100,7 @@ export default function EditProjectScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
@@ -114,9 +109,7 @@ export default function EditProjectScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete */}
       <View
         style={[
@@ -127,17 +120,10 @@ export default function EditProjectScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: Colors.danger }]}>
-            ✕ Annuler
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: Colors.danger }]}>✕ Annuler</Text>
         </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Modifier le projet
-        </Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Modifier le projet</Text>
         <TouchableOpacity
           onPress={handleUpdate}
           disabled={isSubmitting || !name.trim()}
@@ -157,10 +143,7 @@ export default function EditProjectScreen() {
 
       {/* Formulaire — centre sur tablette */}
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          isTablet && styles.contentTablet,
-        ]}
+        contentContainerStyle={[styles.content, isTablet && styles.contentTablet]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -188,9 +171,7 @@ export default function EditProjectScreen() {
 
         {/* Statut du projet */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Statut
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Statut</Text>
           <View style={styles.optionsRow}>
             {STATUSES.map((s) => (
               <TouchableOpacity
@@ -228,9 +209,7 @@ export default function EditProjectScreen() {
 
         {/* Couleur du projet */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Couleur
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Couleur</Text>
           <View style={styles.colorsRow}>
             {PROJECT_COLORS.map((c) => (
               <TouchableOpacity

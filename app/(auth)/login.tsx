@@ -39,10 +39,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert(
-        "Champs requis",
-        "Veuillez remplir votre email et mot de passe.",
-      );
+      Alert.alert("Champs requis", "Veuillez remplir votre email et mot de passe.");
       return;
     }
     setIsLoading(true);
@@ -54,8 +51,7 @@ export default function LoginScreen() {
         router.replace("/(app)");
       }
     } catch (error: any) {
-      const message =
-        error?.response?.data?.message ?? "Email ou mot de passe incorrect.";
+      const message = error?.response?.data?.message ?? "Email ou mot de passe incorrect.";
       Alert.alert("Connexion impossible", message);
     } finally {
       setIsLoading(false);
@@ -63,9 +59,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}>
       <KeyboardAvoidingView
         style={styles.inner}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -73,9 +67,7 @@ export default function LoginScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* En-tete */}
           <View style={styles.header}>
-            <Text style={[styles.title, { color: theme.textPrimary }]}>
-              Project Manager
-            </Text>
+            <Text style={[styles.title, { color: theme.textPrimary }]}>Project Manager</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Connectez-vous a votre espace
             </Text>
@@ -96,9 +88,7 @@ export default function LoginScreen() {
               disabled={!googleReady}
               activeOpacity={0.7}
             >
-              <Text style={[styles.oauthIcon, { color: theme.textPrimary }]}>
-                G
-              </Text>
+              <Text style={[styles.oauthIcon, { color: theme.textPrimary }]}>G</Text>
               <Text style={[styles.oauthText, { color: theme.textPrimary }]}>
                 Continuer avec Google
               </Text>
@@ -117,9 +107,7 @@ export default function LoginScreen() {
               disabled={!githubReady}
               activeOpacity={0.7}
             >
-              <Text style={[styles.oauthIcon, { color: theme.textPrimary }]}>
-                ⌥
-              </Text>
+              <Text style={[styles.oauthIcon, { color: theme.textPrimary }]}>⌥</Text>
               <Text style={[styles.oauthText, { color: theme.textPrimary }]}>
                 Continuer avec GitHub
               </Text>
@@ -128,23 +116,15 @@ export default function LoginScreen() {
 
           {/* Separateur */}
           <View style={styles.separator}>
-            <View
-              style={[styles.separatorLine, { backgroundColor: theme.border }]}
-            />
-            <Text style={[styles.separatorText, { color: theme.textTertiary }]}>
-              ou
-            </Text>
-            <View
-              style={[styles.separatorLine, { backgroundColor: theme.border }]}
-            />
+            <View style={[styles.separatorLine, { backgroundColor: theme.border }]} />
+            <Text style={[styles.separatorText, { color: theme.textTertiary }]}>ou</Text>
+            <View style={[styles.separatorLine, { backgroundColor: theme.border }]} />
           </View>
 
           {/* Formulaire email/mdp */}
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={[styles.label, { color: theme.textPrimary }]}>
-                Email
-              </Text>
+              <Text style={[styles.label, { color: theme.textPrimary }]}>Email</Text>
               {/* testID="email-input" — utilisé par les tests Maestro */}
               <TextInput
                 testID="email-input"
@@ -168,9 +148,7 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={[styles.label, { color: theme.textPrimary }]}>
-                Mot de passe
-              </Text>
+              <Text style={[styles.label, { color: theme.textPrimary }]}>Mot de passe</Text>
               {/* testID="password-input" — utilisé par les tests Maestro */}
               <TextInput
                 testID="password-input"
@@ -224,10 +202,7 @@ export default function LoginScreen() {
             <Text style={[styles.footerText, { color: theme.textSecondary }]}>
               Pas encore de compte ?{" "}
             </Text>
-            <Link
-              href="/(auth)/register"
-              style={[styles.footerLink, { color: theme.primary }]}
-            >
+            <Link href="/(auth)/register" style={[styles.footerLink, { color: theme.primary }]}>
               Creer un compte
             </Link>
           </View>

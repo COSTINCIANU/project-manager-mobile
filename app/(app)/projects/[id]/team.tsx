@@ -67,9 +67,7 @@ export default function TeamScreen() {
   // Recupere les invitations depuis l'API
   const loadInvitations = async () => {
     try {
-      const { data } = await apiClient.get(
-        API_ENDPOINTS.INVITATIONS(Number(id)),
-      );
+      const { data } = await apiClient.get(API_ENDPOINTS.INVITATIONS(Number(id)));
       setInvitations(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log("Erreur chargement invitations:", error);
@@ -131,12 +129,7 @@ export default function TeamScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
@@ -154,9 +147,7 @@ export default function TeamScreen() {
         { backgroundColor: theme.backgroundPrimary, borderColor: theme.border },
       ]}
     >
-      <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-        Inviter un membre
-      </Text>
+      <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Inviter un membre</Text>
 
       {/* Champ email */}
       <View style={styles.field}>
@@ -264,21 +255,14 @@ export default function TeamScreen() {
             style={[styles.invitationCard, { borderBottomColor: theme.border }]}
           >
             <View style={styles.invitationInfo}>
-              <Text
-                style={[styles.invitationEmail, { color: theme.textPrimary }]}
-              >
+              <Text style={[styles.invitationEmail, { color: theme.textPrimary }]}>
                 {invitation.email}
               </Text>
-              <Text
-                style={[styles.invitationRole, { color: theme.textSecondary }]}
-              >
+              <Text style={[styles.invitationRole, { color: theme.textSecondary }]}>
                 Role : {invitation.role}
               </Text>
-              <Text
-                style={[styles.invitationDate, { color: theme.textTertiary }]}
-              >
-                Envoye le{" "}
-                {new Date(invitation.createdAt).toLocaleDateString("fr-FR")}
+              <Text style={[styles.invitationDate, { color: theme.textTertiary }]}>
+                Envoye le {new Date(invitation.createdAt).toLocaleDateString("fr-FR")}
               </Text>
             </View>
             {/* Badge de statut colore */}
@@ -288,12 +272,7 @@ export default function TeamScreen() {
                 { backgroundColor: getStatusColor(invitation.status) + "20" },
               ]}
             >
-              <Text
-                style={[
-                  styles.statusText,
-                  { color: getStatusColor(invitation.status) },
-                ]}
-              >
+              <Text style={[styles.statusText, { color: getStatusColor(invitation.status) }]}>
                 {getStatusLabel(invitation.status)}
               </Text>
             </View>
@@ -304,9 +283,7 @@ export default function TeamScreen() {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete */}
       <View
         style={[
@@ -317,13 +294,8 @@ export default function TeamScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: theme.primary }]}>
-            ← Retour
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: theme.primary }]}>← Retour</Text>
         </TouchableOpacity>
         <Text style={[styles.title, { color: theme.textPrimary }]}>Equipe</Text>
         <Text style={[styles.count, { color: theme.textSecondary }]}>

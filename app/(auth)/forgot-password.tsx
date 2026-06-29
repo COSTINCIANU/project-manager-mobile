@@ -10,13 +10,8 @@ export default function ForgotPasswordScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.inner}>
         <Text style={styles.title}>Mot de passe oublié</Text>
-        <Text style={styles.subtitle}>
-          Fonctionnalité disponible prochainement.
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
+        <Text style={styles.subtitle}>Fonctionnalité disponible prochainement.</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backText}>← Retour à la connexion</Text>
         </TouchableOpacity>
       </View>

@@ -4,9 +4,7 @@ import { Task, CreateTaskPayload, UpdateTaskPayload } from "@/types/task";
 
 export const tasksApi = {
   async getAll(projectId?: number): Promise<Task[]> {
-    const url = projectId
-      ? `${API_ENDPOINTS.TASKS}?projectId=${projectId}`
-      : API_ENDPOINTS.TASKS;
+    const url = projectId ? `${API_ENDPOINTS.TASKS}?projectId=${projectId}` : API_ENDPOINTS.TASKS;
     const { data } = await apiClient.get(url);
     return data;
   },

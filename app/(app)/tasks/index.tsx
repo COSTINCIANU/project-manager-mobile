@@ -91,15 +91,8 @@ function TaskCard({ task }: { task: Task; isTablet: boolean }) {
         </Text>
       </View>
       <View style={styles.taskFooter}>
-        <View
-          style={[
-            styles.priorityBadge,
-            { backgroundColor: priorityColor + "20" },
-          ]}
-        >
-          <Text style={[styles.priorityText, { color: priorityColor }]}>
-            {task.priority}
-          </Text>
+        <View style={[styles.priorityBadge, { backgroundColor: priorityColor + "20" }]}>
+          <Text style={[styles.priorityText, { color: priorityColor }]}>{task.priority}</Text>
         </View>
         {task.dueDate && (
           <Text style={[styles.dueDate, { color: theme.textSecondary }]}>
@@ -107,11 +100,7 @@ function TaskCard({ task }: { task: Task; isTablet: boolean }) {
           </Text>
         )}
         <Text style={[styles.statusText, { color: theme.textSecondary }]}>
-          {task.done
-            ? "✅ Termine"
-            : task.inProgress
-              ? "🔄 En cours"
-              : "⏳ A faire"}
+          {task.done ? "✅ Termine" : task.inProgress ? "🔄 En cours" : "⏳ A faire"}
         </Text>
       </View>
     </TouchableOpacity>
@@ -137,17 +126,11 @@ export default function TasksScreen() {
     }) ?? [];
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Mes taches
-        </Text>
-        <Text style={[styles.count, { color: theme.textSecondary }]}>
-          {filteredTasks.length}
-        </Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Mes taches</Text>
+        <Text style={[styles.count, { color: theme.textSecondary }]}>{filteredTasks.length}</Text>
       </View>
 
       {/* Barre de filtres */}
@@ -190,25 +173,17 @@ export default function TasksScreen() {
         <FlatList
           data={filteredTasks}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TaskCard task={item} isTablet={isTablet} />
-          )}
+          renderItem={({ item }) => <TaskCard task={item} isTablet={isTablet} />}
           numColumns={isTablet ? 2 : 1}
           key={isTablet ? "tablet" : "mobile"}
           columnWrapperStyle={isTablet ? { gap: 10 } : undefined}
           contentContainerStyle={[styles.list, isTablet && { padding: 24 }]}
           refreshControl={
-            <RefreshControl
-              refreshing={isFetching}
-              onRefresh={refetch}
-              tintColor={theme.primary}
-            />
+            <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={theme.primary} />
           }
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
-                Aucune tache
-              </Text>
+              <Text style={[styles.emptyText, { color: theme.textTertiary }]}>Aucune tache</Text>
             </View>
           }
         />

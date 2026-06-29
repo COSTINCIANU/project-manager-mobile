@@ -97,9 +97,7 @@ export default function TaskDetailScreen() {
       setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
       // Utilise les sous-taches deja chargees via useTask
       setSubtasks(task?.subTasks ?? []);
-      setAttachments(
-        Array.isArray(attachmentsRes.data) ? attachmentsRes.data : [],
-      );
+      setAttachments(Array.isArray(attachmentsRes.data) ? attachmentsRes.data : []);
     } catch (error) {
       console.log("Erreur chargement:", error);
     } finally {
@@ -112,10 +110,9 @@ export default function TaskDetailScreen() {
     if (!newComment.trim()) return;
     setSendingComment(true);
     try {
-      const { data } = await apiClient.post(
-        API_ENDPOINTS.COMMENTS(Number(id)),
-        { content: newComment.trim() },
-      );
+      const { data } = await apiClient.post(API_ENDPOINTS.COMMENTS(Number(id)), {
+        content: newComment.trim(),
+      });
       setComments((prev) => [...prev, data]);
       setNewComment("");
     } catch (error) {
@@ -132,9 +129,7 @@ export default function TaskDetailScreen() {
         completed: !subtask.completed,
       });
       setSubtasks((prev) =>
-        prev.map((s) =>
-          s.id === subtask.id ? { ...s, completed: !s.completed } : s,
-        ),
+        prev.map((s) => (s.id === subtask.id ? { ...s, completed: !s.completed } : s))
       );
     } catch (error) {
       console.log("Erreur toggle subtask:", error);
@@ -146,10 +141,9 @@ export default function TaskDetailScreen() {
     if (!newSubtask.trim()) return;
     setAddingSubtask(true);
     try {
-      const { data } = await apiClient.post(
-        API_ENDPOINTS.SUBTASKS(Number(id)),
-        { name: newSubtask.trim() },
-      );
+      const { data } = await apiClient.post(API_ENDPOINTS.SUBTASKS(Number(id)), {
+        name: newSubtask.trim(),
+      });
       setSubtasks((prev) => [
         ...prev,
         { id: data.id, title: data.name, completed: data.done ?? false },
@@ -197,11 +191,9 @@ export default function TaskDetailScreen() {
         type: file.mimeType ?? "application/octet-stream",
         name: file.name,
       } as any);
-      const { data } = await apiClient.post(
-        API_ENDPOINTS.ATTACHMENTS(Number(id)),
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } },
-      );
+      const { data } = await apiClient.post(API_ENDPOINTS.ATTACHMENTS(Number(id)), formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setAttachments((prev) => [...prev, data]);
       Alert.alert("Succes", "Fichier uploade avec succes !");
     } catch (error) {
@@ -242,12 +234,7 @@ export default function TaskDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
@@ -289,11 +276,7 @@ export default function TaskDetailScreen() {
               },
             ]}
           >
-            {task.done
-              ? "✅ Termine"
-              : task.inProgress
-                ? "🔄 En cours"
-                : "⏳ A faire"}
+            {task.done ? "✅ Termine" : task.inProgress ? "🔄 En cours" : "⏳ A faire"}
           </Text>
         </View>
         <View
@@ -305,9 +288,7 @@ export default function TaskDetailScreen() {
             },
           ]}
         >
-          <Text style={[styles.priorityText, { color: theme.textSecondary }]}>
-            {task.priority}
-          </Text>
+          <Text style={[styles.priorityText, { color: theme.textSecondary }]}>{task.priority}</Text>
         </View>
       </View>
 
@@ -322,9 +303,7 @@ export default function TaskDetailScreen() {
             },
           ]}
         >
-          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
-            Description
-          </Text>
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Description</Text>
           <Text style={[styles.description, { color: theme.textSecondary }]}>
             {task.description}
           </Text>
@@ -342,9 +321,7 @@ export default function TaskDetailScreen() {
             },
           ]}
         >
-          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
-            Date d'echeance
-          </Text>
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Date d'echeance</Text>
           <Text style={[styles.dueDate, { color: theme.textPrimary }]}>
             📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
           </Text>
@@ -363,8 +340,7 @@ export default function TaskDetailScreen() {
       >
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
-            Sous-taches ({subtasks.filter((s) => s.completed).length}/
-            {subtasks.length})
+            Sous-taches ({subtasks.filter((s) => s.completed).length}/{subtasks.length})
           </Text>
         </View>
         {subtasks.map((subtask) => (
@@ -421,8 +397,7 @@ export default function TaskDetailScreen() {
             style={[
               styles.subtaskAddButton,
               { backgroundColor: theme.primary },
-              (!newSubtask.trim() || addingSubtask) &&
-                styles.sendButtonDisabled,
+              (!newSubtask.trim() || addingSubtask) && styles.sendButtonDisabled,
             ]}
           >
             {addingSubtask ? (
@@ -451,17 +426,12 @@ export default function TaskDetailScreen() {
           <TouchableOpacity
             onPress={handleUploadFile}
             disabled={uploadingFile}
-            style={[
-              styles.uploadButton,
-              { backgroundColor: theme.primary + "15" },
-            ]}
+            style={[styles.uploadButton, { backgroundColor: theme.primary + "15" }]}
           >
             {uploadingFile ? (
               <ActivityIndicator size="small" color={theme.primary} />
             ) : (
-              <Text style={[styles.uploadButtonText, { color: theme.primary }]}>
-                + Ajouter
-              </Text>
+              <Text style={[styles.uploadButtonText, { color: theme.primary }]}>+ Ajouter</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -472,9 +442,7 @@ export default function TaskDetailScreen() {
         ) : (
           attachments.map((attachment) => (
             <View key={attachment.id} style={styles.attachmentRow}>
-              <Text style={styles.attachmentIcon}>
-                {getFileIcon(attachment.mimeType)}
-              </Text>
+              <Text style={styles.attachmentIcon}>{getFileIcon(attachment.mimeType)}</Text>
               <View style={styles.attachmentInfo}>
                 <Text
                   style={[styles.attachmentName, { color: theme.textPrimary }]}
@@ -482,9 +450,7 @@ export default function TaskDetailScreen() {
                 >
                   {attachment.filename}
                 </Text>
-                <Text
-                  style={[styles.attachmentSize, { color: theme.textTertiary }]}
-                >
+                <Text style={[styles.attachmentSize, { color: theme.textTertiary }]}>
                   {new Date(attachment.uploadedAt).toLocaleDateString("fr-FR")}
                 </Text>
               </View>
@@ -518,31 +484,22 @@ export default function TaskDetailScreen() {
       {loadingData ? (
         <ActivityIndicator color={theme.primary} />
       ) : comments.length === 0 ? (
-        <Text style={[styles.emptyText, { color: theme.textTertiary }]}>
-          Aucun commentaire
-        </Text>
+        <Text style={[styles.emptyText, { color: theme.textTertiary }]}>Aucun commentaire</Text>
       ) : (
         comments.map((comment) => (
           <View
             key={comment.id}
-            style={[
-              styles.commentCard,
-              { backgroundColor: theme.backgroundSecondary },
-            ]}
+            style={[styles.commentCard, { backgroundColor: theme.backgroundSecondary }]}
           >
             <View style={styles.commentHeader}>
-              <Text
-                style={[styles.commentAuthor, { color: theme.textPrimary }]}
-              >
+              <Text style={[styles.commentAuthor, { color: theme.textPrimary }]}>
                 {comment.author?.name ?? comment.author?.email ?? "Utilisateur"}
               </Text>
               <Text style={[styles.commentDate, { color: theme.textTertiary }]}>
                 {new Date(comment.createdAt).toLocaleDateString("fr-FR")}
               </Text>
             </View>
-            <Text
-              style={[styles.commentContent, { color: theme.textSecondary }]}
-            >
+            <Text style={[styles.commentContent, { color: theme.textSecondary }]}>
               {comment.content}
             </Text>
           </View>
@@ -552,9 +509,7 @@ export default function TaskDetailScreen() {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -569,62 +524,40 @@ export default function TaskDetailScreen() {
             },
           ]}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Text style={[styles.backText, { color: theme.primary }]}>
-              ← Retour
-            </Text>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={[styles.backText, { color: theme.primary }]}>← Retour</Text>
           </TouchableOpacity>
-          <Text
-            style={[styles.title, { color: theme.textPrimary }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.title, { color: theme.textPrimary }]} numberOfLines={1}>
             {task.name}
           </Text>
           {/* Bouton modifier la tache */}
           <TouchableOpacity
             onPress={() =>
-              router.push(
-                `/(app)/projects/${task.projectId}/edit-task?taskId=${task.id}` as any,
-              )
+              router.push(`/(app)/projects/${task.projectId}/edit-task?taskId=${task.id}` as any)
             }
-            style={[
-              styles.editButton,
-              { backgroundColor: theme.primary + "15" },
-            ]}
+            style={[styles.editButton, { backgroundColor: theme.primary + "15" }]}
           >
-            <Text style={[styles.editButtonText, { color: theme.primary }]}>
-              ✏️ Modifier
-            </Text>
+            <Text style={[styles.editButtonText, { color: theme.primary }]}>✏️ Modifier</Text>
           </TouchableOpacity>
           {/* Bouton supprimer la tache */}
           <TouchableOpacity
             onPress={() => {
-              Alert.alert(
-                "Supprimer",
-                "Voulez-vous vraiment supprimer cette tache ?",
-                [
-                  { text: "Annuler", style: "cancel" },
-                  {
-                    text: "Supprimer",
-                    style: "destructive",
-                    onPress: async () => {
-                      try {
-                        await apiClient.delete(API_ENDPOINTS.TASK(Number(id)));
-                        queryClient.invalidateQueries({ queryKey: ["tasks"] });
-                        router.replace("/(app)/tasks" as any);
-                      } catch (error) {
-                        Alert.alert(
-                          "Erreur",
-                          "Impossible de supprimer la tache.",
-                        );
-                      }
-                    },
+              Alert.alert("Supprimer", "Voulez-vous vraiment supprimer cette tache ?", [
+                { text: "Annuler", style: "cancel" },
+                {
+                  text: "Supprimer",
+                  style: "destructive",
+                  onPress: async () => {
+                    try {
+                      await apiClient.delete(API_ENDPOINTS.TASK(Number(id)));
+                      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+                      router.replace("/(app)/tasks" as any);
+                    } catch (error) {
+                      Alert.alert("Erreur", "Impossible de supprimer la tache.");
+                    }
                   },
-                ],
-              );
+                },
+              ]);
             }}
             style={styles.deleteButton}
           >
@@ -677,8 +610,7 @@ export default function TaskDetailScreen() {
                   style={[
                     styles.sendButton,
                     { backgroundColor: theme.primary },
-                    (!newComment.trim() || sendingComment) &&
-                      styles.sendButtonDisabled,
+                    (!newComment.trim() || sendingComment) && styles.sendButtonDisabled,
                   ]}
                   onPress={handleSendComment}
                   disabled={!newComment.trim() || sendingComment}
@@ -697,10 +629,7 @@ export default function TaskDetailScreen() {
           // LAYOUT MOBILE — colonne unique avec saisie en bas
           // =====================================================
           <>
-            <ScrollView
-              contentContainerStyle={styles.content}
-              showsVerticalScrollIndicator={false}
-            >
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
               <LeftContent />
               <RightContent />
             </ScrollView>
@@ -734,8 +663,7 @@ export default function TaskDetailScreen() {
                 style={[
                   styles.sendButton,
                   { backgroundColor: theme.primary },
-                  (!newComment.trim() || sendingComment) &&
-                    styles.sendButtonDisabled,
+                  (!newComment.trim() || sendingComment) && styles.sendButtonDisabled,
                 ]}
                 onPress={handleSendComment}
                 disabled={!newComment.trim() || sendingComment}

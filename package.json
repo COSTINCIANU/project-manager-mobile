@@ -47,8 +47,13 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/react": "~19.1.0",
     "babel-preset-expo": "~54.0.10",
+    "eslint": "^10.6.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.9.3",
     "typescript": "~5.9.2"
   },
   "private": true

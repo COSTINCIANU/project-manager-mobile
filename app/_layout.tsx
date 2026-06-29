@@ -63,16 +63,16 @@ export default function RootLayout() {
     notificationService.registerForPushNotifications();
 
     // Écoute les notifications reçues quand l'app est ouverte
-    notificationListener.current =
-      notificationService.addNotificationReceivedListener((notification) => {
+    notificationListener.current = notificationService.addNotificationReceivedListener(
+      (notification) => {
         console.log("Notification reçue:", notification);
-      });
+      }
+    );
 
     // Écoute les clics sur les notifications
-    responseListener.current =
-      notificationService.addNotificationResponseListener((response) => {
-        console.log("Notification cliquée:", response);
-      });
+    responseListener.current = notificationService.addNotificationResponseListener((response) => {
+      console.log("Notification cliquée:", response);
+    });
 
     // Nettoyage des listeners à la déconnexion
     return () => {
@@ -86,9 +86,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           {/* StatusBar adapte automatiquement selon le theme actif */}
-          <StatusBar
-            style={theme.backgroundPrimary === "#0F172A" ? "light" : "dark"}
-          />
+          <StatusBar style={theme.backgroundPrimary === "#0F172A" ? "light" : "dark"} />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(app)" />

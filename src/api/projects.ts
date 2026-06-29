@@ -1,10 +1,6 @@
 import { apiClient } from "./client";
 import { API_ENDPOINTS } from "@/constants/api";
-import {
-  Project,
-  CreateProjectPayload,
-  UpdateProjectPayload,
-} from "@/types/project";
+import { Project, CreateProjectPayload, UpdateProjectPayload } from "@/types/project";
 
 export const projectsApi = {
   async getAll(): Promise<Project[]> {

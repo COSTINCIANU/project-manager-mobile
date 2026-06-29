@@ -15,23 +15,14 @@ export default function RegisterScreen() {
   const { theme } = useTheme();
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}>
       <View style={styles.inner}>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Créer un compte
-        </Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Créer un compte</Text>
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
           Fonctionnalité disponible prochainement.
         </Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: theme.primary }]}>
-            ← Retour à la connexion
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: theme.primary }]}>← Retour à la connexion</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

@@ -1,13 +1,6 @@
 import { User } from "./user";
 
-export type TaskPriority =
-  | "low"
-  | "medium"
-  | "high"
-  | "critical"
-  | "haute"
-  | "moyenne"
-  | "faible";
+export type TaskPriority = "low" | "medium" | "high" | "critical" | "haute" | "moyenne" | "faible";
 
 export interface Task {
   id: number;

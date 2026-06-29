@@ -34,8 +34,7 @@ export const notificationService = {
     }
 
     // Vérifie les permissions actuelles
-    const { status: existingStatus } =
-      await Notifications.getPermissionsAsync();
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     // Demande la permission si pas encore accordée
@@ -70,9 +69,7 @@ export const notificationService = {
    * Écoute les notifications reçues quand l'app est ouverte.
    * Retourne le listener pour pouvoir l'arrêter plus tard.
    */
-  addNotificationReceivedListener(
-    handler: (notification: Notifications.Notification) => void,
-  ) {
+  addNotificationReceivedListener(handler: (notification: Notifications.Notification) => void) {
     return Notifications.addNotificationReceivedListener(handler);
   },
 
@@ -80,9 +77,7 @@ export const notificationService = {
    * Écoute les clics sur les notifications.
    * Retourne le listener pour pouvoir l'arrêter plus tard.
    */
-  addNotificationResponseListener(
-    handler: (response: Notifications.NotificationResponse) => void,
-  ) {
+  addNotificationResponseListener(handler: (response: Notifications.NotificationResponse) => void) {
     return Notifications.addNotificationResponseReceivedListener(handler);
   },
 };

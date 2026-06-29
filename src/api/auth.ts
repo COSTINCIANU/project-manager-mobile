@@ -5,7 +5,7 @@ import { User } from "@/types/user";
 
 export const authApi = {
   async login(
-    payload: LoginPayload,
+    payload: LoginPayload
   ): Promise<AuthTokens & { requiresTwoFactor?: boolean; tempToken?: string }> {
     const { data } = await apiClient.post(API_ENDPOINTS.LOGIN, {
       email: payload.username,

@@ -11,8 +11,7 @@ export interface User {
 
 export function getUserFullName(user: User): string {
   if (user.name) return user.name;
-  if (user.firstName && user.lastName)
-    return `${user.firstName} ${user.lastName}`;
+  if (user.firstName && user.lastName) return `${user.firstName} ${user.lastName}`;
   return user.email;
 }
 

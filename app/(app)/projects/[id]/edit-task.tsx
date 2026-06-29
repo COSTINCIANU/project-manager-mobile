@@ -84,10 +84,7 @@ export default function EditTaskScreen() {
       return;
     }
     if (dueDate && !isValidDate(dueDate)) {
-      Alert.alert(
-        "Date invalide",
-        "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)",
-      );
+      Alert.alert("Date invalide", "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)");
       return;
     }
 
@@ -100,9 +97,7 @@ export default function EditTaskScreen() {
           description: description.trim() || undefined,
           priority,
           // Convertit la date du format francais JJ/MM/AAAA vers AAAA-MM-JJ pour l'API
-          dueDate: dueDate.trim()
-            ? formatDateForApi(dueDate.trim())
-            : undefined,
+          dueDate: dueDate.trim() ? formatDateForApi(dueDate.trim()) : undefined,
           done,
           inProgress,
         } as any,
@@ -127,12 +122,7 @@ export default function EditTaskScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
@@ -141,9 +131,7 @@ export default function EditTaskScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete */}
       <View
         style={[
@@ -154,17 +142,10 @@ export default function EditTaskScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: Colors.danger }]}>
-            ✕ Annuler
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: Colors.danger }]}>✕ Annuler</Text>
         </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Modifier la tache
-        </Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Modifier la tache</Text>
         <TouchableOpacity
           onPress={handleUpdate}
           disabled={isSubmitting || !name.trim()}
@@ -184,18 +165,13 @@ export default function EditTaskScreen() {
 
       {/* Formulaire — centre sur tablette */}
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          isTablet && styles.contentTablet,
-        ]}
+        contentContainerStyle={[styles.content, isTablet && styles.contentTablet]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         {/* Statut de la tache */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Statut
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Statut</Text>
           <View style={styles.statusRow}>
             {/* Bouton A faire */}
             <TouchableOpacity
@@ -253,8 +229,7 @@ export default function EditTaskScreen() {
                 style={[
                   styles.statusText,
                   { color: theme.textSecondary },
-                  inProgress &&
-                    !done && { color: theme.textPrimary, fontWeight: "600" },
+                  inProgress && !done && { color: theme.textPrimary, fontWeight: "600" },
                 ]}
               >
                 🔄 En cours
@@ -315,9 +290,7 @@ export default function EditTaskScreen() {
 
         {/* Description */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Description
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Description</Text>
           <TextInput
             style={[
               styles.input,
@@ -340,9 +313,7 @@ export default function EditTaskScreen() {
 
         {/* Priorite */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Priorite
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Priorite</Text>
           <View style={styles.prioritiesRow}>
             {PRIORITIES.map((p) => (
               <TouchableOpacity
@@ -376,9 +347,7 @@ export default function EditTaskScreen() {
 
         {/* Date d'echeance */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Date d'echeance
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Date d'echeance</Text>
           <TextInput
             style={[
               styles.input,
@@ -395,9 +364,7 @@ export default function EditTaskScreen() {
             keyboardType="numbers-and-punctuation"
             maxLength={10}
           />
-          <Text style={[styles.hint, { color: theme.textTertiary }]}>
-            Format : JJ/MM/AAAA
-          </Text>
+          <Text style={[styles.hint, { color: theme.textTertiary }]}>Format : JJ/MM/AAAA</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

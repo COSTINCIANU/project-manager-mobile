@@ -1,8 +1,4 @@
-import axios, {
-  AxiosInstance,
-  InternalAxiosRequestConfig,
-  AxiosError,
-} from "axios";
+import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from "axios";
 import { API_BASE_URL, API_ENDPOINTS } from "@/constants/api";
 import { tokenService } from "@/services/tokenService";
 
@@ -37,7 +33,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 apiClient.interceptors.response.use(
@@ -67,13 +63,10 @@ apiClient.interceptors.response.use(
         const refreshToken = await tokenService.getRefreshToken();
         if (!refreshToken) throw new Error("Pas de refresh token");
 
-        const { data } = await axios.post(
-          `${API_BASE_URL}${API_ENDPOINTS.REFRESH}`,
-          {
-            // refresh_token: refreshToken,
-            refreshToken: refreshToken, // ✅ correspond à ton API Symfony
-          },
-        );
+        const { data } = await axios.post(`${API_BASE_URL}${API_ENDPOINTS.REFRESH}`, {
+          // refresh_token: refreshToken,
+          refreshToken: refreshToken, // ✅ correspond à ton API Symfony
+        });
 
         // await tokenService.saveTokens(data.token, data.refresh_token);
         await tokenService.saveTokens(data.token, data.refreshToken); // ✅ correspond à ton API Symfony
@@ -90,5 +83,5 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );

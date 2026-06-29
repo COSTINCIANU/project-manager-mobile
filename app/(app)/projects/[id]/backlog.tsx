@@ -88,9 +88,7 @@ export default function BacklogScreen() {
   const queryClient = useQueryClient();
 
   // Onglet actif : backlog ou sprints
-  const [ongletActif, setOngletActif] = useState<"backlog" | "sprints">(
-    "backlog",
-  );
+  const [ongletActif, setOngletActif] = useState<"backlog" | "sprints">("backlog");
   // Formulaire de création de sprint
   const [afficherFormulaire, setAfficherFormulaire] = useState(false);
   const [nomSprint, setNomSprint] = useState("");
@@ -98,9 +96,7 @@ export default function BacklogScreen() {
   const [dateDebut, setDateDebut] = useState("");
   const [dateFin, setDateFin] = useState("");
   // Tâche pour laquelle on affiche le sélecteur de sprint inline
-  const [tacheSelectionnee, setTacheSelectionnee] = useState<SprintTask | null>(
-    null,
-  );
+  const [tacheSelectionnee, setTacheSelectionnee] = useState<SprintTask | null>(null);
 
   // Récupère le backlog
   const {
@@ -110,9 +106,7 @@ export default function BacklogScreen() {
   } = useQuery<SprintTask[]>({
     queryKey: ["backlog", projectId],
     queryFn: async () => {
-      const { data } = await apiClient.get(
-        API_ENDPOINTS.SPRINT_BACKLOG(projectId),
-      );
+      const { data } = await apiClient.get(API_ENDPOINTS.SPRINT_BACKLOG(projectId));
       return data;
     },
   });
@@ -125,9 +119,7 @@ export default function BacklogScreen() {
   } = useQuery<Sprint[]>({
     queryKey: ["sprints", projectId],
     queryFn: async () => {
-      const { data } = await apiClient.get(
-        API_ENDPOINTS.SPRINTS_BY_PROJECT(projectId),
-      );
+      const { data } = await apiClient.get(API_ENDPOINTS.SPRINTS_BY_PROJECT(projectId));
       return data;
     },
   });
@@ -158,13 +150,7 @@ export default function BacklogScreen() {
 
   // Assigner une tâche du backlog à un sprint
   const assignerTache = useMutation({
-    mutationFn: async ({
-      sprintId,
-      taskId,
-    }: {
-      sprintId: number;
-      taskId: number;
-    }) => {
+    mutationFn: async ({ sprintId, taskId }: { sprintId: number; taskId: number }) => {
       await apiClient.post(API_ENDPOINTS.SPRINT_ASSIGN_TASK(sprintId), {
         taskId,
       });
@@ -179,13 +165,7 @@ export default function BacklogScreen() {
 
   // Retirer une tâche d'un sprint vers le backlog
   const retirerTache = useMutation({
-    mutationFn: async ({
-      sprintId,
-      taskId,
-    }: {
-      sprintId: number;
-      taskId: number;
-    }) => {
+    mutationFn: async ({ sprintId, taskId }: { sprintId: number; taskId: number }) => {
       await apiClient.post(API_ENDPOINTS.SPRINT_REMOVE_TASK(sprintId), {
         taskId,
       });
@@ -199,13 +179,7 @@ export default function BacklogScreen() {
 
   // Changer le statut d'un sprint
   const changerStatutSprint = useMutation({
-    mutationFn: async ({
-      sprintId,
-      status,
-    }: {
-      sprintId: number;
-      status: string;
-    }) => {
+    mutationFn: async ({ sprintId, status }: { sprintId: number; status: string }) => {
       await apiClient.put(API_ENDPOINTS.SPRINT_UPDATE(sprintId), { status });
     },
     onSuccess: () => {
@@ -215,14 +189,8 @@ export default function BacklogScreen() {
 
   // Affiche le sélecteur inline — fonctionne sur iOS, Android et Web
   const choisirSprint = (tache: SprintTask) => {
-    if (
-      !sprints ||
-      sprints.filter((s) => s.status !== "termine").length === 0
-    ) {
-      Alert.alert(
-        "Aucun sprint",
-        "Créez d'abord un sprint dans l'onglet Sprints.",
-      );
+    if (!sprints || sprints.filter((s) => s.status !== "termine").length === 0) {
+      Alert.alert("Aucun sprint", "Créez d'abord un sprint dans l'onglet Sprints.");
       return;
     }
     // Toggle le sélecteur inline
@@ -231,27 +199,20 @@ export default function BacklogScreen() {
 
   // Demande confirmation pour retirer une tâche du sprint
   const confirmerRetrait = (sprint: Sprint, tache: SprintTask) => {
-    Alert.alert(
-      "Retirer du sprint",
-      `Remettre "${tache.name}" dans le backlog ?`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Retirer",
-          style: "destructive",
-          onPress: () =>
-            retirerTache.mutate({ sprintId: sprint.id, taskId: tache.id }),
-        },
-      ],
-    );
+    Alert.alert("Retirer du sprint", `Remettre "${tache.name}" dans le backlog ?`, [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Retirer",
+        style: "destructive",
+        onPress: () => retirerTache.mutate({ sprintId: sprint.id, taskId: tache.id }),
+      },
+    ]);
   };
 
   const isLoading = chargementBacklog || chargementSprints;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}>
       {/* En-tête */}
       <View
         style={[
@@ -262,17 +223,10 @@ export default function BacklogScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          style={styles.boutonRetour}
-          onPress={() => router.back()}
-        >
-          <Text style={[styles.texteBoutonRetour, { color: theme.primary }]}>
-            ← Retour
-          </Text>
+        <TouchableOpacity style={styles.boutonRetour} onPress={() => router.back()}>
+          <Text style={[styles.texteBoutonRetour, { color: theme.primary }]}>← Retour</Text>
         </TouchableOpacity>
-        <Text style={[styles.titre, { color: theme.textPrimary }]}>
-          Backlog
-        </Text>
+        <Text style={[styles.titre, { color: theme.textPrimary }]}>Backlog</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -300,10 +254,7 @@ export default function BacklogScreen() {
             style={[
               styles.texteOnglet,
               {
-                color:
-                  ongletActif === "backlog"
-                    ? theme.primary
-                    : theme.textSecondary,
+                color: ongletActif === "backlog" ? theme.primary : theme.textSecondary,
               },
             ]}
           >
@@ -324,10 +275,7 @@ export default function BacklogScreen() {
             style={[
               styles.texteOnglet,
               {
-                color:
-                  ongletActif === "sprints"
-                    ? theme.primary
-                    : theme.textSecondary,
+                color: ongletActif === "sprints" ? theme.primary : theme.textSecondary,
               },
             ]}
           >
@@ -342,10 +290,7 @@ export default function BacklogScreen() {
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={[
-            styles.contenu,
-            isTablet && styles.contenuTablette,
-          ]}
+          contentContainerStyle={[styles.contenu, isTablet && styles.contenuTablette]}
           refreshControl={
             <RefreshControl
               refreshing={false}
@@ -366,11 +311,8 @@ export default function BacklogScreen() {
 
               {backlog && backlog.length === 0 ? (
                 <View style={styles.vide}>
-                  <Text
-                    style={[styles.texteVide, { color: theme.textSecondary }]}
-                  >
-                    Le backlog est vide 🎉{"\n"}Toutes les tâches sont dans un
-                    sprint !
+                  <Text style={[styles.texteVide, { color: theme.textSecondary }]}>
+                    Le backlog est vide 🎉{"\n"}Toutes les tâches sont dans un sprint !
                   </Text>
                 </View>
               ) : (
@@ -391,10 +333,7 @@ export default function BacklogScreen() {
                           {TICKET_ICONS[tache.ticketType] ?? "✅"}
                         </Text>
                         <Text
-                          style={[
-                            styles.nomTache,
-                            { color: theme.textPrimary },
-                          ]}
+                          style={[styles.nomTache, { color: theme.textPrimary }]}
                           numberOfLines={2}
                         >
                           {tache.name}
@@ -405,9 +344,7 @@ export default function BacklogScreen() {
                           style={[
                             styles.badgePriorite,
                             {
-                              backgroundColor:
-                                (PRIORITY_COLORS[tache.priority] ?? "#888") +
-                                "20",
+                              backgroundColor: (PRIORITY_COLORS[tache.priority] ?? "#888") + "20",
                             },
                           ]}
                         >
@@ -415,8 +352,7 @@ export default function BacklogScreen() {
                             style={[
                               styles.texteBadgePriorite,
                               {
-                                color:
-                                  PRIORITY_COLORS[tache.priority] ?? "#888",
+                                color: PRIORITY_COLORS[tache.priority] ?? "#888",
                               },
                             ]}
                           >
@@ -431,8 +367,7 @@ export default function BacklogScreen() {
                                 tacheSelectionnee?.id === tache.id
                                   ? theme.backgroundSecondary
                                   : theme.primary,
-                              borderWidth:
-                                tacheSelectionnee?.id === tache.id ? 1 : 0,
+                              borderWidth: tacheSelectionnee?.id === tache.id ? 1 : 0,
                               borderColor: theme.primary,
                             },
                           ]}
@@ -442,16 +377,11 @@ export default function BacklogScreen() {
                             style={[
                               styles.texteBoutonAssigner,
                               {
-                                color:
-                                  tacheSelectionnee?.id === tache.id
-                                    ? theme.primary
-                                    : "#fff",
+                                color: tacheSelectionnee?.id === tache.id ? theme.primary : "#fff",
                               },
                             ]}
                           >
-                            {tacheSelectionnee?.id === tache.id
-                              ? "✕ Fermer"
-                              : "→ Sprint"}
+                            {tacheSelectionnee?.id === tache.id ? "✕ Fermer" : "→ Sprint"}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -467,12 +397,7 @@ export default function BacklogScreen() {
                             },
                           ]}
                         >
-                          <Text
-                            style={[
-                              styles.titreSelecteur,
-                              { color: theme.textSecondary },
-                            ]}
-                          >
+                          <Text style={[styles.titreSelecteur, { color: theme.textSecondary }]}>
                             Choisir un sprint :
                           </Text>
                           {sprints
@@ -480,10 +405,7 @@ export default function BacklogScreen() {
                             .map((sprint) => (
                               <TouchableOpacity
                                 key={sprint.id}
-                                style={[
-                                  styles.optionSprint,
-                                  { borderColor: theme.border },
-                                ]}
+                                style={[styles.optionSprint, { borderColor: theme.border }]}
                                 onPress={() =>
                                   assignerTache.mutate({
                                     sprintId: sprint.id,
@@ -492,10 +414,7 @@ export default function BacklogScreen() {
                                 }
                               >
                                 <Text
-                                  style={[
-                                    styles.texteOptionSprint,
-                                    { color: theme.textPrimary },
-                                  ]}
+                                  style={[styles.texteOptionSprint, { color: theme.textPrimary }]}
                                 >
                                   {sprint.status === "actif" ? "🏃 " : "📋 "}
                                   {sprint.name}
@@ -504,8 +423,7 @@ export default function BacklogScreen() {
                                   style={[
                                     styles.statut,
                                     {
-                                      color:
-                                        SPRINT_STATUS_COLORS[sprint.status],
+                                      color: SPRINT_STATUS_COLORS[sprint.status],
                                     },
                                   ]}
                                 >
@@ -526,15 +444,10 @@ export default function BacklogScreen() {
           {ongletActif === "sprints" && (
             <View style={styles.section}>
               <TouchableOpacity
-                style={[
-                  styles.boutonCreerSprint,
-                  { backgroundColor: theme.primary },
-                ]}
+                style={[styles.boutonCreerSprint, { backgroundColor: theme.primary }]}
                 onPress={() => setAfficherFormulaire(!afficherFormulaire)}
               >
-                <Text style={styles.texteBoutonCreerSprint}>
-                  + Nouveau sprint
-                </Text>
+                <Text style={styles.texteBoutonCreerSprint}>+ Nouveau sprint</Text>
               </TouchableOpacity>
 
               {afficherFormulaire && (
@@ -547,12 +460,7 @@ export default function BacklogScreen() {
                     },
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.formulaireTitre,
-                      { color: theme.textPrimary },
-                    ]}
-                  >
+                  <Text style={[styles.formulaireTitre, { color: theme.textPrimary }]}>
                     Nouveau sprint
                   </Text>
                   <TextInput
@@ -619,26 +527,15 @@ export default function BacklogScreen() {
                   </View>
                   <View style={styles.boutonsFormulaire}>
                     <TouchableOpacity
-                      style={[
-                        styles.boutonAnnuler,
-                        { borderColor: theme.border },
-                      ]}
+                      style={[styles.boutonAnnuler, { borderColor: theme.border }]}
                       onPress={() => setAfficherFormulaire(false)}
                     >
-                      <Text
-                        style={[
-                          styles.texteBoutonAnnuler,
-                          { color: theme.textSecondary },
-                        ]}
-                      >
+                      <Text style={[styles.texteBoutonAnnuler, { color: theme.textSecondary }]}>
                         Annuler
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[
-                        styles.boutonCreer,
-                        { backgroundColor: theme.primary },
-                      ]}
+                      style={[styles.boutonCreer, { backgroundColor: theme.primary }]}
                       onPress={() => {
                         if (!nomSprint.trim()) {
                           Alert.alert("Erreur", "Le nom du sprint est requis.");
@@ -660,11 +557,8 @@ export default function BacklogScreen() {
 
               {sprints && sprints.length === 0 ? (
                 <View style={styles.vide}>
-                  <Text
-                    style={[styles.texteVide, { color: theme.textSecondary }]}
-                  >
-                    Aucun sprint créé.{"\n"}Cliquez sur "+ Nouveau sprint" pour
-                    commencer.
+                  <Text style={[styles.texteVide, { color: theme.textSecondary }]}>
+                    Aucun sprint créé.{"\n"}Cliquez sur "+ Nouveau sprint" pour commencer.
                   </Text>
                 </View>
               ) : (
@@ -682,20 +576,14 @@ export default function BacklogScreen() {
                     >
                       <View style={styles.enteteSprint}>
                         <View style={styles.infosSprint}>
-                          <Text
-                            style={[
-                              styles.nomSprint,
-                              { color: theme.textPrimary },
-                            ]}
-                          >
+                          <Text style={[styles.nomSprint, { color: theme.textPrimary }]}>
                             {sprint.name}
                           </Text>
                           <View
                             style={[
                               styles.badgeStatut,
                               {
-                                backgroundColor:
-                                  SPRINT_STATUS_COLORS[sprint.status] + "20",
+                                backgroundColor: SPRINT_STATUS_COLORS[sprint.status] + "20",
                               },
                             ]}
                           >
@@ -712,10 +600,7 @@ export default function BacklogScreen() {
                         <View style={styles.boutonsSprint}>
                           {sprint.status === "planifie" && (
                             <TouchableOpacity
-                              style={[
-                                styles.boutonStatut,
-                                { backgroundColor: "#27AE60" },
-                              ]}
+                              style={[styles.boutonStatut, { backgroundColor: "#27AE60" }]}
                               onPress={() =>
                                 changerStatutSprint.mutate({
                                   sprintId: sprint.id,
@@ -723,17 +608,12 @@ export default function BacklogScreen() {
                                 })
                               }
                             >
-                              <Text style={styles.texteStatutBouton}>
-                                ▶ Démarrer
-                              </Text>
+                              <Text style={styles.texteStatutBouton}>▶ Démarrer</Text>
                             </TouchableOpacity>
                           )}
                           {sprint.status === "actif" && (
                             <TouchableOpacity
-                              style={[
-                                styles.boutonStatut,
-                                { backgroundColor: "#9B7FD4" },
-                              ]}
+                              style={[styles.boutonStatut, { backgroundColor: "#9B7FD4" }]}
                               onPress={() =>
                                 changerStatutSprint.mutate({
                                   sprintId: sprint.id,
@@ -741,42 +621,27 @@ export default function BacklogScreen() {
                                 })
                               }
                             >
-                              <Text style={styles.texteStatutBouton}>
-                                ✓ Terminer
-                              </Text>
+                              <Text style={styles.texteStatutBouton}>✓ Terminer</Text>
                             </TouchableOpacity>
                           )}
                         </View>
                       </View>
 
                       {sprint.goal && (
-                        <Text
-                          style={[
-                            styles.objectifSprint,
-                            { color: theme.textSecondary },
-                          ]}
-                        >
+                        <Text style={[styles.objectifSprint, { color: theme.textSecondary }]}>
                           🎯 {sprint.goal}
                         </Text>
                       )}
 
                       {(sprint.startDate || sprint.endDate) && (
-                        <Text
-                          style={[
-                            styles.datesSprint,
-                            { color: theme.textSecondary },
-                          ]}
-                        >
+                        <Text style={[styles.datesSprint, { color: theme.textSecondary }]}>
                           📅 {sprint.startDate ?? "?"} → {sprint.endDate ?? "?"}
                         </Text>
                       )}
 
                       <View style={styles.progressionSprint}>
                         <View
-                          style={[
-                            styles.barreProg,
-                            { backgroundColor: theme.backgroundPrimary },
-                          ]}
+                          style={[styles.barreProg, { backgroundColor: theme.backgroundPrimary }]}
                         >
                           <View
                             style={[
@@ -788,14 +653,8 @@ export default function BacklogScreen() {
                             ]}
                           />
                         </View>
-                        <Text
-                          style={[
-                            styles.texteProgression,
-                            { color: theme.textSecondary },
-                          ]}
-                        >
-                          {sprint.tasksDone}/{sprint.tasksCount} tâches —{" "}
-                          {sprint.progression}%
+                        <Text style={[styles.texteProgression, { color: theme.textSecondary }]}>
+                          {sprint.tasksDone}/{sprint.tasksCount} tâches — {sprint.progression}%
                         </Text>
                       </View>
 
@@ -804,10 +663,7 @@ export default function BacklogScreen() {
                           {sprint.tasks.map((tache) => (
                             <View
                               key={tache.id}
-                              style={[
-                                styles.ligneTache,
-                                { borderBottomColor: theme.border },
-                              ]}
+                              style={[styles.ligneTache, { borderBottomColor: theme.border }]}
                             >
                               <Text style={styles.iconeTypePetit}>
                                 {TICKET_ICONS[tache.ticketType] ?? "✅"}
@@ -822,26 +678,12 @@ export default function BacklogScreen() {
                               >
                                 {tache.name}
                               </Text>
-                              <Text
-                                style={[
-                                  styles.statutTache,
-                                  { color: theme.textSecondary },
-                                ]}
-                              >
-                                {tache.done
-                                  ? "✅"
-                                  : tache.inProgress
-                                    ? "🔄"
-                                    : "⏳"}
+                              <Text style={[styles.statutTache, { color: theme.textSecondary }]}>
+                                {tache.done ? "✅" : tache.inProgress ? "🔄" : "⏳"}
                               </Text>
-                              <TouchableOpacity
-                                onPress={() => confirmerRetrait(sprint, tache)}
-                              >
+                              <TouchableOpacity onPress={() => confirmerRetrait(sprint, tache)}>
                                 <Text
-                                  style={[
-                                    styles.boutonRetirer,
-                                    { color: theme.textSecondary },
-                                  ]}
+                                  style={[styles.boutonRetirer, { color: theme.textSecondary }]}
                                 >
                                   ✕
                                 </Text>
@@ -852,12 +694,7 @@ export default function BacklogScreen() {
                       )}
 
                       {sprint.tasks.length === 0 && (
-                        <Text
-                          style={[
-                            styles.sprintVide,
-                            { color: theme.textSecondary },
-                          ]}
-                        >
+                        <Text style={[styles.sprintVide, { color: theme.textSecondary }]}>
                           Aucune tâche — assignez des tâches depuis le backlog
                         </Text>
                       )}

@@ -135,19 +135,10 @@ export default function SubscriptionScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
-    >
-      <ScrollView
-        contentContainerStyle={[
-          styles.contenu,
-          isTablet && styles.contenuTablette,
-        ]}
-      >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}>
+      <ScrollView contentContainerStyle={[styles.contenu, isTablet && styles.contenuTablette]}>
         {/* En-tête */}
-        <Text style={[styles.titre, { color: theme.textPrimary }]}>
-          💳 Abonnement
-        </Text>
+        <Text style={[styles.titre, { color: theme.textPrimary }]}>💳 Abonnement</Text>
         <Text style={[styles.sousTitre, { color: theme.textSecondary }]}>
           Choisissez le plan adapté à votre équipe
         </Text>
@@ -168,17 +159,14 @@ export default function SubscriptionScreen() {
             >
               <Text style={[styles.textePlanActuel, { color: theme.primary }]}>
                 ✅ Plan actuel :{" "}
-                {PLANS.find((p) => p.id === planActuel.plan)?.nom ??
-                  planActuel.plan}
+                {PLANS.find((p) => p.id === planActuel.plan)?.nom ?? planActuel.plan}
               </Text>
             </View>
           )
         )}
 
         {/* Liste des plans */}
-        <View
-          style={[styles.listePlans, isTablet && styles.listePlansTablette]}
-        >
+        <View style={[styles.listePlans, isTablet && styles.listePlansTablette]}>
           {PLANS.map((plan) => {
             const estActuel = planActuel?.plan === plan.id;
             return (
@@ -200,27 +188,16 @@ export default function SubscriptionScreen() {
               >
                 {/* Badge recommandé */}
                 {plan.recommande && (
-                  <View
-                    style={[
-                      styles.badgeRecommande,
-                      { backgroundColor: plan.couleur },
-                    ]}
-                  >
+                  <View style={[styles.badgeRecommande, { backgroundColor: plan.couleur }]}>
                     <Text style={styles.texteBadgeRecommande}>Recommandé</Text>
                   </View>
                 )}
 
                 {/* Nom et prix */}
-                <Text style={[styles.nomPlan, { color: plan.couleur }]}>
-                  {plan.nom}
-                </Text>
+                <Text style={[styles.nomPlan, { color: plan.couleur }]}>{plan.nom}</Text>
                 <View style={styles.lignePrix}>
-                  <Text style={[styles.prix, { color: theme.textPrimary }]}>
-                    {plan.prix}
-                  </Text>
-                  <Text
-                    style={[styles.periode, { color: theme.textSecondary }]}
-                  >
+                  <Text style={[styles.prix, { color: theme.textPrimary }]}>{plan.prix}</Text>
+                  <Text style={[styles.periode, { color: theme.textSecondary }]}>
                     {plan.periode}
                   </Text>
                 </View>
@@ -229,20 +206,8 @@ export default function SubscriptionScreen() {
                 <View style={styles.listeFonctionnalites}>
                   {plan.fonctionnalites.map((f, i) => (
                     <View key={i} style={styles.ligneFonctionnalite}>
-                      <Text
-                        style={[
-                          styles.checkFonctionnalite,
-                          { color: plan.couleur },
-                        ]}
-                      >
-                        ✓
-                      </Text>
-                      <Text
-                        style={[
-                          styles.texteFonctionnalite,
-                          { color: theme.textSecondary },
-                        ]}
-                      >
+                      <Text style={[styles.checkFonctionnalite, { color: plan.couleur }]}>✓</Text>
+                      <Text style={[styles.texteFonctionnalite, { color: theme.textSecondary }]}>
                         {f}
                       </Text>
                     </View>
@@ -261,34 +226,19 @@ export default function SubscriptionScreen() {
                       },
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.texteBoutonPlan,
-                        { color: theme.textSecondary },
-                      ]}
-                    >
+                    <Text style={[styles.texteBoutonPlan, { color: theme.textSecondary }]}>
                       Plan gratuit
                     </Text>
                   </View>
                 ) : estActuel ? (
-                  <View
-                    style={[
-                      styles.boutonPlan,
-                      { backgroundColor: plan.couleur + "20" },
-                    ]}
-                  >
-                    <Text
-                      style={[styles.texteBoutonPlan, { color: plan.couleur }]}
-                    >
+                  <View style={[styles.boutonPlan, { backgroundColor: plan.couleur + "20" }]}>
+                    <Text style={[styles.texteBoutonPlan, { color: plan.couleur }]}>
                       Plan actuel ✓
                     </Text>
                   </View>
                 ) : (
                   <TouchableOpacity
-                    style={[
-                      styles.boutonPlan,
-                      { backgroundColor: plan.couleur },
-                    ]}
+                    style={[styles.boutonPlan, { backgroundColor: plan.couleur }]}
                     onPress={() => handleChoisirPlan(plan.id)}
                     disabled={checkout.isPending && planEnCours === plan.id}
                   >
@@ -313,9 +263,7 @@ export default function SubscriptionScreen() {
             onPress={async () => {
               try {
                 // Génère un token temporaire de téléchargement
-                const { data } = await apiClient.post(
-                  API_ENDPOINTS.STRIPE_INVOICE_TOKEN,
-                );
+                const { data } = await apiClient.post(API_ENDPOINTS.STRIPE_INVOICE_TOKEN);
                 if (data.url) {
                   Linking.openURL(data.url);
                 }
@@ -339,9 +287,7 @@ export default function SubscriptionScreen() {
             {portail.isPending ? (
               <ActivityIndicator size="small" color={theme.primary} />
             ) : (
-              <Text
-                style={[styles.texteBoutonPortail, { color: theme.primary }]}
-              >
+              <Text style={[styles.texteBoutonPortail, { color: theme.primary }]}>
                 🧾 Gérer mon abonnement et mes factures
               </Text>
             )}

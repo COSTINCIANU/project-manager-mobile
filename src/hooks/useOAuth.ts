@@ -30,14 +30,13 @@ export function useGoogleOAuth() {
   // Configuration de la requete OAuth Google
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {
-      clientId:
-        "359683885190-9hi34n86k37nqg8j5asakcvu2ip1pes3.apps.googleusercontent.com",
+      clientId: "359683885190-9hi34n86k37nqg8j5asakcvu2ip1pes3.apps.googleusercontent.com",
       scopes: ["openid", "profile", "email"],
       redirectUri: REDIRECT_URI,
     },
     {
       authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-    },
+    }
   );
 
   // Traite la reponse OAuth quand l'utilisateur revient
@@ -79,7 +78,7 @@ export function useGithubOAuth() {
     },
     {
       authorizationEndpoint: "https://github.com/login/oauth/authorize",
-    },
+    }
   );
 
   // Traite la reponse OAuth quand l'utilisateur revient

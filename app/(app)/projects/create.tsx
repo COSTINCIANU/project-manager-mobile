@@ -68,17 +68,11 @@ export default function CreateProjectScreen() {
       return;
     }
     if (startDate && !isValidDate(startDate)) {
-      Alert.alert(
-        "Date invalide",
-        "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)",
-      );
+      Alert.alert("Date invalide", "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)");
       return;
     }
     if (endDate && !isValidDate(endDate)) {
-      Alert.alert(
-        "Date invalide",
-        "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)",
-      );
+      Alert.alert("Date invalide", "Format attendu : JJ/MM/AAAA (ex: 17/08/2027)");
       return;
     }
 
@@ -89,9 +83,7 @@ export default function CreateProjectScreen() {
         description: description.trim() || undefined,
         priority: priority as any,
         // Convertit les dates du format francais JJ/MM/AAAA vers AAAA-MM-JJ pour l'API
-        startDate: startDate.trim()
-          ? formatDateForApi(startDate.trim())
-          : undefined,
+        startDate: startDate.trim() ? formatDateForApi(startDate.trim()) : undefined,
         endDate: endDate.trim() ? formatDateForApi(endDate.trim()) : undefined,
         status: "active",
         color: "#6366F1",
@@ -108,9 +100,7 @@ export default function CreateProjectScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete */}
       <View
         style={[
@@ -121,17 +111,10 @@ export default function CreateProjectScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: Colors.danger }]}>
-            ✕ Annuler
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: Colors.danger }]}>✕ Annuler</Text>
         </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Nouveau projet
-        </Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Nouveau projet</Text>
         <TouchableOpacity
           onPress={handleCreate}
           disabled={isSubmitting || !name.trim()}
@@ -151,10 +134,7 @@ export default function CreateProjectScreen() {
 
       {/* Formulaire — centre sur tablette */}
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          isTablet && styles.contentTablet,
-        ]}
+        contentContainerStyle={[styles.content, isTablet && styles.contentTablet]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -183,9 +163,7 @@ export default function CreateProjectScreen() {
 
         {/* Description */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Description
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Description</Text>
           <TextInput
             style={[
               styles.input,
@@ -208,9 +186,7 @@ export default function CreateProjectScreen() {
 
         {/* Priorite */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Priorite
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Priorite</Text>
           <View style={styles.prioritiesRow}>
             {PRIORITIES.map((p) => (
               <TouchableOpacity
@@ -244,9 +220,7 @@ export default function CreateProjectScreen() {
 
         {/* Date de debut */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Date de debut
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Date de debut</Text>
           <TextInput
             style={[
               styles.input,
@@ -263,16 +237,12 @@ export default function CreateProjectScreen() {
             keyboardType="numbers-and-punctuation"
             maxLength={10}
           />
-          <Text style={[styles.hint, { color: theme.textTertiary }]}>
-            Format : JJ/MM/AAAA
-          </Text>
+          <Text style={[styles.hint, { color: theme.textTertiary }]}>Format : JJ/MM/AAAA</Text>
         </View>
 
         {/* Date de fin */}
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.textPrimary }]}>
-            Date de fin
-          </Text>
+          <Text style={[styles.label, { color: theme.textPrimary }]}>Date de fin</Text>
           <TextInput
             style={[
               styles.input,
@@ -289,9 +259,7 @@ export default function CreateProjectScreen() {
             keyboardType="numbers-and-punctuation"
             maxLength={10}
           />
-          <Text style={[styles.hint, { color: theme.textTertiary }]}>
-            Format : JJ/MM/AAAA
-          </Text>
+          <Text style={[styles.hint, { color: theme.textTertiary }]}>Format : JJ/MM/AAAA</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

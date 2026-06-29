@@ -84,9 +84,7 @@ export const offlineService = {
    * Ajoute une action en attente de synchronisation.
    * Par exemple : creer une tache sans connexion internet.
    */
-  async addPendingAction(
-    action: Omit<PendingAction, "id" | "createdAt">,
-  ): Promise<void> {
+  async addPendingAction(action: Omit<PendingAction, "id" | "createdAt">): Promise<void> {
     try {
       const existing = await this.getPendingActions();
       const newAction: PendingAction = {
@@ -94,10 +92,7 @@ export const offlineService = {
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
       };
-      await AsyncStorage.setItem(
-        KEYS.PENDING_ACTIONS,
-        JSON.stringify([...existing, newAction]),
-      );
+      await AsyncStorage.setItem(KEYS.PENDING_ACTIONS, JSON.stringify([...existing, newAction]));
     } catch (error) {
       console.log("Erreur ajout action pending:", error);
     }

@@ -81,11 +81,7 @@ function TaskItem({ task, isTablet }: { task: Task; isTablet: boolean }) {
           {TICKET_TYPE_ICONS[task.ticketType ?? "task"] ?? "✅"}
         </Text>
         <Text
-          style={[
-            styles.taskName,
-            { color: theme.textPrimary },
-            task.done && styles.taskDone,
-          ]}
+          style={[styles.taskName, { color: theme.textPrimary }, task.done && styles.taskDone]}
           numberOfLines={2}
         >
           {task.name}
@@ -93,15 +89,8 @@ function TaskItem({ task, isTablet }: { task: Task; isTablet: boolean }) {
       </View>
       {/* Pied de carte : priorite + date + statut */}
       <View style={styles.taskFooter}>
-        <View
-          style={[
-            styles.priorityBadge,
-            { backgroundColor: priorityColor + "20" },
-          ]}
-        >
-          <Text style={[styles.priorityText, { color: priorityColor }]}>
-            {task.priority}
-          </Text>
+        <View style={[styles.priorityBadge, { backgroundColor: priorityColor + "20" }]}>
+          <Text style={[styles.priorityText, { color: priorityColor }]}>{task.priority}</Text>
         </View>
         {task.dueDate && (
           <Text style={[styles.dueDate, { color: theme.textSecondary }]}>
@@ -109,11 +98,7 @@ function TaskItem({ task, isTablet }: { task: Task; isTablet: boolean }) {
           </Text>
         )}
         <Text style={[styles.statusText, { color: theme.textSecondary }]}>
-          {task.done
-            ? "✅ Termine"
-            : task.inProgress
-              ? "🔄 En cours"
-              : "⏳ A faire"}
+          {task.done ? "✅ Termine" : task.inProgress ? "🔄 En cours" : "⏳ A faire"}
         </Text>
       </View>
     </TouchableOpacity>
@@ -132,9 +117,7 @@ export default function ProjectTasksScreen() {
   const { data: tasks, isLoading, refetch, isFetching } = useTasks(Number(id));
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete avec bouton retour et bouton creer */}
       <View
         style={[
@@ -145,19 +128,12 @@ export default function ProjectTasksScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={[styles.backText, { color: theme.primary }]}>
-            ← Retour
-          </Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: theme.primary }]}>← Retour</Text>
         </TouchableOpacity>
         <Text style={[styles.title, { color: theme.textPrimary }]}>Taches</Text>
         <TouchableOpacity
-          onPress={() =>
-            router.push(`/(app)/projects/${id}/create-task` as any)
-          }
+          onPress={() => router.push(`/(app)/projects/${id}/create-task` as any)}
           style={[styles.addButton, { backgroundColor: theme.primary }]}
         >
           <Text style={styles.addButtonText}>+ Nouveau</Text>
@@ -173,21 +149,13 @@ export default function ProjectTasksScreen() {
         <FlatList
           data={tasks}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TaskItem task={item} isTablet={isTablet} />
-          )}
+          renderItem={({ item }) => <TaskItem task={item} isTablet={isTablet} />}
           numColumns={isTablet ? 2 : 1}
           key={isTablet ? "tablet" : "mobile"}
-          columnWrapperStyle={
-            isTablet ? { gap: 10, paddingHorizontal: 16 } : undefined
-          }
+          columnWrapperStyle={isTablet ? { gap: 10, paddingHorizontal: 16 } : undefined}
           contentContainerStyle={[styles.list, isTablet && { padding: 24 }]}
           refreshControl={
-            <RefreshControl
-              refreshing={isFetching}
-              onRefresh={refetch}
-              tintColor={theme.primary}
-            />
+            <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={theme.primary} />
           }
           ListEmptyComponent={
             <View style={styles.empty}>

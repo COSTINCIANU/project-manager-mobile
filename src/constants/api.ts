@@ -87,23 +87,18 @@ export const API_ENDPOINTS = {
   // Templates
   TEMPLATES: "/api/templates",
   TEMPLATE: (id: number) => `/api/templates/${id}`,
-  TEMPLATE_CREATE_PROJECT: (id: number) =>
-    `/api/templates/${id}/create-project`,
+  TEMPLATE_CREATE_PROJECT: (id: number) => `/api/templates/${id}/create-project`,
 
   // Champs personnalisés
-  CUSTOM_FIELDS_BY_PROJECT: (projectId: number) =>
-    `/api/custom-fields/project/${projectId}`,
-  CUSTOM_FIELDS_BY_TASK: (taskId: number) =>
-    `/api/custom-fields/task/${taskId}`,
+  CUSTOM_FIELDS_BY_PROJECT: (projectId: number) => `/api/custom-fields/project/${projectId}`,
+  CUSTOM_FIELDS_BY_TASK: (taskId: number) => `/api/custom-fields/task/${taskId}`,
   CUSTOM_FIELD_CREATE: "/api/custom-fields",
   CUSTOM_FIELD_UPDATE: (id: number) => `/api/custom-fields/${id}`,
   CUSTOM_FIELD_DELETE: (id: number) => `/api/custom-fields/${id}`,
 
   // Sprints et Backlog
-  SPRINTS_BY_PROJECT: (projectId: number) =>
-    `/api/sprints/project/${projectId}`,
-  SPRINT_BACKLOG: (projectId: number) =>
-    `/api/sprints/project/${projectId}/backlog`,
+  SPRINTS_BY_PROJECT: (projectId: number) => `/api/sprints/project/${projectId}`,
+  SPRINT_BACKLOG: (projectId: number) => `/api/sprints/project/${projectId}/backlog`,
   SPRINT_CREATE: "/api/sprints",
   SPRINT_UPDATE: (id: number) => `/api/sprints/${id}`,
   SPRINT_DELETE: (id: number) => `/api/sprints/${id}`,
@@ -114,10 +109,8 @@ export const API_ENDPOINTS = {
   SEARCH: "/api/search",
 
   // Rapports
-  REPORT_BURNDOWN: (sprintId: number) =>
-    `/api/reports/sprint/${sprintId}/burndown`,
-  REPORT_PROJECT_STATS: (projectId: number) =>
-    `/api/reports/project/${projectId}/stats`,
+  REPORT_BURNDOWN: (sprintId: number) => `/api/reports/sprint/${sprintId}/burndown`,
+  REPORT_PROJECT_STATS: (projectId: number) => `/api/reports/project/${projectId}/stats`,
 
   // Stripe
   STRIPE_CHECKOUT: "/api/stripe/checkout",
@@ -128,12 +121,8 @@ export const API_ENDPOINTS = {
   STRIPE_INVOICE_TOKEN: "/api/stripe/invoice/token",
 
   // Rapports avancés
-  REPORT_VELOCITY: (projectId: number) =>
-    `/api/reports/project/${projectId}/velocity`,
-  REPORT_TIME_SPENT: (projectId: number) =>
-    `/api/reports/project/${projectId}/time-spent`,
-  REPORT_MULTI_SPRINT: (projectId: number) =>
-    `/api/reports/project/${projectId}/multi-sprint`,
-  REPORT_EXPORT_CSV: (projectId: number) =>
-    `/api/reports/project/${projectId}/export-csv`,
+  REPORT_VELOCITY: (projectId: number) => `/api/reports/project/${projectId}/velocity`,
+  REPORT_TIME_SPENT: (projectId: number) => `/api/reports/project/${projectId}/time-spent`,
+  REPORT_MULTI_SPRINT: (projectId: number) => `/api/reports/project/${projectId}/multi-sprint`,
+  REPORT_EXPORT_CSV: (projectId: number) => `/api/reports/project/${projectId}/export-csv`,
 } as const;

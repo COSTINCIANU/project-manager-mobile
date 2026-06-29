@@ -69,10 +69,7 @@ function ProjectCard({
       activeOpacity={0.7}
     >
       <View style={styles.cardHeader}>
-        <Text
-          style={[styles.cardTitle, { color: theme.textPrimary }]}
-          numberOfLines={1}
-        >
+        <Text style={[styles.cardTitle, { color: theme.textPrimary }]} numberOfLines={1}>
           {project.name}
         </Text>
         <View
@@ -81,43 +78,25 @@ function ProjectCard({
             { backgroundColor: PRIORITY_COLORS[project.priority] + "20" },
           ]}
         >
-          <Text
-            style={[
-              styles.priorityText,
-              { color: PRIORITY_COLORS[project.priority] },
-            ]}
-          >
+          <Text style={[styles.priorityText, { color: PRIORITY_COLORS[project.priority] }]}>
             {PRIORITY_LABELS[project.priority]}
           </Text>
         </View>
       </View>
 
       {project.description && (
-        <Text
-          style={[styles.cardDesc, { color: theme.textSecondary }]}
-          numberOfLines={2}
-        >
+        <Text style={[styles.cardDesc, { color: theme.textSecondary }]} numberOfLines={2}>
           {project.description}
         </Text>
       )}
 
       <View style={styles.progressContainer}>
-        <View
-          style={[
-            styles.progressBar,
-            { backgroundColor: theme.backgroundTertiary },
-          ]}
-        >
+        <View style={[styles.progressBar, { backgroundColor: theme.backgroundTertiary }]}>
           <View
-            style={[
-              styles.progressFill,
-              { width: `${progress}%`, backgroundColor: theme.primary },
-            ]}
+            style={[styles.progressFill, { width: `${progress}%`, backgroundColor: theme.primary }]}
           />
         </View>
-        <Text style={[styles.progressText, { color: theme.textSecondary }]}>
-          {progress}%
-        </Text>
+        <Text style={[styles.progressText, { color: theme.textSecondary }]}>{progress}%</Text>
       </View>
 
       <View style={styles.cardFooter}>
@@ -138,22 +117,11 @@ export default function ProjectsScreen() {
   const { theme } = useTheme();
 
   const { isTablet } = useBreakpoint();
-  const {
-    data: projects,
-    isLoading,
-    isError,
-    refetch,
-    isFetching,
-  } = useProjects();
+  const { data: projects, isLoading, isError, refetch, isFetching } = useProjects();
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
@@ -163,16 +131,9 @@ export default function ProjectsScreen() {
 
   if (isError) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundTertiary },
-        ]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
         <View style={styles.centered}>
-          <Text style={[styles.errorText, { color: Colors.danger }]}>
-            Erreur de chargement
-          </Text>
+          <Text style={[styles.errorText, { color: Colors.danger }]}>Erreur de chargement</Text>
           <TouchableOpacity
             onPress={() => refetch()}
             style={[styles.retryButton, { backgroundColor: theme.primary }]}
@@ -185,14 +146,10 @@ export default function ProjectsScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundTertiary }]}>
       {/* En-tete avec titre et boutons */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Projets
-        </Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>Projets</Text>
         <View style={styles.headerButtons}>
           {/* Bouton pour créer depuis un template */}
           <TouchableOpacity
@@ -205,9 +162,7 @@ export default function ProjectsScreen() {
               },
             ]}
           >
-            <Text
-              style={[styles.templateButtonText, { color: theme.textPrimary }]}
-            >
+            <Text style={[styles.templateButtonText, { color: theme.textPrimary }]}>
               📋 Templates
             </Text>
           </TouchableOpacity>
@@ -237,11 +192,7 @@ export default function ProjectsScreen() {
         contentContainerStyle={[styles.list, isTablet && styles.listTablet]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl
-            refreshing={isFetching}
-            onRefresh={refetch}
-            tintColor={theme.primary}
-          />
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={theme.primary} />
         }
         ListEmptyComponent={
           <View style={styles.empty}>

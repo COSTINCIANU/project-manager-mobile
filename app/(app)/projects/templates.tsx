@@ -66,17 +66,10 @@ export default function TemplatesScreen() {
 
   // Mutation pour créer un projet depuis un template
   const creerProjetDepuisTemplate = useMutation({
-    mutationFn: async ({
-      templateId,
-      nom,
-    }: {
-      templateId: number;
-      nom: string;
-    }) => {
-      const { data } = await apiClient.post(
-        API_ENDPOINTS.TEMPLATE_CREATE_PROJECT(templateId),
-        { name: nom },
-      );
+    mutationFn: async ({ templateId, nom }: { templateId: number; nom: string }) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.TEMPLATE_CREATE_PROJECT(templateId), {
+        name: nom,
+      });
       return data;
     },
     onSuccess: (data) => {
@@ -89,7 +82,7 @@ export default function TemplatesScreen() {
             text: "Voir le projet",
             onPress: () => router.push(`/projects/${data.projectId}`),
           },
-        ],
+        ]
       );
     },
     onError: () => {
@@ -136,9 +129,7 @@ export default function TemplatesScreen() {
 
   if (isLoading) {
     return (
-      <View
-        style={[styles.centré, { backgroundColor: theme.backgroundPrimary }]}
-      >
+      <View style={[styles.centré, { backgroundColor: theme.backgroundPrimary }]}>
         <ActivityIndicator size="large" color={theme.primary} />
         <Text style={[styles.texteChargement, { color: theme.textSecondary }]}>
           Chargement des templates...
@@ -148,26 +139,15 @@ export default function TemplatesScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.backgroundPrimary }]}
-    >
-      <ScrollView
-        style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
-      >
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.backgroundPrimary }]}>
+      <ScrollView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}>
         <View style={[styles.contenu, isTablet && styles.contenuTablette]}>
           {/* En-tête */}
           {/* Bouton retour + titre */}
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.boutonRetour}
-          >
-            <Text style={[styles.texteBoutonRetour, { color: theme.primary }]}>
-              ← Retour
-            </Text>
+          <TouchableOpacity onPress={() => router.back()} style={styles.boutonRetour}>
+            <Text style={[styles.texteBoutonRetour, { color: theme.primary }]}>← Retour</Text>
           </TouchableOpacity>
-          <Text style={[styles.titre, { color: theme.textPrimary }]}>
-            Choisir un template
-          </Text>
+          <Text style={[styles.titre, { color: theme.textPrimary }]}>Choisir un template</Text>
           <Text style={[styles.sousTitre, { color: theme.textSecondary }]}>
             Crée un projet avec des tâches préremplies
           </Text>
@@ -183,9 +163,7 @@ export default function TemplatesScreen() {
                 },
               ]}
             >
-              <Text
-                style={[styles.formulaireTitre, { color: theme.textPrimary }]}
-              >
+              <Text style={[styles.formulaireTitre, { color: theme.textPrimary }]}>
                 Nouveau projet depuis "{templateChoisi.name}"
               </Text>
               <TextInput
@@ -207,20 +185,12 @@ export default function TemplatesScreen() {
                   style={[styles.boutonAnnuler, { borderColor: theme.border }]}
                   onPress={() => setAfficherFormulaire(false)}
                 >
-                  <Text
-                    style={[
-                      styles.texteBoutonAnnuler,
-                      { color: theme.textSecondary },
-                    ]}
-                  >
+                  <Text style={[styles.texteBoutonAnnuler, { color: theme.textSecondary }]}>
                     Annuler
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[
-                    styles.boutonCreer,
-                    { backgroundColor: templateChoisi.color },
-                  ]}
+                  style={[styles.boutonCreer, { backgroundColor: templateChoisi.color }]}
                   onPress={confirmerCreation}
                   disabled={creerProjetDepuisTemplate.isPending}
                 >
@@ -254,33 +224,19 @@ export default function TemplatesScreen() {
                 onPress={() => choisirTemplate(template)}
               >
                 {/* Bande de couleur en haut de la carte */}
-                <View
-                  style={[
-                    styles.bandeColor,
-                    { backgroundColor: template.color },
-                  ]}
-                />
+                <View style={[styles.bandeColor, { backgroundColor: template.color }]} />
 
                 <View style={styles.carteContenu}>
                   {/* Nom et description */}
-                  <Text
-                    style={[styles.nomTemplate, { color: theme.textPrimary }]}
-                  >
+                  <Text style={[styles.nomTemplate, { color: theme.textPrimary }]}>
                     {template.name}
                   </Text>
-                  <Text
-                    style={[
-                      styles.descriptionTemplate,
-                      { color: theme.textSecondary },
-                    ]}
-                  >
+                  <Text style={[styles.descriptionTemplate, { color: theme.textSecondary }]}>
                     {template.description}
                   </Text>
 
                   {/* Nombre de tâches */}
-                  <Text
-                    style={[styles.nombreTaches, { color: template.color }]}
-                  >
+                  <Text style={[styles.nombreTaches, { color: template.color }]}>
                     {template.tasksCount} tâches incluses
                   </Text>
 
@@ -296,23 +252,13 @@ export default function TemplatesScreen() {
                             },
                           ]}
                         />
-                        <Text
-                          style={[
-                            styles.nomTache,
-                            { color: theme.textSecondary },
-                          ]}
-                        >
+                        <Text style={[styles.nomTache, { color: theme.textSecondary }]}>
                           {tache.name}
                         </Text>
                       </View>
                     ))}
                     {template.tasks.length > 3 && (
-                      <Text
-                        style={[
-                          styles.plusDeTaches,
-                          { color: theme.textSecondary },
-                        ]}
-                      >
+                      <Text style={[styles.plusDeTaches, { color: theme.textSecondary }]}>
                         +{template.tasks.length - 3} autres tâches...
                       </Text>
                     )}
@@ -320,15 +266,10 @@ export default function TemplatesScreen() {
 
                   {/* Bouton choisir */}
                   <TouchableOpacity
-                    style={[
-                      styles.boutonChoisir,
-                      { backgroundColor: template.color },
-                    ]}
+                    style={[styles.boutonChoisir, { backgroundColor: template.color }]}
                     onPress={() => choisirTemplate(template)}
                   >
-                    <Text style={styles.texteBoutonChoisir}>
-                      Utiliser ce template
-                    </Text>
+                    <Text style={styles.texteBoutonChoisir}>Utiliser ce template</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>

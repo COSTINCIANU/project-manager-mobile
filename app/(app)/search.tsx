@@ -179,9 +179,7 @@ export default function SearchScreen() {
       if (filtreDateDebut) params.append("date_from", filtreDateDebut);
       if (filtreDateFin) params.append("date_to", filtreDateFin);
 
-      const { data } = await apiClient.get(
-        `${API_ENDPOINTS.SEARCH}?${params.toString()}`,
-      );
+      const { data } = await apiClient.get(`${API_ENDPOINTS.SEARCH}?${params.toString()}`);
       return data;
     },
     enabled: !!(
@@ -243,9 +241,7 @@ export default function SearchScreen() {
   }) {
     return (
       <View style={{ marginBottom: 10 }}>
-        <Text style={[styles.labelFiltre, { color: theme.textPrimary }]}>
-          {label}
-        </Text>
+        <Text style={[styles.labelFiltre, { color: theme.textPrimary }]}>{label}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.rangeFiltres}>
             {options.map((opt) => (
@@ -255,12 +251,8 @@ export default function SearchScreen() {
                 style={[
                   styles.optionFiltre,
                   {
-                    backgroundColor:
-                      valeur === opt.value
-                        ? theme.primary
-                        : theme.backgroundPrimary,
-                    borderColor:
-                      valeur === opt.value ? theme.primary : theme.border,
+                    backgroundColor: valeur === opt.value ? theme.primary : theme.backgroundPrimary,
+                    borderColor: valeur === opt.value ? theme.primary : theme.border,
                   },
                 ]}
               >
@@ -268,8 +260,7 @@ export default function SearchScreen() {
                   style={[
                     styles.texteOptionFiltre,
                     {
-                      color:
-                        valeur === opt.value ? "#fff" : theme.textSecondary,
+                      color: valeur === opt.value ? "#fff" : theme.textSecondary,
                     },
                   ]}
                 >
@@ -287,20 +278,13 @@ export default function SearchScreen() {
   // RENDU
   // =====================
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}>
       <ScrollView
-        contentContainerStyle={[
-          styles.contenu,
-          isTablet && styles.contenuTablette,
-        ]}
+        contentContainerStyle={[styles.contenu, isTablet && styles.contenuTablette]}
         keyboardShouldPersistTaps="handled"
       >
         {/* ---- TITRE ---- */}
-        <Text style={[styles.titre, { color: theme.textPrimary }]}>
-          🔍 Recherche avancée
-        </Text>
+        <Text style={[styles.titre, { color: theme.textPrimary }]}>🔍 Recherche avancée</Text>
 
         {/* ---- BARRE DE RECHERCHE ---- */}
         <View
@@ -324,18 +308,11 @@ export default function SearchScreen() {
           />
           {terme.length > 0 && (
             <TouchableOpacity onPress={() => setTerme("")}>
-              <Text
-                style={[styles.boutonEffacer, { color: theme.textSecondary }]}
-              >
-                ✕
-              </Text>
+              <Text style={[styles.boutonEffacer, { color: theme.textSecondary }]}>✕</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[
-              styles.boutonRechercher,
-              { backgroundColor: theme.primary },
-            ]}
+            style={[styles.boutonRechercher, { backgroundColor: theme.primary }]}
             onPress={lancerRecherche}
           >
             <Text style={styles.texteBoutonRechercher}>Chercher</Text>
@@ -349,9 +326,7 @@ export default function SearchScreen() {
             {
               borderColor: theme.border,
               backgroundColor:
-                nombreFiltresActifs > 0
-                  ? theme.primary + "20"
-                  : theme.backgroundSecondary,
+                nombreFiltresActifs > 0 ? theme.primary + "20" : theme.backgroundSecondary,
             },
           ]}
           onPress={() => setAfficherFiltres(!afficherFiltres)}
@@ -360,13 +335,11 @@ export default function SearchScreen() {
             style={[
               styles.texteBoutonFiltres,
               {
-                color:
-                  nombreFiltresActifs > 0 ? theme.primary : theme.textSecondary,
+                color: nombreFiltresActifs > 0 ? theme.primary : theme.textSecondary,
               },
             ]}
           >
-            ⚙️ Filtres{" "}
-            {nombreFiltresActifs > 0 ? `(${nombreFiltresActifs})` : ""}
+            ⚙️ Filtres {nombreFiltresActifs > 0 ? `(${nombreFiltresActifs})` : ""}
             {afficherFiltres ? " ▲" : " ▼"}
           </Text>
         </TouchableOpacity>
@@ -407,9 +380,7 @@ export default function SearchScreen() {
             />
 
             {/* Filtre projet — sélecteur inline */}
-            <Text style={[styles.labelFiltre, { color: theme.textPrimary }]}>
-              Projet
-            </Text>
+            <Text style={[styles.labelFiltre, { color: theme.textPrimary }]}>Projet</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.rangeFiltres}>
                 <TouchableOpacity
@@ -418,11 +389,8 @@ export default function SearchScreen() {
                     styles.optionFiltre,
                     {
                       backgroundColor:
-                        filtreProjetId === ""
-                          ? theme.primary
-                          : theme.backgroundPrimary,
-                      borderColor:
-                        filtreProjetId === "" ? theme.primary : theme.border,
+                        filtreProjetId === "" ? theme.primary : theme.backgroundPrimary,
+                      borderColor: filtreProjetId === "" ? theme.primary : theme.border,
                     },
                   ]}
                 >
@@ -430,8 +398,7 @@ export default function SearchScreen() {
                     style={[
                       styles.texteOptionFiltre,
                       {
-                        color:
-                          filtreProjetId === "" ? "#fff" : theme.textSecondary,
+                        color: filtreProjetId === "" ? "#fff" : theme.textSecondary,
                       },
                     ]}
                   >
@@ -450,9 +417,7 @@ export default function SearchScreen() {
                             ? theme.primary
                             : theme.backgroundPrimary,
                         borderColor:
-                          filtreProjetId === String(projet.id)
-                            ? theme.primary
-                            : theme.border,
+                          filtreProjetId === String(projet.id) ? theme.primary : theme.border,
                       },
                     ]}
                   >
@@ -461,9 +426,7 @@ export default function SearchScreen() {
                         styles.texteOptionFiltre,
                         {
                           color:
-                            filtreProjetId === String(projet.id)
-                              ? "#fff"
-                              : theme.textSecondary,
+                            filtreProjetId === String(projet.id) ? "#fff" : theme.textSecondary,
                         },
                       ]}
                     >
@@ -529,12 +492,7 @@ export default function SearchScreen() {
                   setFiltreDateFin("");
                 }}
               >
-                <Text
-                  style={[
-                    styles.texteBoutonReinit,
-                    { color: theme.textSecondary },
-                  ]}
-                >
+                <Text style={[styles.texteBoutonReinit, { color: theme.textSecondary }]}>
                   Réinitialiser les filtres
                 </Text>
               </TouchableOpacity>
@@ -553,9 +511,7 @@ export default function SearchScreen() {
         {resultats && !isLoading && (
           <View style={styles.resultats}>
             {/* Compteur */}
-            <Text
-              style={[styles.nombreResultats, { color: theme.textSecondary }]}
-            >
+            <Text style={[styles.nombreResultats, { color: theme.textSecondary }]}>
               {resultats.total} résultat{resultats.total > 1 ? "s" : ""} trouvé
               {resultats.total > 1 ? "s" : ""}
             </Text>
@@ -563,9 +519,7 @@ export default function SearchScreen() {
             {/* Projets */}
             {resultats.projects.length > 0 && (
               <View style={styles.sectionResultats}>
-                <Text
-                  style={[styles.titreSection, { color: theme.textPrimary }]}
-                >
+                <Text style={[styles.titreSection, { color: theme.textPrimary }]}>
                   📁 Projets ({resultats.projects.length})
                 </Text>
                 {resultats.projects.map((projet) => (
@@ -580,22 +534,13 @@ export default function SearchScreen() {
                         borderLeftWidth: 4,
                       },
                     ]}
-                    onPress={() =>
-                      router.push(`/(app)/projects/${projet.id}` as any)
-                    }
+                    onPress={() => router.push(`/(app)/projects/${projet.id}` as any)}
                   >
-                    <Text
-                      style={[styles.nomResultat, { color: theme.textPrimary }]}
-                    >
+                    <Text style={[styles.nomResultat, { color: theme.textPrimary }]}>
                       {projet.name}
                     </Text>
                     <View style={styles.piedResultat}>
-                      <Text
-                        style={[
-                          styles.metaResultat,
-                          { color: theme.textSecondary },
-                        ]}
-                      >
+                      <Text style={[styles.metaResultat, { color: theme.textSecondary }]}>
                         {projet.status} • {projet.progress}%
                       </Text>
                     </View>
@@ -607,9 +552,7 @@ export default function SearchScreen() {
             {/* Tâches */}
             {resultats.tasks.length > 0 && (
               <View style={styles.sectionResultats}>
-                <Text
-                  style={[styles.titreSection, { color: theme.textPrimary }]}
-                >
+                <Text style={[styles.titreSection, { color: theme.textPrimary }]}>
                   📋 Tâches ({resultats.tasks.length})
                 </Text>
                 {resultats.tasks.map((tache) => (
@@ -620,34 +563,23 @@ export default function SearchScreen() {
                       {
                         backgroundColor: theme.backgroundSecondary,
                         borderColor: theme.border,
-                        borderLeftColor:
-                          PRIORITY_COLORS[tache.priority] ?? "#888",
+                        borderLeftColor: PRIORITY_COLORS[tache.priority] ?? "#888",
                         borderLeftWidth: 4,
                       },
                     ]}
-                    onPress={() =>
-                      router.push(`/(app)/tasks/${tache.id}` as any)
-                    }
+                    onPress={() => router.push(`/(app)/tasks/${tache.id}` as any)}
                   >
                     <View style={styles.enteteResultatTache}>
                       <Text style={styles.iconeTicket}>
                         {TICKET_ICONS[tache.ticketType] ?? "✅"}
                       </Text>
-                      <Text
-                        style={[
-                          styles.nomResultat,
-                          { color: theme.textPrimary },
-                        ]}
-                      >
+                      <Text style={[styles.nomResultat, { color: theme.textPrimary }]}>
                         {tache.name}
                       </Text>
                     </View>
                     {tache.description && (
                       <Text
-                        style={[
-                          styles.descriptionResultat,
-                          { color: theme.textSecondary },
-                        ]}
+                        style={[styles.descriptionResultat, { color: theme.textSecondary }]}
                         numberOfLines={1}
                       >
                         {tache.description}
@@ -658,9 +590,7 @@ export default function SearchScreen() {
                         style={[
                           styles.badgePriorite,
                           {
-                            backgroundColor:
-                              (PRIORITY_COLORS[tache.priority] ?? "#888") +
-                              "20",
+                            backgroundColor: (PRIORITY_COLORS[tache.priority] ?? "#888") + "20",
                           },
                         ]}
                       >
@@ -675,12 +605,7 @@ export default function SearchScreen() {
                           {tache.priority}
                         </Text>
                       </View>
-                      <Text
-                        style={[
-                          styles.metaResultat,
-                          { color: theme.textSecondary },
-                        ]}
-                      >
+                      <Text style={[styles.metaResultat, { color: theme.textSecondary }]}>
                         {tache.done
                           ? "✅ Terminé"
                           : tache.inProgress
@@ -688,14 +613,8 @@ export default function SearchScreen() {
                             : "⏳ À faire"}
                       </Text>
                       {tache.dueDate && (
-                        <Text
-                          style={[
-                            styles.metaResultat,
-                            { color: theme.textSecondary },
-                          ]}
-                        >
-                          📅{" "}
-                          {new Date(tache.dueDate).toLocaleDateString("fr-FR")}
+                        <Text style={[styles.metaResultat, { color: theme.textSecondary }]}>
+                          📅 {new Date(tache.dueDate).toLocaleDateString("fr-FR")}
                         </Text>
                       )}
                     </View>
@@ -707,9 +626,7 @@ export default function SearchScreen() {
             {/* Aucun résultat */}
             {resultats.total === 0 && (
               <View style={styles.vide}>
-                <Text
-                  style={[styles.texteVide, { color: theme.textSecondary }]}
-                >
+                <Text style={[styles.texteVide, { color: theme.textSecondary }]}>
                   Aucun résultat pour ces critères
                 </Text>
               </View>
@@ -721,8 +638,7 @@ export default function SearchScreen() {
         {!resultats && !isLoading && (
           <View style={styles.vide}>
             <Text style={[styles.texteVide, { color: theme.textSecondary }]}>
-              Tapez un mot-clé ou sélectionnez{"\n"}un filtre pour lancer la
-              recherche
+              Tapez un mot-clé ou sélectionnez{"\n"}un filtre pour lancer la recherche
             </Text>
           </View>
         )}

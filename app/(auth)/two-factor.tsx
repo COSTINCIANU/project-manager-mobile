@@ -42,10 +42,7 @@ export default function TwoFactorScreen() {
       setUser(user);
       router.replace("/(app)");
     } catch {
-      Alert.alert(
-        "Code incorrect",
-        "Vérifiez le code reçu par email et réessayez.",
-      );
+      Alert.alert("Code incorrect", "Vérifiez le code reçu par email et réessayez.");
     } finally {
       setIsLoading(false);
     }

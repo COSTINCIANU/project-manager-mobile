@@ -141,10 +141,7 @@ export default function AutomatisationsScreen() {
   // =====================
   const mutationCreer = useMutation({
     mutationFn: async (donnees: NouvelleRegle) => {
-      const reponse = await apiClient.post(
-        `/projects/${projetId}/regles`,
-        donnees,
-      );
+      const reponse = await apiClient.post(`/projects/${projetId}/regles`, donnees);
       return reponse.data;
     },
     onSuccess: () => {
@@ -236,9 +233,7 @@ export default function AutomatisationsScreen() {
   }) {
     return (
       <View style={{ marginBottom: 12 }}>
-        <Text style={[styles.labelChamp, { color: theme.textSecondary }]}>
-          {label}
-        </Text>
+        <Text style={[styles.labelChamp, { color: theme.textSecondary }]}>{label}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={{ flexDirection: "row", gap: 8 }}>
             {options.map((option) => (
@@ -253,21 +248,15 @@ export default function AutomatisationsScreen() {
                         ? theme.primary
                         : theme.backgroundSecondary,
                     borderColor:
-                      valeurSelectionnee === option.valeur
-                        ? theme.primary
-                        : theme.border,
+                      valeurSelectionnee === option.valeur ? theme.primary : theme.border,
                   },
                 ]}
               >
                 <Text
                   style={{
                     fontSize: 12,
-                    color:
-                      valeurSelectionnee === option.valeur
-                        ? "#fff"
-                        : theme.textPrimary,
-                    fontWeight:
-                      valeurSelectionnee === option.valeur ? "600" : "400",
+                    color: valeurSelectionnee === option.valeur ? "#fff" : theme.textPrimary,
+                    fontWeight: valeurSelectionnee === option.valeur ? "600" : "400",
                   }}
                 >
                   {option.label}
@@ -284,20 +273,13 @@ export default function AutomatisationsScreen() {
   // RENDU
   // =====================
   return (
-    <SafeAreaView
-      style={[styles.conteneur, { backgroundColor: theme.backgroundTertiary }]}
-    >
+    <SafeAreaView style={[styles.conteneur, { backgroundColor: theme.backgroundTertiary }]}>
       {/* ---- EN-TÊTE ---- */}
       <View style={[styles.entete, { borderBottomColor: theme.border }]}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.boutonRetour}
-        >
+        <TouchableOpacity onPress={() => router.back()} style={styles.boutonRetour}>
           <Text style={{ color: theme.primary, fontSize: 14 }}>← Retour</Text>
         </TouchableOpacity>
-        <Text style={[styles.titre, { color: theme.textPrimary }]}>
-          Automatisations
-        </Text>
+        <Text style={[styles.titre, { color: theme.textPrimary }]}>Automatisations</Text>
         <TouchableOpacity
           onPress={() => setAfficherFormulaire(!afficherFormulaire)}
           style={[styles.boutonNouvelle, { backgroundColor: theme.primary }]}
@@ -309,13 +291,8 @@ export default function AutomatisationsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={[
-          styles.contenu,
-          isTablet && styles.contenuTablette,
-        ]}
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
-        }
+        contentContainerStyle={[styles.contenu, isTablet && styles.contenuTablette]}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       >
         {/* ---- MESSAGE SUCCÈS / ERREUR ---- */}
         {message && (
@@ -323,8 +300,7 @@ export default function AutomatisationsScreen() {
             style={[
               styles.message,
               {
-                backgroundColor:
-                  message.type === "succes" ? "#EAF3DE" : "#FCEBEB",
+                backgroundColor: message.type === "succes" ? "#EAF3DE" : "#FCEBEB",
               },
             ]}
           >
@@ -355,16 +331,12 @@ export default function AutomatisationsScreen() {
             </Text>
 
             {/* Nom de la règle */}
-            <Text style={[styles.labelChamp, { color: theme.textSecondary }]}>
-              Nom de la règle
-            </Text>
+            <Text style={[styles.labelChamp, { color: theme.textSecondary }]}>Nom de la règle</Text>
             <TextInput
               placeholder="Ex : Notifier quand tâche terminée"
               placeholderTextColor={theme.textSecondary}
               value={formulaire.nom}
-              onChangeText={(texte) =>
-                setFormulaire({ ...formulaire, nom: texte })
-              }
+              onChangeText={(texte) => setFormulaire({ ...formulaire, nom: texte })}
               style={[
                 styles.champTexte,
                 {
@@ -393,13 +365,12 @@ export default function AutomatisationsScreen() {
             {VALEURS_DECLENCHEUR[formulaire.declencheur]?.length > 0 && (
               <SelecteurInline
                 label="Valeur du déclencheur"
-                options={VALEURS_DECLENCHEUR[formulaire.declencheur].map(
-                  (v) => ({ valeur: v, label: v }),
-                )}
+                options={VALEURS_DECLENCHEUR[formulaire.declencheur].map((v) => ({
+                  valeur: v,
+                  label: v,
+                }))}
                 valeurSelectionnee={formulaire.valeurDeclencheur}
-                onSelectionner={(v) =>
-                  setFormulaire({ ...formulaire, valeurDeclencheur: v })
-                }
+                onSelectionner={(v) => setFormulaire({ ...formulaire, valeurDeclencheur: v })}
               />
             )}
 
@@ -426,9 +397,7 @@ export default function AutomatisationsScreen() {
                   label: v,
                 }))}
                 valeurSelectionnee={formulaire.valeurAction}
-                onSelectionner={(v) =>
-                  setFormulaire({ ...formulaire, valeurAction: v })
-                }
+                onSelectionner={(v) => setFormulaire({ ...formulaire, valeurAction: v })}
               />
             )}
 
@@ -441,9 +410,7 @@ export default function AutomatisationsScreen() {
               {mutationCreer.isPending ? (
                 <ActivityIndicator color="#fff" size="small" />
               ) : (
-                <Text
-                  style={{ color: "#fff", fontSize: 13, fontWeight: "600" }}
-                >
+                <Text style={{ color: "#fff", fontSize: 13, fontWeight: "600" }}>
                   Créer la règle
                 </Text>
               )}
@@ -466,12 +433,7 @@ export default function AutomatisationsScreen() {
           </Text>
 
           {/* Chargement */}
-          {isLoading && (
-            <ActivityIndicator
-              color={theme.primary}
-              style={{ marginVertical: 20 }}
-            />
-          )}
+          {isLoading && <ActivityIndicator color={theme.primary} style={{ marginVertical: 20 }} />}
 
           {/* Aucune règle */}
           {!isLoading && regles.length === 0 && (
@@ -494,17 +456,10 @@ export default function AutomatisationsScreen() {
               ]}
             >
               {/* Nom de la règle */}
-              <Text style={[styles.nomRegle, { color: theme.textPrimary }]}>
-                {regle.nom}
-              </Text>
+              <Text style={[styles.nomRegle, { color: theme.textPrimary }]}>{regle.nom}</Text>
 
               {/* Description lisible de la règle */}
-              <Text
-                style={[
-                  styles.descriptionRegle,
-                  { color: theme.textSecondary },
-                ]}
-              >
+              <Text style={[styles.descriptionRegle, { color: theme.textSecondary }]}>
                 {labelDeclencheur(regle.declencheur)}
                 {regle.valeurDeclencheur ? ` → ${regle.valeurDeclencheur}` : ""}
                 {" ⟶ "}

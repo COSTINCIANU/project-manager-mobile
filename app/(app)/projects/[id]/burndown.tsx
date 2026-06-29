@@ -98,33 +98,26 @@ export default function BurndownScreen() {
   const router = useRouter();
 
   // Sprint sélectionné pour le burndown
-  const [sprintSelectionne, setSprintSelectionne] = useState<number | null>(
-    null,
-  );
+  const [sprintSelectionne, setSprintSelectionne] = useState<number | null>(null);
 
   // Récupère les stats globales du projet
   const { data: stats, isLoading: chargementStats } = useQuery<ProjectStats>({
     queryKey: ["project-stats", projectId],
     queryFn: async () => {
-      const { data } = await apiClient.get(
-        API_ENDPOINTS.REPORT_PROJECT_STATS(projectId),
-      );
+      const { data } = await apiClient.get(API_ENDPOINTS.REPORT_PROJECT_STATS(projectId));
       return data;
     },
   });
 
   // Récupère le burndown du sprint sélectionné
-  const { data: burndown, isLoading: chargementBurndown } =
-    useQuery<BurndownData>({
-      queryKey: ["burndown", sprintSelectionne],
-      queryFn: async () => {
-        const { data } = await apiClient.get(
-          API_ENDPOINTS.REPORT_BURNDOWN(sprintSelectionne!),
-        );
-        return data;
-      },
-      enabled: !!sprintSelectionne,
-    });
+  const { data: burndown, isLoading: chargementBurndown } = useQuery<BurndownData>({
+    queryKey: ["burndown", sprintSelectionne],
+    queryFn: async () => {
+      const { data } = await apiClient.get(API_ENDPOINTS.REPORT_BURNDOWN(sprintSelectionne!));
+      return data;
+    },
+    enabled: !!sprintSelectionne,
+  });
 
   // Dimensions du graphique
   const largeurEcran = Dimensions.get("window").width;
@@ -137,20 +130,14 @@ export default function BurndownScreen() {
   const hauteurZone = hauteurGraphique - paddingBas - paddingHaut;
 
   // Génère le chemin SVG pour une série de données
-  const genererChemin = (
-    donnees: Array<{ tasksRemaining: number }>,
-    maxTaches: number,
-  ): string => {
+  const genererChemin = (donnees: Array<{ tasksRemaining: number }>, maxTaches: number): string => {
     if (donnees.length === 0) return "";
 
     return donnees
       .map((d, i) => {
-        const x =
-          paddingGauche + (i / Math.max(donnees.length - 1, 1)) * largeurZone;
+        const x = paddingGauche + (i / Math.max(donnees.length - 1, 1)) * largeurZone;
         const y =
-          paddingHaut +
-          ((maxTaches - d.tasksRemaining) / Math.max(maxTaches, 1)) *
-            hauteurZone;
+          paddingHaut + ((maxTaches - d.tasksRemaining) / Math.max(maxTaches, 1)) * hauteurZone;
         return `${i === 0 ? "M" : "L"} ${x} ${y}`;
       })
       .join(" ");
@@ -165,28 +152,14 @@ export default function BurndownScreen() {
   const isLoading = chargementStats || chargementBurndown;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}
-    >
-      <ScrollView
-        contentContainerStyle={[
-          styles.contenu,
-          isTablet && styles.contenuTablette,
-        ]}
-      >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundPrimary }]}>
+      <ScrollView contentContainerStyle={[styles.contenu, isTablet && styles.contenuTablette]}>
         {/* Bouton retour */}
-        <TouchableOpacity
-          style={styles.boutonRetour}
-          onPress={() => router.back()}
-        >
-          <Text style={[styles.texteBoutonRetour, { color: theme.primary }]}>
-            ← Retour
-          </Text>
+        <TouchableOpacity style={styles.boutonRetour} onPress={() => router.back()}>
+          <Text style={[styles.texteBoutonRetour, { color: theme.primary }]}>← Retour</Text>
         </TouchableOpacity>
 
-        <Text style={[styles.titre, { color: theme.textPrimary }]}>
-          📊 Rapports
-        </Text>
+        <Text style={[styles.titre, { color: theme.textPrimary }]}>📊 Rapports</Text>
 
         {chargementStats ? (
           <ActivityIndicator size="large" color={theme.primary} />
@@ -203,67 +176,31 @@ export default function BurndownScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
-                  Vue globale
-                </Text>
+                <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>Vue globale</Text>
                 <View style={styles.grilleStats}>
-                  <View
-                    style={[
-                      styles.statItem,
-                      { backgroundColor: theme.backgroundPrimary },
-                    ]}
-                  >
+                  <View style={[styles.statItem, { backgroundColor: theme.backgroundPrimary }]}>
                     <Text style={[styles.statNombre, { color: theme.primary }]}>
                       {stats.totalTaches}
                     </Text>
-                    <Text
-                      style={[styles.statLabel, { color: theme.textSecondary }]}
-                    >
-                      Total
-                    </Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Total</Text>
                   </View>
-                  <View
-                    style={[
-                      styles.statItem,
-                      { backgroundColor: theme.backgroundPrimary },
-                    ]}
-                  >
+                  <View style={[styles.statItem, { backgroundColor: theme.backgroundPrimary }]}>
                     <Text style={[styles.statNombre, { color: "#888" }]}>
                       {stats.parStatut.aFaire}
                     </Text>
-                    <Text
-                      style={[styles.statLabel, { color: theme.textSecondary }]}
-                    >
-                      À faire
-                    </Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>À faire</Text>
                   </View>
-                  <View
-                    style={[
-                      styles.statItem,
-                      { backgroundColor: theme.backgroundPrimary },
-                    ]}
-                  >
+                  <View style={[styles.statItem, { backgroundColor: theme.backgroundPrimary }]}>
                     <Text style={[styles.statNombre, { color: "#F59E0B" }]}>
                       {stats.parStatut.enCours}
                     </Text>
-                    <Text
-                      style={[styles.statLabel, { color: theme.textSecondary }]}
-                    >
-                      En cours
-                    </Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>En cours</Text>
                   </View>
-                  <View
-                    style={[
-                      styles.statItem,
-                      { backgroundColor: theme.backgroundPrimary },
-                    ]}
-                  >
+                  <View style={[styles.statItem, { backgroundColor: theme.backgroundPrimary }]}>
                     <Text style={[styles.statNombre, { color: "#27AE60" }]}>
                       {stats.parStatut.terminees}
                     </Text>
-                    <Text
-                      style={[styles.statLabel, { color: theme.textSecondary }]}
-                    >
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
                       Terminées
                     </Text>
                   </View>
@@ -281,9 +218,7 @@ export default function BurndownScreen() {
                     },
                   ]}
                 >
-                  <Text
-                    style={[styles.titreCarte, { color: theme.textPrimary }]}
-                  >
+                  <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
                     Par type de ticket
                   </Text>
                   {Object.entries(stats.parType).map(([type, count]) => (
@@ -297,16 +232,9 @@ export default function BurndownScreen() {
                               ? "⚡"
                               : "✅"}
                       </Text>
-                      <Text
-                        style={[styles.nomType, { color: theme.textPrimary }]}
-                      >
-                        {type}
-                      </Text>
+                      <Text style={[styles.nomType, { color: theme.textPrimary }]}>{type}</Text>
                       <View
-                        style={[
-                          styles.barreType,
-                          { backgroundColor: theme.backgroundPrimary },
-                        ]}
+                        style={[styles.barreType, { backgroundColor: theme.backgroundPrimary }]}
                       >
                         <View
                           style={[
@@ -318,12 +246,7 @@ export default function BurndownScreen() {
                           ]}
                         />
                       </View>
-                      <Text
-                        style={[
-                          styles.nombreType,
-                          { color: theme.textSecondary },
-                        ]}
-                      >
+                      <Text style={[styles.nombreType, { color: theme.textSecondary }]}>
                         {count}
                       </Text>
                     </View>
@@ -342,11 +265,7 @@ export default function BurndownScreen() {
                     },
                   ]}
                 >
-                  <Text
-                    style={[styles.titreCarte, { color: theme.textPrimary }]}
-                  >
-                    Sprints
-                  </Text>
+                  <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>Sprints</Text>
                   {stats.sprints.map((sprint) => (
                     <TouchableOpacity
                       key={sprint.id}
@@ -358,26 +277,18 @@ export default function BurndownScreen() {
                         },
                       ]}
                       onPress={() =>
-                        setSprintSelectionne(
-                          sprint.id === sprintSelectionne ? null : sprint.id,
-                        )
+                        setSprintSelectionne(sprint.id === sprintSelectionne ? null : sprint.id)
                       }
                     >
                       <View style={styles.infosSprint}>
-                        <Text
-                          style={[
-                            styles.nomSprint,
-                            { color: theme.textPrimary },
-                          ]}
-                        >
+                        <Text style={[styles.nomSprint, { color: theme.textPrimary }]}>
                           {sprint.name}
                         </Text>
                         <View
                           style={[
                             styles.badgeStatut,
                             {
-                              backgroundColor:
-                                SPRINT_STATUS_COLORS[sprint.status] + "20",
+                              backgroundColor: SPRINT_STATUS_COLORS[sprint.status] + "20",
                             },
                           ]}
                         >
@@ -393,38 +304,24 @@ export default function BurndownScreen() {
                       </View>
                       <View style={styles.progressionSprint}>
                         <View
-                          style={[
-                            styles.barreProg,
-                            { backgroundColor: theme.backgroundPrimary },
-                          ]}
+                          style={[styles.barreProg, { backgroundColor: theme.backgroundPrimary }]}
                         >
                           <View
                             style={[
                               styles.remplissageProg,
                               {
                                 width: `${sprint.progression}%`,
-                                backgroundColor:
-                                  SPRINT_STATUS_COLORS[sprint.status],
+                                backgroundColor: SPRINT_STATUS_COLORS[sprint.status],
                               },
                             ]}
                           />
                         </View>
-                        <Text
-                          style={[
-                            styles.texteProg,
-                            { color: theme.textSecondary },
-                          ]}
-                        >
-                          {sprint.tasksDone}/{sprint.tasksTotal} —{" "}
-                          {sprint.progression}%
+                        <Text style={[styles.texteProg, { color: theme.textSecondary }]}>
+                          {sprint.tasksDone}/{sprint.tasksTotal} — {sprint.progression}%
                         </Text>
                       </View>
-                      <Text
-                        style={[styles.voirBurndown, { color: theme.primary }]}
-                      >
-                        {sprintSelectionne === sprint.id
-                          ? "▲ Masquer"
-                          : "📊 Burndown"}
+                      <Text style={[styles.voirBurndown, { color: theme.primary }]}>
+                        {sprintSelectionne === sprint.id ? "▲ Masquer" : "📊 Burndown"}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -447,25 +344,15 @@ export default function BurndownScreen() {
                   ) : (
                     burndown && (
                       <>
-                        <Text
-                          style={[
-                            styles.titreCarte,
-                            { color: theme.textPrimary },
-                          ]}
-                        >
+                        <Text style={[styles.titreCarte, { color: theme.textPrimary }]}>
                           Burndown — {burndown.sprint.name}
                         </Text>
 
                         {burndown.donneesReelles.length === 0 ? (
                           <View style={styles.videChart}>
-                            <Text
-                              style={[
-                                styles.texteVideChart,
-                                { color: theme.textSecondary },
-                              ]}
-                            >
-                              Pas encore de données.{"\n"}Le graphique se
-                              remplit chaque nuit automatiquement.
+                            <Text style={[styles.texteVideChart, { color: theme.textSecondary }]}>
+                              Pas encore de données.{"\n"}Le graphique se remplit chaque nuit
+                              automatiquement.
                             </Text>
                           </View>
                         ) : (
@@ -474,17 +361,9 @@ export default function BurndownScreen() {
                             <View style={styles.legende}>
                               <View style={styles.elementLegende}>
                                 <View
-                                  style={[
-                                    styles.ligneLegende,
-                                    { backgroundColor: theme.primary },
-                                  ]}
+                                  style={[styles.ligneLegende, { backgroundColor: theme.primary }]}
                                 />
-                                <Text
-                                  style={[
-                                    styles.texteLegende,
-                                    { color: theme.textSecondary },
-                                  ]}
-                                >
+                                <Text style={[styles.texteLegende, { color: theme.textSecondary }]}>
                                   Réel
                                 </Text>
                               </View>
@@ -498,22 +377,14 @@ export default function BurndownScreen() {
                                     },
                                   ]}
                                 />
-                                <Text
-                                  style={[
-                                    styles.texteLegende,
-                                    { color: theme.textSecondary },
-                                  ]}
-                                >
+                                <Text style={[styles.texteLegende, { color: theme.textSecondary }]}>
                                   Idéal
                                 </Text>
                               </View>
                             </View>
 
                             {/* Graphique SVG */}
-                            <Svg
-                              width={largeurGraphique}
-                              height={hauteurGraphique}
-                            >
+                            <Svg width={largeurGraphique} height={hauteurGraphique}>
                               {/* Axe Y */}
                               <Line
                                 x1={paddingGauche}
@@ -536,9 +407,7 @@ export default function BurndownScreen() {
                               {/* Labels axe Y */}
                               {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
                                 const y = paddingHaut + ratio * hauteurZone;
-                                const valeur = Math.round(
-                                  burndown.sprint.tasksTotal * (1 - ratio),
-                                );
+                                const valeur = Math.round(burndown.sprint.tasksTotal * (1 - ratio));
                                 return (
                                   <SvgText
                                     key={ratio}
@@ -558,7 +427,7 @@ export default function BurndownScreen() {
                                 <Path
                                   d={genererChemin(
                                     burndown.ligneIdeale,
-                                    burndown.sprint.tasksTotal,
+                                    burndown.sprint.tasksTotal
                                   )}
                                   stroke="#888"
                                   strokeWidth={1.5}
@@ -573,7 +442,7 @@ export default function BurndownScreen() {
                                   <Path
                                     d={genererChemin(
                                       burndown.donneesReelles,
-                                      burndown.sprint.tasksTotal,
+                                      burndown.sprint.tasksTotal
                                     )}
                                     stroke={theme.primary}
                                     strokeWidth={2.5}
@@ -583,29 +452,15 @@ export default function BurndownScreen() {
                                   {burndown.donneesReelles.map((d, i) => {
                                     const x =
                                       paddingGauche +
-                                      (i /
-                                        Math.max(
-                                          burndown.donneesReelles.length - 1,
-                                          1,
-                                        )) *
+                                      (i / Math.max(burndown.donneesReelles.length - 1, 1)) *
                                         largeurZone;
                                     const y =
                                       paddingHaut +
-                                      ((burndown.sprint.tasksTotal -
-                                        d.tasksRemaining) /
-                                        Math.max(
-                                          burndown.sprint.tasksTotal,
-                                          1,
-                                        )) *
+                                      ((burndown.sprint.tasksTotal - d.tasksRemaining) /
+                                        Math.max(burndown.sprint.tasksTotal, 1)) *
                                         hauteurZone;
                                     return (
-                                      <Circle
-                                        key={i}
-                                        cx={x}
-                                        cy={y}
-                                        r={4}
-                                        fill={theme.primary}
-                                      />
+                                      <Circle key={i} cx={x} cy={y} r={4} fill={theme.primary} />
                                     );
                                   })}
                                 </>
@@ -614,21 +469,13 @@ export default function BurndownScreen() {
                               {/* Labels axe X */}
                               {burndown.donneesReelles.map((d, i) => {
                                 if (
-                                  i %
-                                    Math.ceil(
-                                      burndown.donneesReelles.length / 5,
-                                    ) !==
-                                    0 &&
+                                  i % Math.ceil(burndown.donneesReelles.length / 5) !== 0 &&
                                   i !== burndown.donneesReelles.length - 1
                                 )
                                   return null;
                                 const x =
                                   paddingGauche +
-                                  (i /
-                                    Math.max(
-                                      burndown.donneesReelles.length - 1,
-                                      1,
-                                    )) *
+                                  (i / Math.max(burndown.donneesReelles.length - 1, 1)) *
                                     largeurZone;
                                 return (
                                   <SvgText
@@ -648,14 +495,10 @@ export default function BurndownScreen() {
                             {/* Stats du sprint */}
                             <View style={styles.statsSprint}>
                               <Text
-                                style={[
-                                  styles.statSprintTexte,
-                                  { color: theme.textSecondary },
-                                ]}
+                                style={[styles.statSprintTexte, { color: theme.textSecondary }]}
                               >
                                 {burndown.sprint.tasksDone} tâches terminées sur{" "}
-                                {burndown.sprint.tasksTotal} —{" "}
-                                {burndown.sprint.progression}%
+                                {burndown.sprint.tasksTotal} — {burndown.sprint.progression}%
                               </Text>
                             </View>
                           </>
