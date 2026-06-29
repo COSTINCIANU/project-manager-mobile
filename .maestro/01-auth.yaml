@@ -1,0 +1,35 @@
+appId: host.exp.exponent
+---
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- tapOn:
+    text: "Project Manager"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- tapOn:
+    id: "email-input"
+- inputText: "gheorghina.costincianu@sfr.fr"
+
+- tapOn:
+    id: "password-input"
+- inputText: "23197710"
+
+- hideKeyboard
+
+- tapOn:
+    id: "login-button"
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+- assertVisible:
+    text: "Projets"
+
+- assertVisible:
+    text: "Taches"
+
+- takeScreenshot: auth-success

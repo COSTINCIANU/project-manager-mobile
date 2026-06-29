@@ -145,7 +145,9 @@ export default function LoginScreen() {
               <Text style={[styles.label, { color: theme.textPrimary }]}>
                 Email
               </Text>
+              {/* testID="email-input" — utilisé par les tests Maestro */}
               <TextInput
+                testID="email-input"
                 style={[
                   styles.input,
                   {
@@ -169,7 +171,9 @@ export default function LoginScreen() {
               <Text style={[styles.label, { color: theme.textPrimary }]}>
                 Mot de passe
               </Text>
+              {/* testID="password-input" — utilisé par les tests Maestro */}
               <TextInput
+                testID="password-input"
                 style={[
                   styles.input,
                   {
@@ -195,7 +199,9 @@ export default function LoginScreen() {
               Mot de passe oublie ?
             </Link>
 
+            {/* testID="login-button" — utilisé par les tests Maestro */}
             <TouchableOpacity
+              testID="login-button"
               style={[
                 styles.button,
                 { backgroundColor: theme.primary },
