@@ -37,6 +37,7 @@ const ACTIONS = [
   { icon: "📊", label: "Rapports", path: "burndown" },
   { icon: "📈", label: "Rapports", path: "rapports" },
   { icon: "🔁", label: "Automatisations", path: "automatisations" },
+  { icon: "🏁", label: "Jalons", path: "jalons" },
 ];
 
 export default function ProjectDetailScreen() {
