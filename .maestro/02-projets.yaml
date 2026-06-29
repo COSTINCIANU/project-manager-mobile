@@ -1,0 +1,49 @@
+# =====================================================
+# 02-projets.yaml — Test Maestro : Navigation projets
+# Connexion puis navigation vers la liste des projets
+# =====================================================
+appId: host.exp.exponent
+---
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- tapOn:
+    text: "Project Manager"
+
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# Connexion
+- tapOn:
+    id: "email-input"
+- inputText: "gheorghina.costincianu@sfr.fr"
+
+- tapOn:
+    id: "password-input"
+- inputText: "23197710"
+
+- hideKeyboard
+
+- tapOn:
+    id: "login-button"
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Vérifie le dashboard
+- assertVisible:
+    text: "Projets"
+
+# Navigue vers Projets
+- tapOn:
+    text: "Projets"
+
+- waitForAnimationToEnd:
+    timeout: 8000
+
+# Vérifie la page projets
+- assertVisible:
+    text: "Projets"
+
+- takeScreenshot: projets-success
