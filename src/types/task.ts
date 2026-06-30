@@ -17,6 +17,8 @@ export interface Task {
   elapsedTime: number | null;
   subTasks: SubTask[];
   tags: string[];
+  recurrence: "daily" | "weekly" | "monthly" | null;
+  recurrenceEndDate: string | null;
 }
 
 export interface SubTask {

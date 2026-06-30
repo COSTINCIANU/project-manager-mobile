@@ -94,6 +94,18 @@ function TaskCard({ task }: { task: Task; isTablet: boolean }) {
         <View style={[styles.priorityBadge, { backgroundColor: priorityColor + "20" }]}>
           <Text style={[styles.priorityText, { color: priorityColor }]}>{task.priority}</Text>
         </View>
+        {task.recurrence && (
+          <View style={[styles.priorityBadge, { backgroundColor: "#F0E6FF" }]}>
+            <Text style={[styles.priorityText, { color: "#7B2FBE" }]}>
+              🔄{" "}
+              {task.recurrence === "daily"
+                ? "Quotidien"
+                : task.recurrence === "weekly"
+                  ? "Hebdo"
+                  : "Mensuel"}
+            </Text>
+          </View>
+        )}
         {task.dueDate && (
           <Text style={[styles.dueDate, { color: theme.textSecondary }]}>
             📅 {new Date(task.dueDate).toLocaleDateString("fr-FR")}
