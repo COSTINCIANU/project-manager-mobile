@@ -228,6 +228,15 @@ export default function ProfileScreen() {
           <Text style={styles.editProfileText}>💳 Mon abonnement</Text>
         </TouchableOpacity>
 
+        {/* Bouton historique */}
+        <TouchableOpacity
+          style={[styles.editProfileButton, { backgroundColor: "#378ADD" }]}
+          onPress={() => router.push("/(app)/profile/history" as any)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.editProfileText}>📋 Historique des actions</Text>
+        </TouchableOpacity>
+
         {/* Bouton deconnexion */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.8}>
           <Text style={styles.logoutText}>Se deconnecter</Text>
