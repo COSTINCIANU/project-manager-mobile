@@ -15,7 +15,7 @@ import * as Notifications from "expo-notifications";
 import { useAuthStore } from "@/stores/authStore";
 import { notificationService } from "@/services/notificationService";
 import { useThemeStore } from "@/stores/themeStore";
-
+import { RateLimitToast } from "@/components/RateLimitToast";
 // Maintenir le splash screen jusqu'à la fin de l'initialisation
 SplashScreen.preventAutoHideAsync();
 
@@ -91,6 +91,8 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(app)" />
           </Stack>
+          {/* Toast d'alerte rate limiting — visible sur tous les écrans */}
+          <RateLimitToast />
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

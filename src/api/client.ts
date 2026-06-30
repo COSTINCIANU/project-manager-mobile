@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from "axios";
 import { API_BASE_URL, API_ENDPOINTS } from "@/constants/api";
 import { tokenService } from "@/services/tokenService";
+import { DeviceEventEmitter } from "react-native";
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -43,6 +44,19 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
+    // =====================
+    // Gestion du rate limiting (429)
+    // Emet un événement global pour afficher un toast d'alerte
+    // =====================
+    if (error.response?.status === 429) {
+      const data = error.response.data as { error?: string; retryAfter?: number };
+      DeviceEventEmitter.emit("rate-limit-error", {
+        message: data?.error || "Trop de requêtes — veuillez patienter quelques instants.",
+        retryAfter: data?.retryAfter,
+      });
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -64,12 +78,10 @@ apiClient.interceptors.response.use(
         if (!refreshToken) throw new Error("Pas de refresh token");
 
         const { data } = await axios.post(`${API_BASE_URL}${API_ENDPOINTS.REFRESH}`, {
-          // refresh_token: refreshToken,
-          refreshToken: refreshToken, // ✅ correspond à ton API Symfony
+          refreshToken: refreshToken,
         });
 
-        // await tokenService.saveTokens(data.token, data.refresh_token);
-        await tokenService.saveTokens(data.token, data.refreshToken); // ✅ correspond à ton API Symfony
+        await tokenService.saveTokens(data.token, data.refreshToken);
         processQueue(null, data.token);
         originalRequest.headers.Authorization = `Bearer ${data.token}`;
         return apiClient(originalRequest);
