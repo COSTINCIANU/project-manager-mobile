@@ -275,7 +275,13 @@ const styles = StyleSheet.create({
   selecteurPeriode: { flexDirection: "row", gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
   boutonPeriode: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 16, borderWidth: 1 },
   centre: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
-  axeContainer: { height: 24, position: "relative", borderBottomWidth: 1, marginBottom: 8 },
+  axeContainer: {
+    width: 868,
+    height: 24,
+    position: "relative",
+    borderBottomWidth: 1,
+    marginBottom: 8,
+  },
   ligneAujourdhui: { position: "absolute", top: 0, bottom: 0, width: 2, opacity: 0.5 },
   marqueurJalon: { position: "absolute", top: 0, transform: [{ translateX: -7 }] },
   ligneTache: {
@@ -286,8 +292,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   nomTache: { width: 140, fontSize: 12, flexShrink: 0 },
-  barreContainer: { flex: 1, height: 20, position: "relative" },
-  barreTache: { position: "absolute", top: 4, width: 30, height: 12, borderRadius: 4 },
+  barreContainer: { width: 700, height: 20, position: "relative" },
+  barreTache: { position: "absolute", top: 3, width: 40, height: 14, borderRadius: 4 },
   ligneJalonVerticale: {
     position: "absolute",
     top: -20,
