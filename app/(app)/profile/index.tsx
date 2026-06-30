@@ -81,6 +81,47 @@ export default function ProfileScreen() {
     }
   };
 
+  // =====================
+  // RGPD — EXPORT DES DONNÉES
+  // =====================
+  const handleExportData = async () => {
+    try {
+      const { data } = await apiClient.get("/api/user/export");
+      Alert.alert(
+        "Export réussi",
+        "Vos données ont été récupérées. Sur mobile, contactez le support pour recevoir le fichier complet par email."
+      );
+      console.log("Données exportées:", data);
+    } catch (error) {
+      Alert.alert("Erreur", "Impossible d'exporter vos données.");
+    }
+  };
+
+  // =====================
+  // RGPD — SUPPRESSION DE COMPTE
+  // =====================
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Supprimer mon compte",
+      "Cette action est irréversible. Toutes vos données personnelles seront supprimées définitivement.",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Supprimer définitivement",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await apiClient.delete("/api/user/me");
+              await logout();
+            } catch (error) {
+              Alert.alert("Erreur", "Impossible de supprimer le compte.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (!user) return null;
 
   const avatarUrl = user.avatar ? `https://api.costincianu.fr${user.avatar}` : null;
@@ -235,6 +276,34 @@ export default function ProfileScreen() {
           activeOpacity={0.8}
         >
           <Text style={styles.editProfileText}>📋 Historique des actions</Text>
+        </TouchableOpacity>
+
+        {/* Bouton export RGPD */}
+        <TouchableOpacity
+          style={[
+            styles.editProfileButton,
+            { backgroundColor: theme.backgroundPrimary, borderWidth: 1, borderColor: theme.border },
+          ]}
+          onPress={handleExportData}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.editProfileText, { color: theme.textPrimary }]}>
+            📥 Exporter mes données
+          </Text>
+        </TouchableOpacity>
+
+        {/* Bouton supprimer compte RGPD */}
+        <TouchableOpacity
+          style={[
+            styles.editProfileButton,
+            { backgroundColor: Colors.danger + "15", borderWidth: 1, borderColor: Colors.danger },
+          ]}
+          onPress={handleDeleteAccount}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.editProfileText, { color: Colors.danger }]}>
+            🗑️ Supprimer mon compte
+          </Text>
         </TouchableOpacity>
 
         {/* Bouton deconnexion */}
