@@ -27,6 +27,9 @@ import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/constants/api";
 import { useRouter } from "expo-router";
 
+import { File, Paths } from "expo-file-system";
+import * as Sharing from "expo-sharing";
+
 export default function ProfileScreen() {
   const { user, logout, setUser } = useAuthStore();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -87,16 +90,25 @@ export default function ProfileScreen() {
   const handleExportData = async () => {
     try {
       const { data } = await apiClient.get("/api/user/export");
-      Alert.alert(
-        "Export réussi",
-        "Vos données ont été récupérées. Sur mobile, contactez le support pour recevoir le fichier complet par email."
-      );
-      console.log("Données exportées:", data);
+
+      const fileName = `mes-donnees-${new Date().toISOString().split("T")[0]}.json`;
+      const file = new File(Paths.document, fileName);
+
+      file.write(JSON.stringify(data, null, 2));
+
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(file.uri, {
+          mimeType: "application/json",
+          dialogTitle: "Exporter mes données",
+        });
+      } else {
+        Alert.alert("Export réussi", `Fichier enregistré : ${fileName}`);
+      }
     } catch (error) {
       Alert.alert("Erreur", "Impossible d'exporter vos données.");
     }
   };
-
   // =====================
   // RGPD — SUPPRESSION DE COMPTE
   // =====================
