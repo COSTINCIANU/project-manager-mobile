@@ -34,7 +34,7 @@ const ACTIONS = [
   { icon: "👥", label: "Equipe", path: "team" },
   { icon: "⚙️", label: "Champs", path: "custom-fields" },
   { icon: "📦", label: "Backlog", path: "backlog" },
-  { icon: "📊", label: "Rapports", path: "burndown" },
+  { icon: "📊", label: "Burndown", path: "burndown" },
   { icon: "📈", label: "Rapports", path: "rapports" },
   { icon: "🔁", label: "Automatisations", path: "automatisations" },
   { icon: "🏁", label: "Jalons", path: "jalons" },
@@ -150,7 +150,10 @@ export default function ProjectDetailScreen() {
               onPress={() => router.push(`/(app)/projects/${id}/${action.path}` as any)}
             >
               <Text style={styles.actionIcon}>{action.icon}</Text>
-              <Text style={[styles.actionText, { color: theme.textPrimary }]}>{action.label}</Text>
+
+              <Text style={[styles.actionText, { color: theme.textPrimary }]} numberOfLines={1}>
+                {action.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -173,7 +176,10 @@ export default function ProjectDetailScreen() {
               onPress={() => router.push(`/(app)/projects/${id}/${action.path}` as any)}
             >
               <Text style={styles.actionIcon}>{action.icon}</Text>
-              <Text style={[styles.actionText, { color: theme.textPrimary }]}>{action.label}</Text>
+
+              <Text style={[styles.actionText, { color: theme.textPrimary }]} numberOfLines={1}>
+                {action.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -331,18 +337,28 @@ const styles = StyleSheet.create({
   actionsRow: { flexDirection: "row", gap: 10, paddingVertical: 4 },
   // Actions grille tablette
   actionsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  // actionButton: {
+  //   width: 80,
+  //   borderRadius: 12,
+  //   padding: 12,
+  //   alignItems: "center",
+  //   gap: 6,
+  //   borderWidth: 0.5,
+  // },
+
   actionButton: {
-    width: 80,
+    width: 78,
     borderRadius: 12,
-    padding: 12,
+    padding: 10,
     alignItems: "center",
-    gap: 6,
+    gap: 4,
     borderWidth: 0.5,
   },
+  actionText: { fontSize: 11, fontWeight: "500", textAlign: "center" },
   // Bouton action sur tablette — prend 30% de la largeur
   actionButtonTablet: { width: "30%" },
   actionIcon: { fontSize: 24 },
-  actionText: { fontSize: 12, fontWeight: "500", textAlign: "center" },
+
   section: { borderRadius: 12, padding: 16, gap: 12 },
   sectionTitle: { fontSize: 15, fontWeight: "600" },
   taskItem: { flexDirection: "row", alignItems: "center", gap: 10 },
